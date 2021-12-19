@@ -1,57 +1,108 @@
 <?php
-use UserAgentParserComparison\Entity\Provider;
 
-include_once 'bootstrap.php';
+use Ramsey\Uuid\Uuid;
 
-/* @var $entityManager \Doctrine\ORM\EntityManager */
+include 'bootstrap.php';
 
-/* @var $chain \UserAgentParser\Provider\Chain */
+/* @var $chain \UserAgentParserComparison\Provider\Chain */
 $chain = include 'bin/getChainProvider.php';
 
-foreach ($chain->getProviders() as $provider) {
-    /* @var $provider \UserAgentParser\Provider\AbstractProvider */
-    
-    $providerRepo = $entityManager->getRepository('UserAgentParserComparison\Entity\Provider');
-    
-    $providerEntity = $providerRepo->findOneBy([
-        'name' => $provider->getName(),
-        'type' => 'real'
-    ]);
-    if ($providerEntity === null) {
-        $providerEntity = new Provider();
-    }
-    
-    $providerEntity->type = 'real';
-    $providerEntity->name = $provider->getName();
-    $providerEntity->packageName = $provider->getPackageName();
-    $providerEntity->homepage = $provider->getHomepage();
-    $providerEntity->version = $provider->getVersion();
-    
-    /*
-     * capabilities
-     */
-    $capabilities = $provider->getDetectionCapabilities();
-    
-    $providerEntity->canDetectBrowserName = $capabilities['browser']['name'];
-    $providerEntity->canDetectBrowserVersion = $capabilities['browser']['version'];
-    
-    $providerEntity->canDetectEngineName = $capabilities['renderingEngine']['name'];
-    $providerEntity->canDetectEngineVersion = $capabilities['renderingEngine']['version'];
-    
-    $providerEntity->canDetectOsName = $capabilities['operatingSystem']['name'];
-    $providerEntity->canDetectOsVersion = $capabilities['operatingSystem']['version'];
-    
-    $providerEntity->canDetectDeviceModel = $capabilities['device']['model'];
-    $providerEntity->canDetectDeviceBrand = $capabilities['device']['brand'];
-    $providerEntity->canDetectDeviceType = $capabilities['device']['type'];
-    $providerEntity->canDetectDeviceIsMobile = $capabilities['device']['isMobile'];
-    $providerEntity->canDetectDeviceIsTouch = $capabilities['device']['isTouch'];
-    
-    $providerEntity->canDetectBotIsBot = $capabilities['bot']['isBot'];
-    $providerEntity->canDetectBotName = $capabilities['bot']['name'];
-    $providerEntity->canDetectBotType = $capabilities['bot']['type'];
-    
-    $entityManager->persist($providerEntity);
-}
+/* @var $pdo \PDO */
 
-$entityManager->flush();
+$statementSelectProvider = $pdo->prepare('SELECT * FROM `provider` WHERE `proType` = :proType AND `proName` = :proName');
+$statementInsertProvider = $pdo->prepare('INSERT INTO `provider` (`proId`, `proType`, `proName`, `proHomepage`, `proVersion`, `proPackageName`, `proCanDetectBrowserName`, `proCanDetectBrowserVersion`, `proCanDetectEngineName`, `proCanDetectEngineVersion`, `proCanDetectOsName`, `proCanDetectOsVersion`, `proCanDetectDeviceModel`, `proCanDetectDeviceBrand`, `proCanDetectDeviceType`, `proCanDetectDeviceIsMobile`, `proCanDetectDeviceIsTouch`, `proCanDetectBotIsBot`, `proCanDetectBotName`, `proCanDetectBotType`) VALUES (:proId, :proType, :proName, :proHomepage, :proVersion, :proPackageName, :proCanDetectBrowserName, :proCanDetectBrowserVersion, :proCanDetectEngineName, :proCanDetectEngineVersion, :proCanDetectOsName, :proCanDetectOsVersion, :proCanDetectDeviceModel, :proCanDetectDeviceBrand, :proCanDetectDeviceType, :proCanDetectDeviceIsMobile, :proCanDetectDeviceIsTouch, :proCanDetectBotIsBot, :proCanDetectBotName, :proCanDetectBotType)');
+$statementUpdateProvider = $pdo->prepare('UPDATE `provider` SET `proType` = :proType, `proName` = :proName, `proHomepage` = :proHomepage, `proVersion` = :proVersion, `proPackageName` = :proPackageName, `proCanDetectBrowserName` = :proCanDetectBrowserName, `proCanDetectBrowserVersion` = :proCanDetectBrowserVersion, `proCanDetectEngineName` = :proCanDetectEngineName, `proCanDetectEngineVersion` = :proCanDetectEngineVersion, `proCanDetectOsName` = :proCanDetectOsName, `proCanDetectOsVersion` = :proCanDetectOsVersion, `proCanDetectDeviceModel` = :proCanDetectDeviceModel, `proCanDetectDeviceBrand` = :proCanDetectDeviceBrand, `proCanDetectDeviceType` = :proCanDetectDeviceType, `proCanDetectDeviceIsMobile` = :proCanDetectDeviceIsMobile, `proCanDetectDeviceIsTouch` = :proCanDetectDeviceIsTouch, `proCanDetectBotIsBot` = :proCanDetectBotIsBot, `proCanDetectBotName` = :proCanDetectBotName, `proCanDetectBotType` = :proCanDetectBotType WHERE `proId` = :proId');
+
+$proType = 'real';
+
+foreach ($chain->getProviders() as $provider) {
+    /* @var $provider \UserAgentParserComparison\Provider\AbstractParseProvider */
+
+    $capabilities               = $provider->getDetectionCapabilities();
+    $proName                    = $provider->getName();
+    $proHomepage                = $provider->getHomepage();
+    $proVersion                 = $provider->getVersion();
+    $proPackageName             = $provider->getPackageName();
+    $proCanDetectBrowserName    = $capabilities['browser']['name'] ?? 0;
+    $proCanDetectBrowserVersion = $capabilities['browser']['version'] ?? 0;
+    $proCanDetectEngineName     = $capabilities['renderingEngine']['name'] ?? 0;
+    $proCanDetectEngineVersion  = $capabilities['renderingEngine']['version'] ?? 0;
+    $proCanDetectOsName         = $capabilities['operatingSystem']['name'] ?? 0;
+    $proCanDetectOsVersion      = $capabilities['operatingSystem']['version'] ?? 0;
+    $proCanDetectDeviceModel    = $capabilities['device']['model'] ?? 0;
+    $proCanDetectDeviceBrand    = $capabilities['device']['brand'] ?? 0;
+    $proCanDetectDeviceType     = $capabilities['device']['type'] ?? 0;
+    $proCanDetectDeviceIsMobile = $capabilities['device']['isMobile'] ?? 0;
+    $proCanDetectDeviceIsTouch  = $capabilities['device']['isTouch'] ?? 0;
+    $proCanDetectBotIsBot       = $capabilities['bot']['isBot'] ?? 0;
+    $proCanDetectBotName        = $capabilities['bot']['name'] ?? 0;
+    $proCanDetectBotType        = $capabilities['bot']['type'] ?? 0;
+
+    echo $proName, ': ';
+
+    $statementSelectProvider->bindValue(':proType', $proType, \PDO::PARAM_STR);
+    $statementSelectProvider->bindValue(':proName', $proName, \PDO::PARAM_STR);
+
+    $statementSelectProvider->execute();
+
+    $found = false;
+
+    while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT)) {
+        // update!
+        $statementUpdateProvider->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+        $statementUpdateProvider->bindValue(':proType', $proType, \PDO::PARAM_STR);
+        $statementUpdateProvider->bindValue(':proName', $proName, \PDO::PARAM_STR);
+        $statementUpdateProvider->bindValue(':proHomepage', $proHomepage, \PDO::PARAM_STR);
+        $statementUpdateProvider->bindValue(':proVersion', $proVersion, \PDO::PARAM_STR);
+        $statementUpdateProvider->bindValue(':proPackageName', $proPackageName, \PDO::PARAM_STR);
+        $statementUpdateProvider->bindValue(':proCanDetectBrowserName', $proCanDetectBrowserName, \PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectBrowserVersion', $proCanDetectBrowserVersion, \PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectEngineName', $proCanDetectEngineName, \PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectEngineVersion', $proCanDetectEngineVersion, \PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectOsName', $proCanDetectOsName, \PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectOsVersion', $proCanDetectOsVersion, \PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectDeviceModel', $proCanDetectDeviceModel, \PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectDeviceBrand', $proCanDetectDeviceBrand, \PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectDeviceType', $proCanDetectDeviceType, \PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectDeviceIsMobile', $proCanDetectDeviceIsMobile, \PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectDeviceIsTouch', $proCanDetectDeviceIsTouch, \PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectBotIsBot', $proCanDetectBotIsBot, \PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectBotName', $proCanDetectBotName, \PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectBotType', $proCanDetectBotType, \PDO::PARAM_INT);
+
+        $statementUpdateProvider->execute();
+
+        $found = true;
+
+        echo 'U', PHP_EOL;
+
+        break;
+    }
+
+    if (!$found) {
+        $statementInsertProvider->bindValue(':proId', Uuid::uuid4()->toString(), \PDO::PARAM_STR);
+        $statementInsertProvider->bindValue(':proType', $proType, \PDO::PARAM_STR);
+        $statementInsertProvider->bindValue(':proName', $proName, \PDO::PARAM_STR);
+        $statementInsertProvider->bindValue(':proHomepage', $proHomepage, \PDO::PARAM_STR);
+        $statementInsertProvider->bindValue(':proVersion', $proVersion, \PDO::PARAM_STR);
+        $statementInsertProvider->bindValue(':proPackageName', $proPackageName, \PDO::PARAM_STR);
+        $statementInsertProvider->bindValue(':proCanDetectBrowserName', $proCanDetectBrowserName, \PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectBrowserVersion', $proCanDetectBrowserVersion, \PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectEngineName', $proCanDetectEngineName, \PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectEngineVersion', $proCanDetectEngineVersion, \PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectOsName', $proCanDetectOsName, \PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectOsVersion', $proCanDetectOsVersion, \PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectDeviceModel', $proCanDetectDeviceModel, \PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectDeviceBrand', $proCanDetectDeviceBrand, \PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectDeviceType', $proCanDetectDeviceType, \PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectDeviceIsMobile', $proCanDetectDeviceIsMobile, \PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectDeviceIsTouch', $proCanDetectDeviceIsTouch, \PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectBotIsBot', $proCanDetectBotIsBot, \PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectBotName', $proCanDetectBotName, \PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectBotType', $proCanDetectBotType, \PDO::PARAM_INT);
+
+        $statementInsertProvider->execute();
+
+        echo 'I', PHP_EOL;
+    }
+}

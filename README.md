@@ -29,18 +29,11 @@ Download all (currently 3) `browscap.ini` files for PHP from [here](http://brows
 
 And put it to `data/*.ini`
 
-#### Wurfl
-
-Download the `wurfl.xml` from [here (need register)](http://www.scientiamobile.com/downloads) or [here (not allowed)](https://github.com/fauvel/wurfl-dbapi/blob/master/data/wurfl.xml)
-
-You need to put the wurfl file to `data/wurfl.xml`
-
-
 ### Step 4) init caches
 ```
 php bin/cache/initBrowscap.php
-php bin/cache/initPiwik.php
-php bin/cache/initWurfl.php
+php bin/cache/initMatomo.php
+php bin/cache/initBrowserDetector.php
 ```
 
 
