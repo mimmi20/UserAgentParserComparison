@@ -132,8 +132,10 @@ class WhichBrowser extends AbstractTestProvider
                     continue;
                 }
 
+                $uaString = $headers['User-Agent'];
+
                 $toInsert = [
-                    'uaString' => $headers['User-Agent'],
+                    'uaString' => $uaString,
                     'result' => $result
                 ];
 
@@ -142,9 +144,9 @@ class WhichBrowser extends AbstractTestProvider
 
                     $toInsert['uaAdditionalHeaders'] = $headers;
 
-                    $key = bin2hex(sha1($headers['User-Agent'] . ' ' . json_encode($headers), true));
+                    $key = bin2hex(sha1($uaString . ' ' . json_encode($headers), true));
                 } else {
-                    $key = bin2hex(sha1($headers['User-Agent'], true));
+                    $key = bin2hex(sha1($uaString, true));
                 }
 
                 yield $key => $toInsert;
