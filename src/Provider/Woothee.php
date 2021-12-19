@@ -173,7 +173,7 @@ class Woothee extends AbstractParseProvider
         }
 
         if (isset($resultRaw['version'])) {
-            $browser->getVersion()->setComplete($this->getRealResult($resultRaw['version']));
+            $browser->getVersion()->setComplete((string) $this->getRealResult($resultRaw['version']));
         }
     }
 

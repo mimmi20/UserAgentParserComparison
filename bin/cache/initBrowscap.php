@@ -17,6 +17,9 @@ $filesystem = new \League\Flysystem\Filesystem($adapter);
 $cache = new \MatthiasMullie\Scrapbook\Psr16\SimpleCache(
     new \MatthiasMullie\Scrapbook\Adapters\Flysystem($filesystem)
 );
+
+$cache->clear();
+
 $logger = new \Psr\Log\NullLogger();
 
 $bc = new \BrowscapPHP\BrowscapUpdater($cache, $logger);
@@ -33,7 +36,8 @@ $filesystem = new \League\Flysystem\Filesystem($adapter);
 $cache = new \MatthiasMullie\Scrapbook\Psr16\SimpleCache(
     new \MatthiasMullie\Scrapbook\Adapters\Flysystem($filesystem)
 );
-$logger = new \Psr\Log\NullLogger();
+
+$cache->clear();
 
 $bc = new \BrowscapPHP\BrowscapUpdater($cache, $logger);
 $bc->convertFile('data/lite_php_browscap.ini');
@@ -48,7 +52,8 @@ $filesystem = new \League\Flysystem\Filesystem($adapter);
 $cache = new \MatthiasMullie\Scrapbook\Psr16\SimpleCache(
     new \MatthiasMullie\Scrapbook\Adapters\Flysystem($filesystem)
 );
-$logger = new \Psr\Log\NullLogger();
+
+$cache->clear();
 
 $bc = new \BrowscapPHP\BrowscapUpdater($cache, $logger);
 $bc->convertFile('data/php_browscap.ini');

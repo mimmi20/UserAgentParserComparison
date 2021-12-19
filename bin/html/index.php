@@ -6,12 +6,15 @@ use UserAgentParserComparison\Html\Index;
  */
 include_once 'bootstrap.php';
 
-/* @var $entityManager \Doctrine\ORM\EntityManager */
+/* @var $pdo \PDO */
 
-$generate = new Index($entityManager);
-$generate->setTitle('UserAgentParser comparison');
+$generate = new Index($pdo, 'UserAgentParserComparison comparison');
 
 /*
- * persist!
- */
-file_put_contents($basePath . '/../index.html', $generate->getHtml());
+     * persist!
+     */
+$folder = $basePath;
+if (! file_exists($folder)) {
+    mkdir($folder, 0777, true);
+}
+file_put_contents($folder . '/../index.html', $generate->getHtml());

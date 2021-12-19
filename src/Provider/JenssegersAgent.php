@@ -147,7 +147,7 @@ class JenssegersAgent extends AbstractParseProvider
     {
         if ($this->isRealResult($resultRaw['browserName'], 'browser', 'name') === true) {
             $browser->setName($resultRaw['browserName']);
-            $browser->getVersion()->setComplete($this->getRealResult($resultRaw['browserVersion']));
+            $browser->getVersion()->setComplete((string) $this->getRealResult($resultRaw['browserVersion']));
         }
     }
 
@@ -160,7 +160,7 @@ class JenssegersAgent extends AbstractParseProvider
     {
         if ($this->isRealResult($resultRaw['osName']) === true) {
             $os->setName($resultRaw['osName']);
-            $os->getVersion()->setComplete($this->getRealResult($resultRaw['osVersion']));
+            $os->getVersion()->setComplete((string) $this->getRealResult($resultRaw['osVersion']));
         }
     }
 

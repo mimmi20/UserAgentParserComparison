@@ -229,7 +229,7 @@ class BrowserDetector extends AbstractParseProvider
         }
 
         if ($clientRaw->getVersion()) {
-            $browser->getVersion()->setComplete($this->getRealResult($clientRaw->getVersion()->getVersion()));
+            $browser->getVersion()->setComplete((string) $this->getRealResult($clientRaw->getVersion()->getVersion()));
         }
     }
 
@@ -257,7 +257,7 @@ class BrowserDetector extends AbstractParseProvider
         }
 
         if ($osRaw->getVersion()) {
-            $os->getVersion()->setComplete($this->getRealResult($osRaw->getVersion()->getVersion()));
+            $os->getVersion()->setComplete((string) $this->getRealResult($osRaw->getVersion()->getVersion()));
         }
     }
 

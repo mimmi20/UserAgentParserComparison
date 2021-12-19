@@ -6,18 +6,19 @@ use UserAgentParserComparison\Html\OverviewProvider;
  */
 include_once 'bootstrap.php';
 
-/* @var $entityManager \Doctrine\ORM\EntityManager */
-$conn = $entityManager->getConnection();
+/* @var $pdo \PDO */
 
-$providerRepo = $entityManager->getRepository('UserAgentParserComparison\Entity\Provider');
+$statementSelectProvider = $pdo->prepare('SELECT * FROM `provider` WHERE `proType` = :proType');
 
-foreach ($providerRepo->findBy(['type' => 'real']) as $provider) {
-    /* @var $provider \UserAgentParserComparison\Entity\Provider */
+$statementSelectProvider->bindValue(':proType', 'real', \PDO::PARAM_STR);
+
+$statementSelectProvider->execute();
+
+while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT)) {
+
+    echo $dbResultProvider['proName'] . PHP_EOL;
     
-    echo $provider->name . PHP_EOL;
-    
-    $generate = new OverviewProvider($entityManager, $provider);
-    $generate->setTitle('Overview - ' . $provider->name);
+    $generate = new OverviewProvider($pdo, $dbResultProvider, 'Overview - ' . $dbResultProvider['proName']);
     
     /*
      * persist!
@@ -27,5 +28,5 @@ foreach ($providerRepo->findBy(['type' => 'real']) as $provider) {
         mkdir($folder, 0777, true);
     }
 
-    file_put_contents($folder . '/' . $provider->name . '.html', $generate->getHtml());
+    file_put_contents($folder . '/' . $dbResultProvider['proName'] . '.html', $generate->getHtml());
 }

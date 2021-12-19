@@ -155,7 +155,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         }
 
         if (isset($resultRaw->version)) {
-            $browser->getVersion()->setComplete($this->getRealResult($resultRaw->version));
+            $browser->getVersion()->setComplete((string) $this->getRealResult($resultRaw->version));
         }
     }
 
@@ -171,7 +171,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         }
 
         if (isset($resultRaw->renderingengine_version)) {
-            $engine->getVersion()->setComplete($this->getRealResult($resultRaw->renderingengine_version));
+            $engine->getVersion()->setComplete((string) $this->getRealResult($resultRaw->renderingengine_version));
         }
     }
 
@@ -187,14 +187,14 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         }
 
         if (isset($resultRaw->platform_version)) {
-            $os->getVersion()->setComplete($this->getRealResult($resultRaw->platform_version));
+            $os->getVersion()->setComplete((string) $this->getRealResult($resultRaw->platform_version));
         }
     }
 
     /**
      *
-     * @param Model\UserAgent $device
-     * @param stdClass        $resultRaw
+     * @param Model\Device $device
+     * @param stdClass     $resultRaw
      */
     private function hydrateDevice(Model\Device $device, stdClass $resultRaw): void
     {

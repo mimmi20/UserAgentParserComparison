@@ -6,8 +6,9 @@ use UserAgentParserComparison\Html\OverviewGeneral;
  */
 include_once 'bootstrap.php';
 
-$generate = new OverviewGeneral($entityManager);
-$generate->setTitle('UserAgentParser comparison overview');
+/* @var $pdo \PDO */
+
+$generate = new OverviewGeneral($pdo, 'UserAgentParserComparison comparison overview');
 
 /*
  * persist!

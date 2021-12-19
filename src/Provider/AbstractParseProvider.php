@@ -22,6 +22,10 @@ abstract class AbstractParseProvider extends AbstractProvider
      */
     protected function isRealResult(?string $value, ?string $group = null, ?string $part = null): bool
     {
+        if (null === $value) {
+            return false;
+        }
+
         $value = trim($value);
 
         if ($value === '') {

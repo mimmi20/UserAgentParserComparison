@@ -106,14 +106,14 @@ class UAParser extends AbstractParseProvider
         ],
     ];
 
-    private $parser;
+    private ?Parser $parser = null;
 
     /**
      *
-     * @param  Parser                    $parser
+     * @param  Parser|null                    $parser
      * @throws PackageNotLoadedException
      */
-    public function __construct(Parser $parser = null)
+    public function __construct(?Parser $parser = null)
     {
         if ($parser === null) {
             $this->checkIfInstalled();
@@ -126,7 +126,7 @@ class UAParser extends AbstractParseProvider
      *
      * @return Parser
      */
-    public function getParser()
+    public function getParser(): Parser
     {
         if ($this->parser !== null) {
             return $this->parser;
