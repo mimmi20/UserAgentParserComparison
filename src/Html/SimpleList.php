@@ -4,23 +4,18 @@ namespace UserAgentParserComparison\Html;
 class SimpleList extends AbstractHtml
 {
 
-    private $elements = [];
+    private array $elements = [];
 
     public function setElements(array $elements)
     {
         $this->elements = $elements;
     }
 
-    public function getElements()
-    {
-        return $this->elements;
-    }
-
-    private function getList()
+    private function getList(): string
     {
         $html = '<ul class="list collection">';
         
-        foreach ($this->getElements() as $element) {
+        foreach ($this->elements as $element) {
             $html .= '<li class="collection-item">';
             
             $html .= '<h4 class="searchable"><span class="name">' . $element['name'] . '</span>';
@@ -54,14 +49,14 @@ class SimpleList extends AbstractHtml
         return $html;
     }
 
-    public function getHtml()
+    public function getHtml(): string
     {
         $body = '
 <div class="section">
-    <h1 class="header center orange-text">' . $this->getTitle() . '</h1>
+    <h1 class="header center orange-text">' . $this->title . '</h1>
         
     <div class="row center">
-        ' . count($this->getElements()) . ' result(s) found
+        ' . count($this->elements) . ' result(s) found
     </div>
 </div>
         

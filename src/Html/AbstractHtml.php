@@ -1,60 +1,34 @@
 <?php
 namespace UserAgentParserComparison\Html;
 
-use Doctrine\ORM\EntityManager;
-
 abstract class AbstractHtml
 {
 
-    private $title;
+    protected ?string $title = null;
 
-    protected $em;
+    protected \PDO $pdo;
 
-    private $userAgentCount;
+    private ?int $userAgentCount = null;
 
-    public function __construct(EntityManager $em)
+    public function __construct(\PDO $pdo, ?string $title = null)
     {
-        $this->em = $em;
-    }
-
-    /**
-     *
-     * @return EntityManager
-     */
-    protected function getEntityManager()
-    {
-        return $this->em;
-    }
-
-    public function setTitle($title)
-    {
+        $this->pdo = $pdo;
         $this->title = $title;
     }
 
-    public function getTitle()
-    {
-        return $this->title;
-    }
-
-    protected function getUserAgentCount()
+    protected function getUserAgentCount(): int
     {
         if ($this->userAgentCount === null) {
-            $sql = "
-                SELECT
-                    COUNT(1) getThis
-                FROM userAgent
-            ";
+            $statementCountAllResults = $this->pdo->prepare('SELECT COUNT(*) AS `count` FROM `userAgent`');
+            $statementCountAllResults->execute();
             
-            $conn = $this->getEntityManager()->getConnection();
-            $result = $conn->fetchAll($sql);
-            
-            $this->userAgentCount = $result[0]['getThis'];
+            $this->userAgentCount = $statementCountAllResults->fetch(\PDO::FETCH_COLUMN);
         }
         
         return $this->userAgentCount;
     }
 
-    protected function getPercentCircle($resultFound, $uniqueFound = null)
+    protected function getPercentCircle(int $resultFound, ?int $uniqueFound = null): string
     {
         $onePercent = $this->getUserAgentCount() / 100;
         
@@ -79,7 +53,7 @@ abstract class AbstractHtml
         return $html;
     }
 
-    protected function getUserAgentUrl($uaId)
+    protected function getUserAgentUrl(string $uaId): string
     {
         $url = '../../user-agent-detail/' . substr($uaId, 0, 2) . '/' . substr($uaId, 2, 2);
         $url .= '/' . $uaId . '.html';
@@ -87,7 +61,7 @@ abstract class AbstractHtml
         return $url;
     }
 
-    protected function getHtmlCombined($body, $script = '')
+    protected function getHtmlCombined(string $body, string $script = ''): string
     {
         return '
 <!DOCTYPE html>
@@ -95,7 +69,7 @@ abstract class AbstractHtml
 <head>
     <meta charset="utf-8" />
             
-    <title>' . htmlspecialchars($this->getTitle()) . '</title>
+    <title>' . htmlspecialchars($this->title) . '</title>
         
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/css/materialize.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -119,21 +93,21 @@ abstract class AbstractHtml
                 <br />
                 You can also improve this further, by suggesting ideas at <a href="https://github.com/ThaDafinser/UserAgentParserComparison">ThaDafinser/UserAgentParserComparison</a><br />
                 <br />
-                The comparison is based on the abstraction by <a href="https://github.com/ThaDafinser/UserAgentParser">ThaDafinser/UserAgentParser</a>
+                The comparison is based on the abstraction by <a href="https://github.com/ThaDafinser/UserAgentParserComparison">ThaDafinser/UserAgentParserComparison</a>
             </h5>
         </div>
             
     </div>
         
     <div class="card">
-		<div class="card-content">
-			Comparison created <i>' . date('Y-m-d H:i:s') . '</i> | by 
+        <div class="card-content">
+            Comparison created <i>' . date('Y-m-d H:i:s') . '</i> | by 
             <a href="https://github.com/ThaDafinser">ThaDafinser</a>
         </div>
     </div>
-			    
+                
 </div>
-			    
+                
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/js/materialize.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/list.js/1.2.0/list.min.js"></script>
@@ -146,5 +120,5 @@ abstract class AbstractHtml
 </html>';
     }
 
-    abstract public function getHtml();
+    abstract public function getHtml(): string;
 }

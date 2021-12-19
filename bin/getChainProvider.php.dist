@@ -1,9 +1,5 @@
 <?php
-use UserAgentParser\Provider;
-use UserAgentParser\Provider\Http;
-use BrowscapPHP\Cache\BrowscapCache;
-use Doctrine\Common\Cache;
-use WurflCache\Adapter\File;
+use UserAgentParserComparison\Provider;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Handler\CurlHandler;
@@ -11,122 +7,107 @@ use GuzzleHttp\Handler\CurlHandler;
 /*
  * Browscap
  */
-$cache = new File([
-    File::DIR => '../myCache/.tmp/browscap/php'
-]);
+$browscapAdapter = new \League\Flysystem\Local\LocalFilesystemAdapter('data/cache/.tmp/browscap/standard');
+$browscapCache   = new \MatthiasMullie\Scrapbook\Psr16\SimpleCache(
+    new \MatthiasMullie\Scrapbook\Adapters\Flysystem(
+        new \League\Flysystem\Filesystem($browscapAdapter)
+    )
+);
 
-// $cache = new \WurflCache\Adapter\Apc([
-//     'namespace' => 'browscap-php'
-// ]);
+$logger = new \Psr\Log\NullLogger();
 
-$browscapParser = new \BrowscapPHP\Browscap();
-$browscapParser->setCache($cache);
-
-$browscapProvider = new Provider\BrowscapPhp($browscapParser);
+$browscapProviderStandard = new Provider\BrowscapPhp(
+    new \BrowscapPHP\Browscap($browscapCache, $logger)
+);
 
 /*
  * BrowscapLite
  */
-$cache = new File([
-    File::DIR => '../myCache/.tmp/browscap/lite'
-]);
+$browscapLiteAdapter = new \League\Flysystem\Local\LocalFilesystemAdapter('data/cache/.tmp/browscap/lite');
+$browscapLiteCache   = new \MatthiasMullie\Scrapbook\Psr16\SimpleCache(
+    new \MatthiasMullie\Scrapbook\Adapters\Flysystem(
+        new \League\Flysystem\Filesystem($browscapLiteAdapter)
+    )
+);
 
-$browscapParser = new \BrowscapPHP\Browscap();
-$browscapParser->setCache($cache);
-
-$browscapProviderLite = new Provider\BrowscapLite($browscapParser);
+$browscapProviderLite = new Provider\BrowscapLite(
+    new \BrowscapPHP\Browscap($browscapLiteCache, $logger)
+);
 
 /*
  * BrowscapFull
  */
-$cache = new File([
-    File::DIR => '../myCache/.tmp/browscap/full'
-]);
+$browscapFullAdapter = new \League\Flysystem\Local\LocalFilesystemAdapter('data/cache/.tmp/browscap/full');
+$browscapFullCache   = new \MatthiasMullie\Scrapbook\Psr16\SimpleCache(
+    new \MatthiasMullie\Scrapbook\Adapters\Flysystem(
+        new \League\Flysystem\Filesystem($browscapFullAdapter)
+    )
+);
 
-$browscapParser = new \BrowscapPHP\Browscap();
-$browscapParser->setCache($cache);
-
-$browscapProviderFull = new Provider\BrowscapFull($browscapParser);
-
-/*
- * Piwik
-*/
-$cache = new Cache\PhpFileCache('../myCache/.tmp/piwik');
-
-// $cache = new Cache\ApcCache();
-// $cache->setNamespace('piwik_device');
-
-$piwikParser = new \DeviceDetector\DeviceDetector();
-$piwikParser->setCache($cache);
-
-$piwikProvider = new Provider\PiwikDeviceDetector($piwikParser);
+$browscapProviderFull = new Provider\BrowscapFull(
+    new \BrowscapPHP\Browscap($browscapFullCache, $logger)
+);
 
 /*
- * Wurfl
-*/
-$resourcesDir = '../myCache/.tmp/wurfl';
+ * Matomo
+ */
+$matamoAdapter = new \League\Flysystem\Local\LocalFilesystemAdapter('data/cache/.tmp/matomo');
+$matamoCache   = new \MatthiasMullie\Scrapbook\Psr16\SimpleCache(
+    new \MatthiasMullie\Scrapbook\Adapters\Flysystem(
+        new \League\Flysystem\Filesystem($matamoAdapter)
+    )
+);
 
-$persistenceDir = $resourcesDir . '/storage/persistence';
-$cacheDir       = $resourcesDir . '/storage/cache';
+$matomoParser = new \DeviceDetector\DeviceDetector();
+$matomoParser->setCache(new \DeviceDetector\Cache\PSR16Bridge($matamoCache));
 
-// Create WURFL Configuration
-$wurflConfig = new \Wurfl\Configuration\InMemoryConfig();
-$wurflConfig->wurflFile('data/wurfl.xml');
-$wurflConfig->matchMode(\Wurfl\Configuration\Config::MATCH_MODE_ACCURACY);
+$matomoProvider = new Provider\MatomoDeviceDetector($matomoParser);
 
-$wurflConfig->persistence('file', [
-    \Wurfl\Configuration\Config::DIR => $persistenceDir,
-]);
+/*
+ * BrowserDetector
+ */
+$detectorAdapter = new \League\Flysystem\Local\LocalFilesystemAdapter('data/cache/.tmp/browser-detector');
+$detectorCache   = new \MatthiasMullie\Scrapbook\Psr16\SimpleCache(
+    new \MatthiasMullie\Scrapbook\Adapters\Flysystem(
+        new \League\Flysystem\Filesystem($detectorAdapter)
+    )
+);
 
-// Setup Caching
-// $wurflConfig->cache('apc');
-$wurflConfig->cache('file', [
-    \Wurfl\Configuration\Config::DIR => $cacheDir
-]);
-
-// Create the cache instance from the configuration
-$cacheStorage = \Wurfl\Storage\Factory::create($wurflConfig->cache);
-
-// Create the persistent cache instance from the configuration
-$persistenceStorage = \Wurfl\Storage\Factory::create($wurflConfig->persistence);
-
-// Create a WURFL Manager from the WURFL Configuration
-$wurflManager = new \Wurfl\Manager($wurflConfig, $persistenceStorage, $cacheStorage);
-
-$wurflProvider = new Provider\Wurfl($wurflManager);
+$browserDetectorFactory  = new \BrowserDetector\DetectorFactory($detectorCache, $logger);
+$browserDetectorProvider = new Provider\BrowserDetector(
+    $browserDetectorFactory()
+);
 
 /*
  * HTTP
  */
-$handler = new CurlHandler();
-$stack = HandlerStack::create($handler);
+//$handler = new CurlHandler();
+//$stack = HandlerStack::create($handler);
+//
+//$client = new Client([
+//    'handler' => $stack,
+//    'timeout' => 3,
+//
+//    'curl' => [
+//        CURLOPT_SSL_VERIFYHOST => false,
+//        CURLOPT_SSL_VERIFYPEER => false
+//    ]
+//]);
+//
+//$userAgentString = new Provider\Http\UserAgentStringCom($client);
 
-$client = new Client([
-    'handler' => $stack,
-    'timeout' => 3,
 
-    'curl' => [
-        CURLOPT_SSL_VERIFYHOST => false,
-        CURLOPT_SSL_VERIFYPEER => false
-    ]
-]);
-
-$userAgentString = new Http\UserAgentStringCom($client);
-
-
-$chain = new Provider\Chain([
-    $browscapProvider,
+return new Provider\Chain([
+    $browscapProviderStandard,
     $browscapProviderLite,
     $browscapProviderFull,
+    $matomoProvider,
+    $browserDetectorProvider,
     new Provider\DonatjUAParser(),
-    $piwikProvider,
     new Provider\SinergiBrowserDetector(),
     new Provider\UAParser(),
     new Provider\WhichBrowser(),
     new Provider\Woothee(),
-    $wurflProvider,
-    
+
 //     $userAgentString,
 ]);
-
-return $chain;

@@ -1,16 +1,22 @@
 <?php
+
+chdir(dirname(dirname(__DIR__)));
+
 /*
  * Browscap cache init
  */
-include 'bootstrap.php';
+require_once 'vendor/autoload.php';
 
 /*
  * Full
  */
 echo '.';
 
-$memoryCache = new \Doctrine\Common\Cache\FilesystemCache('../myCache/.tmp/browscap/full');
-$cache = new \Roave\DoctrineSimpleCache\SimpleCacheAdapter($memoryCache);
+$adapter = new \League\Flysystem\Local\LocalFilesystemAdapter('data/cache/.tmp/browscap/full');
+$filesystem = new \League\Flysystem\Filesystem($adapter);
+$cache = new \MatthiasMullie\Scrapbook\Psr16\SimpleCache(
+    new \MatthiasMullie\Scrapbook\Adapters\Flysystem($filesystem)
+);
 $logger = new \Psr\Log\NullLogger();
 
 $bc = new \BrowscapPHP\BrowscapUpdater($cache, $logger);
@@ -22,8 +28,11 @@ $bc->convertFile('data/full_php_browscap.ini');
  */
 echo '.';
 
-$memoryCache = new \Doctrine\Common\Cache\FilesystemCache('../myCache/.tmp/browscap/lite');
-$cache = new \Roave\DoctrineSimpleCache\SimpleCacheAdapter($memoryCache);
+$adapter = new \League\Flysystem\Local\LocalFilesystemAdapter('data/cache/.tmp/browscap/lite');
+$filesystem = new \League\Flysystem\Filesystem($adapter);
+$cache = new \MatthiasMullie\Scrapbook\Psr16\SimpleCache(
+    new \MatthiasMullie\Scrapbook\Adapters\Flysystem($filesystem)
+);
 $logger = new \Psr\Log\NullLogger();
 
 $bc = new \BrowscapPHP\BrowscapUpdater($cache, $logger);
@@ -34,8 +43,11 @@ $bc->convertFile('data/lite_php_browscap.ini');
  */
 echo '.';
 
-$memoryCache = new \Doctrine\Common\Cache\FilesystemCache('../myCache/.tmp/browscap/standard');
-$cache = new \Roave\DoctrineSimpleCache\SimpleCacheAdapter($memoryCache);
+$adapter = new \League\Flysystem\Local\LocalFilesystemAdapter('data/cache/.tmp/browscap/standard');
+$filesystem = new \League\Flysystem\Filesystem($adapter);
+$cache = new \MatthiasMullie\Scrapbook\Psr16\SimpleCache(
+    new \MatthiasMullie\Scrapbook\Adapters\Flysystem($filesystem)
+);
 $logger = new \Psr\Log\NullLogger();
 
 $bc = new \BrowscapPHP\BrowscapUpdater($cache, $logger);

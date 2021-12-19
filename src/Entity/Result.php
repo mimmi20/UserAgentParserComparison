@@ -42,14 +42,14 @@ class Result
     protected $provider;
 
     /**
-     * @OneToOne(targetEntity="ResultEvaluation", mappedBy="result")
-     */
-    protected $resultEvaluation;
-
-    /**
      * @Column(type="string", name="resProviderVersion", nullable=true)
      */
     protected $providerVersion;
+
+    /**
+     * @OneToOne(targetEntity="ResultEvaluation", mappedBy="result")
+     */
+    protected $resultEvaluation;
 
     /**
      * @Column(type="string", name="resFilename", nullable=true)

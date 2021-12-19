@@ -1,23 +1,35 @@
 <?php
-namespace UserAgentParserComparison\Provider;
+namespace UserAgentParserComparison\Provider\Test;
 
-use BrowscapPHP\Browscap;
+use UserAgentParserComparison\Exception\NoResultFoundException;
 
 /**
- * Abstraction for Browscap lite type
- *
  * @author Martin Keckeis <martin.keckeis1@gmail.com>
  * @license MIT
  * @see https://github.com/browscap/browscap-php
  */
-class BrowscapLite extends AbstractBrowscap
+class MobileDetect extends AbstractTestProvider
 {
     /**
      * Name of the provider
      *
      * @var string
      */
-    protected $name = 'BrowscapLite';
+    protected $name = 'MobileDetect';
+
+    /**
+     * Homepage of the provider
+     *
+     * @var string
+     */
+    protected $homepage = 'https://github.com/serbanghita/Mobile-Detect';
+
+    /**
+     * Composer package name
+     *
+     * @var string
+     */
+    protected $packageName = 'mobiledetect/mobiledetectlib';
 
     protected $detectionCapabilities = [
 
@@ -33,13 +45,13 @@ class BrowscapLite extends AbstractBrowscap
 
         'operatingSystem' => [
             'name'    => true,
-            'version' => false,
+            'version' => true,
         ],
 
         'device' => [
-            'model'    => false,
+            'model'    => true,
             'brand'    => false,
-            'type'     => true,
+            'type'     => false,
             'isMobile' => true,
             'isTouch'  => false,
         ],
@@ -50,4 +62,14 @@ class BrowscapLite extends AbstractBrowscap
             'type'  => false,
         ],
     ];
+
+    /**
+     * @throws NoResultFoundException
+     *
+     * @return iterable
+     */
+    public function getTests(): iterable
+    {
+        return [];
+    }
 }

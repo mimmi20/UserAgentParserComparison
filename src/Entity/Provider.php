@@ -30,6 +30,11 @@ class Provider
     public $name;
 
     /**
+     * @Column(type="string", name="proVersion", nullable=true)
+     */
+    public $version;
+
+    /**
      * @Column(type="string", name="proPackageName", nullable=true)
      */
     public $packageName;
@@ -38,11 +43,6 @@ class Provider
      * @Column(type="string", name="proHomepage", nullable=true)
      */
     public $homepage;
-    
-    /**
-     * @Column(type="string", name="proVersion", nullable=true)
-     */
-    public $version;
 
     /**
      * @Column(type="boolean", name="proCanDetectBrowserName")

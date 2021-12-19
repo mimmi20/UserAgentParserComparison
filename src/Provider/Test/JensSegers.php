@@ -1,21 +1,35 @@
 <?php
-namespace UserAgentParserComparison\Provider;
+namespace UserAgentParserComparison\Provider\Test;
+
+use UserAgentParserComparison\Exception\NoResultFoundException;
 
 /**
- * Abstraction for Browscap php type
- *
  * @author Martin Keckeis <martin.keckeis1@gmail.com>
  * @license MIT
  * @see https://github.com/browscap/browscap-php
  */
-class BrowscapPhp extends AbstractBrowscap
+class JensSegers extends AbstractTestProvider
 {
     /**
      * Name of the provider
      *
      * @var string
      */
-    protected $name = 'BrowscapPhp';
+    protected $name = 'JenssegersAgent';
+
+    /**
+     * Homepage of the provider
+     *
+     * @var string
+     */
+    protected $homepage = 'https://github.com/jenssegers/agent';
+
+    /**
+     * Composer package name
+     *
+     * @var string
+     */
+    protected $packageName = 'jenssegers/agent';
 
     protected $detectionCapabilities = [
 
@@ -31,15 +45,15 @@ class BrowscapPhp extends AbstractBrowscap
 
         'operatingSystem' => [
             'name'    => true,
-            'version' => false,
+            'version' => true,
         ],
 
         'device' => [
             'model'    => false,
             'brand'    => false,
-            'type'     => true,
+            'type'     => false,
             'isMobile' => true,
-            'isTouch'  => true,
+            'isTouch'  => false,
         ],
 
         'bot' => [
@@ -48,4 +62,14 @@ class BrowscapPhp extends AbstractBrowscap
             'type'  => false,
         ],
     ];
+
+    /**
+     * @throws NoResultFoundException
+     *
+     * @return iterable
+     */
+    public function getTests(): iterable
+    {
+        return [];
+    }
 }

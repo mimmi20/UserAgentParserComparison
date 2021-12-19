@@ -4,72 +4,76 @@ namespace UserAgentParserComparison\Html;
 class OverviewGeneral extends AbstractHtml
 {
 
-    private function getProviders()
+    private function getProviders(): iterable
     {
         $sql = "
             SELECT
-            	provider.*,
+                `provider`.*,
             
-            	SUM(resResultFound) as resultFound,
+                SUM(`resResultFound`) AS `resultFound`,
             
-            	COUNT(resBrowserName) as browserFound,
-                COUNT(DISTINCT resBrowserName) as browserFoundUnique,
+                COUNT(`resBrowserName`) AS `browserFound`,
+                COUNT(DISTINCT `resBrowserName`) AS `browserFoundUnique`,
             
-            	COUNT(resEngineName) as engineFound,
-                COUNT(DISTINCT resEngineName) as engineFoundUnique,
+                COUNT(`resEngineName`) AS `engineFound`,
+                COUNT(DISTINCT `resEngineName`) AS `engineFoundUnique`,
             
-            	COUNT(resOsName) as osFound,
-                COUNT(DISTINCT resOsName) as osFoundUnique,
+                COUNT(`resOsName`) AS `osFound`,
+                COUNT(DISTINCT `resOsName`) AS `osFoundUnique`,
             
-            	COUNT(resDeviceModel) as deviceModelFound,
-                COUNT(DISTINCT resDeviceModel) as deviceModelFoundUnique,
+                COUNT(`resDeviceModel`) AS `deviceModelFound`,
+                COUNT(DISTINCT `resDeviceModel`) AS `deviceModelFoundUnique`,
             
-            	COUNT(resDeviceBrand) as deviceBrandFound,
-                COUNT(DISTINCT resDeviceBrand) as deviceBrandFoundUnique,
+                COUNT(`resDeviceBrand`) AS `deviceBrandFound`,
+                COUNT(DISTINCT `resDeviceBrand`) AS `deviceBrandFoundUnique`,
             
-            	COUNT(resDeviceType) as deviceTypeFound,
-                COUNT(DISTINCT resDeviceType) as deviceTypeFoundUnique,
+                COUNT(`resDeviceType`) AS `deviceTypeFound`,
+                COUNT(DISTINCT `resDeviceType`) AS `deviceTypeFoundUnique`,
             
-            	COUNT(resDeviceIsMobile) as asMobileDetected,
+                COUNT(`resDeviceIsMobile`) AS `asMobileDetected`,
             
-            	COUNT(resBotIsBot) as asBotDetected,
+                COUNT(`resBotIsBot`) AS `asBotDetected`,
             
-            	AVG(resParseTime) as avgParseTime
-            FROM result
-            JOIN provider 
-                ON proId = provider_id
-                AND proType = 'real'
+                AVG(`resParseTime`) AS `avgParseTime`
+            FROM `result`
+            INNER JOIN `provider` 
+                ON `proId` = `provider_id`
+                AND `proType` = 'real'
             GROUP BY
-            	proId
+                `proId`
             ORDER BY 
-            	proName
+                `proName`
         ";
+
+        $statement = $this->pdo->prepare($sql);
+
+        $statement->execute();
         
-        $conn = $this->getEntityManager()->getConnection();
-        
-        return $conn->fetchAll($sql);
+        yield from $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    private function getUserAgentPerProviderCount()
+    private function getUserAgentPerProviderCount(): iterable
     {
         $sql = "
             SELECT 
-            	proName,
-                COUNT(1) countNumber
-            FROM provider
-            JOIN result
-            	ON provider_id = proId
-            where proType = 'testSuite'
-            GROUP BY proId
-            ORDER BY proName
+                `proName`,
+                COUNT(*) AS `countNumber`
+            FROM `provider`
+            JOIN `result`
+                ON `provider_id` = `proId`
+            where `proType` = 'testSuite'
+            GROUP BY `proId`
+            ORDER BY `proName`
         ";
-        
-        $conn = $this->getEntityManager()->getConnection();
-        
-        return $conn->fetchAll($sql);
+
+        $statement = $this->pdo->prepare($sql);
+
+        $statement->execute();
+
+        yield from $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    private function getTableSummary()
+    private function getTableSummary(): string
     {
         $html = '<table class="striped">';
         
@@ -206,7 +210,7 @@ class OverviewGeneral extends AbstractHtml
                 $html .= '
                     <td>
                         ' . $row['asBotDetected'] . '
-    				</td>
+                    </td>
                 ';
             } else {
                 $html .= '
@@ -227,7 +231,7 @@ class OverviewGeneral extends AbstractHtml
                     <a class="tooltipped" data-position="top" data-delay="50" data-tooltip="' . htmlspecialchars($info) . '">
                         ' . round($row['avgParseTime'], 5) . '
                     </a>
-				</td>
+                </td>
             ';
             
             $html .= '<td><a href="' . $row['proName'] . '.html" class="btn waves-effect waves-light">Details</a></td>';
@@ -241,10 +245,8 @@ class OverviewGeneral extends AbstractHtml
         return $html;
     }
 
-    private function getTableTests()
+    private function getTableTests(): string
     {
-        $html = '';
-        
         $html = '<table class="striped">';
         
         /*
@@ -281,7 +283,7 @@ class OverviewGeneral extends AbstractHtml
         return $html;
     }
 
-    public function getHtml()
+    public function getHtml(): string
     {
         $body = '
 <div class="section">

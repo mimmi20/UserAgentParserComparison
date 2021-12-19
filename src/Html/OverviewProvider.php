@@ -1,66 +1,58 @@
 <?php
 namespace UserAgentParserComparison\Html;
 
-use Doctrine\ORM\EntityManager;
-use UserAgentParserComparison\Entity\Provider;
-
 class OverviewProvider extends AbstractHtml
 {
 
-    private $provider;
+    private array $provider;
 
-    public function __construct(EntityManager $em, Provider $provider)
+    public function __construct(\PDO $pdo, array $provider, ?string $title = null)
     {
-        $this->em = $em;
+        $this->pdo = $pdo;
         $this->provider = $provider;
+        $this->title = $title;
     }
 
-    /**
-     *
-     * @return Provider
-     */
-    private function getProvider()
-    {
-        return $this->provider;
-    }
-
-    private function getResult()
+    private function getResult(): array
     {
         $sql = "
             SELECT
-            	SUM(resResultFound) as resultFound,
+                SUM(`resResultFound`) AS `resultFound`,
     
-            	COUNT(resBrowserName) as browserFound,
-            	COUNT(resEngineName) as engineFound,
-            	COUNT(resOsName) as osFound,
+                COUNT(`resBrowserName`) AS `browserFound`,
+                COUNT(`resEngineName`) AS `engineFound`,
+                COUNT(`resOsName`) AS `osFound`,
     
-            	COUNT(resDeviceModel) as deviceModelFound,
-            	COUNT(resDeviceBrand) as deviceBrandFound,
-            	COUNT(resDeviceType) as deviceTypeFound,
-            	COUNT(resDeviceIsMobile) as asMobileDetected,
+                COUNT(`resDeviceModel`) AS `deviceModelFound`,
+                COUNT(`resDeviceBrand`) as `deviceBrandFound`,
+                COUNT(`resDeviceType`) AS `deviceTypeFound`,
+                COUNT(`resDeviceIsMobile`) AS `asMobileDetected`,
     
-            	COUNT(resBotIsBot) as asBotDetected,
-                COUNT(resBotName) as botNameFound,
-                COUNT(resBotType) as botTypeFound,
+                COUNT(`resBotIsBot`) AS `asBotDetected`,
+                COUNT(`resBotName`) AS `botNameFound`,
+                COUNT(`resBotType`) AS `botTypeFound`,
     
-            	AVG(resParseTime) as avgParseTime
-            FROM result
-            JOIN provider on proId = provider_id
+                AVG(`resParseTime`) AS `avgParseTime`
+            FROM `result`
+            INNER JOIN `provider` ON `proId` = `provider_id`
             WHERE
-                provider_id = '" . $this->getProvider()->id . "'
+                `provider_id` = :proId
             GROUP BY
-            	proId
+                `proId`
         ";
+
+        $statement = $this->pdo->prepare($sql);
+
+        $statement->bindValue(':proId', $this->provider['proId'], \PDO::PARAM_STR);
+
+        $statement->execute();
         
-        $conn = $this->getEntityManager()->getConnection();
-        $result = $conn->fetchAll($sql);
-        
-        return $result[0];
+        return $statement->fetch();
     }
 
-    private function getTable()
+    private function getTable(): string
     {
-        $provider = $this->getProvider();
+        $provider = $this->provider;
         
         $html = '<table class="striped">';
         
@@ -104,14 +96,14 @@ class OverviewProvider extends AbstractHtml
             <td>
                 ' . round($row['resultFound'] / $totalUserAgentsOnePercent, 2) . '%
                 <div class="progress">
-					<div class="determinate" style="width: ' . round($row['resultFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-				</div>
-			</td>
-		    <td>
+                    <div class="determinate" style="width: ' . round($row['resultFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
+                </div>
+            </td>
+            <td>
                 ' . $row['resultFound'] . '
             </td>
             <td>
-                <a href="not-detected/' . $provider->name . '/no-result-found.html" class="btn waves-effect waves-light">
+                <a href="not-detected/' . $provider['proName'] . '/no-result-found.html" class="btn waves-effect waves-light">
                     Not detected
                 </a>
             </td>
@@ -121,7 +113,7 @@ class OverviewProvider extends AbstractHtml
         /*
          * browser
          */
-        if ($provider->canDetectBrowserName === true) {
+        if ($provider['proCanDetectBrowserName']) {
             $html .= '
                 <tr>
                 <td>
@@ -130,17 +122,17 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     ' . round($row['browserFound'] / $totalUserAgentsOnePercent, 2) . '%
                     <div class="progress">
-    					<div class="determinate" style="width: ' . round($row['browserFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-    				</div>
-    			</td>
-    		    <td>
+                        <div class="determinate" style="width: ' . round($row['browserFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
+                    </div>
+                </td>
+                <td>
                     ' . $row['browserFound'] . '
                 </td>
                 <td>
-                    <a href="detected/' . $provider->name . '/browser-names.html" class="btn waves-effect waves-light">
+                    <a href="detected/' . $provider['proName'] . '/browser-names.html" class="btn waves-effect waves-light">
                         Detected
                     </a>
-                    <a href="not-detected/' . $provider->name . '/browser-names.html" class="btn waves-effect waves-light">
+                    <a href="not-detected/' . $provider['proName'] . '/browser-names.html" class="btn waves-effect waves-light">
                         Not detected
                     </a>
                 </td>
@@ -162,7 +154,7 @@ class OverviewProvider extends AbstractHtml
         /*
          * engine
          */
-        if ($provider->canDetectEngineName === true) {
+        if ($provider['proCanDetectEngineName']) {
             $html .= '
                 <tr>
                 <td>
@@ -171,17 +163,17 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     ' . round($row['engineFound'] / $totalUserAgentsOnePercent, 2) . '%
                     <div class="progress">
-    					<div class="determinate" style="width: ' . round($row['engineFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-    				</div>
-    			</td>
-    		    <td>
+                        <div class="determinate" style="width: ' . round($row['engineFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
+                    </div>
+                </td>
+                <td>
                     ' . $row['engineFound'] . '
                 </td>
                 <td>
-                    <a href="detected/' . $provider->name . '/rendering-engines.html" class="btn waves-effect waves-light">
+                    <a href="detected/' . $provider['proName'] . '/rendering-engines.html" class="btn waves-effect waves-light">
                         Detected
                     </a>
-                    <a href="not-detected/' . $provider->name . '/rendering-engines.html" class="btn waves-effect waves-light">
+                    <a href="not-detected/' . $provider['proName'] . '/rendering-engines.html" class="btn waves-effect waves-light">
                         Not detected
                     </a>
                 </td>
@@ -203,7 +195,7 @@ class OverviewProvider extends AbstractHtml
         /*
          * os
          */
-        if ($provider->canDetectOsName === true) {
+        if ($provider['proCanDetectOsName']) {
             $html .= '
                 <tr>
                 <td>
@@ -212,17 +204,17 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     ' . round($row['osFound'] / $totalUserAgentsOnePercent, 2) . '%
                     <div class="progress">
-    					<div class="determinate" style="width: ' . round($row['osFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-    				</div>
-    			</td>
-    		    <td>
+                        <div class="determinate" style="width: ' . round($row['osFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
+                    </div>
+                </td>
+                <td>
                     ' . $row['osFound'] . '
                 </td>
                 <td>
-                    <a href="detected/' . $provider->name . '/operating-systems.html" class="btn waves-effect waves-light">
+                    <a href="detected/' . $provider['proName'] . '/operating-systems.html" class="btn waves-effect waves-light">
                         Detected
                     </a>
-                    <a href="not-detected/' . $provider->name . '/operating-systems.html" class="btn waves-effect waves-light">
+                    <a href="not-detected/' . $provider['proName'] . '/operating-systems.html" class="btn waves-effect waves-light">
                         Not detected
                     </a>
                 </td>
@@ -244,7 +236,7 @@ class OverviewProvider extends AbstractHtml
         /*
          * device brand
          */
-        if ($provider->canDetectDeviceBrand === true) {
+        if ($provider['proCanDetectDeviceBrand']) {
             $html .= '
                 <tr>
                 <td>
@@ -253,17 +245,17 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     ' . round($row['deviceBrandFound'] / $totalUserAgentsOnePercent, 2) . '%
                     <div class="progress">
-    					<div class="determinate" style="width: ' . round($row['deviceBrandFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-    				</div>
-    			</td>
-    		    <td>
+                        <div class="determinate" style="width: ' . round($row['deviceBrandFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
+                    </div>
+                </td>
+                <td>
                     ' . $row['deviceBrandFound'] . '
                 </td>
                 <td>
-                    <a href="detected/' . $provider->name . '/device-brands.html" class="btn waves-effect waves-light">
+                    <a href="detected/' . $provider['proName'] . '/device-brands.html" class="btn waves-effect waves-light">
                         Detected
                     </a>
-                    <a href="not-detected/' . $provider->name . '/device-brands.html" class="btn waves-effect waves-light">
+                    <a href="not-detected/' . $provider['proName'] . '/device-brands.html" class="btn waves-effect waves-light">
                         Not detected
                     </a>
                 </td>
@@ -285,7 +277,7 @@ class OverviewProvider extends AbstractHtml
         /*
          * device model
          */
-        if ($provider->canDetectDeviceModel === true) {
+        if ($provider['proCanDetectDeviceModel']) {
             $html .= '
                 <tr>
                 <td>
@@ -294,17 +286,17 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     ' . round($row['deviceModelFound'] / $totalUserAgentsOnePercent, 2) . '%
                     <div class="progress">
-    					<div class="determinate" style="width: ' . round($row['deviceModelFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-    				</div>
-    			</td>
-    		    <td>
+                        <div class="determinate" style="width: ' . round($row['deviceModelFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
+                    </div>
+                </td>
+                <td>
                     ' . $row['deviceModelFound'] . '
                 </td>
                 <td>
-                    <a href="detected/' . $provider->name . '/device-models.html" class="btn waves-effect waves-light">
+                    <a href="detected/' . $provider['proName'] . '/device-models.html" class="btn waves-effect waves-light">
                         Detected
                     </a>
-                    <a href="not-detected/' . $provider->name . '/device-models.html" class="btn waves-effect waves-light">
+                    <a href="not-detected/' . $provider['proName'] . '/device-models.html" class="btn waves-effect waves-light">
                         Not detected
                     </a>
                 </td>
@@ -326,7 +318,7 @@ class OverviewProvider extends AbstractHtml
         /*
          * device type
          */
-        if ($provider->canDetectDeviceType === true) {
+        if ($provider['proCanDetectDeviceType']) {
             $html .= '
                 <tr>
                 <td>
@@ -335,17 +327,17 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     ' . round($row['deviceTypeFound'] / $totalUserAgentsOnePercent, 2) . '%
                     <div class="progress">
-    					<div class="determinate" style="width: ' . round($row['deviceTypeFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-    				</div>
-    			</td>
-    		    <td>
+                        <div class="determinate" style="width: ' . round($row['deviceTypeFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
+                    </div>
+                </td>
+                <td>
                     ' . $row['deviceTypeFound'] . '
                 </td>
                 <td>
-                    <a href="detected/' . $provider->name . '/device-types.html" class="btn waves-effect waves-light">
+                    <a href="detected/' . $provider['proName'] . '/device-types.html" class="btn waves-effect waves-light">
                         Detected
                     </a>
-                    <a href="not-detected/' . $provider->name . '/device-types.html" class="btn waves-effect waves-light">
+                    <a href="not-detected/' . $provider['proName'] . '/device-types.html" class="btn waves-effect waves-light">
                         Not detected
                     </a>
                 </td>
@@ -367,7 +359,7 @@ class OverviewProvider extends AbstractHtml
         /*
          * Is mobile
          */
-        if ($provider->canDetectDeviceIsMobile === true) {
+        if ($provider['proCanDetectDeviceIsMobile']) {
             $html .= '
                 <tr>
                 <td>
@@ -376,14 +368,14 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     ' . round($row['asMobileDetected'] / $totalUserAgentsOnePercent, 2) . '%
                     <div class="progress">
-    					<div class="determinate" style="width: ' . round($row['asMobileDetected'] / $totalUserAgentsOnePercent, 0) . '"></div>
-    				</div>
-    			</td>
-    		    <td>
+                        <div class="determinate" style="width: ' . round($row['asMobileDetected'] / $totalUserAgentsOnePercent, 0) . '"></div>
+                    </div>
+                </td>
+                <td>
                     ' . $row['asMobileDetected'] . '
                 </td>
                 <td>
-                    <a href="not-detected/' . $provider->name . '/device-is-mobile.html" class="btn waves-effect waves-light">
+                    <a href="not-detected/' . $provider['proName'] . '/device-is-mobile.html" class="btn waves-effect waves-light">
                         Not detected
                     </a>
                 </td>
@@ -405,7 +397,7 @@ class OverviewProvider extends AbstractHtml
         /*
          * Is bot
          */
-        if ($provider->canDetectBotIsBot === true) {
+        if ($provider['proCanDetectBotIsBot']) {
             $html .= '
                 <tr>
                 <td>
@@ -413,15 +405,18 @@ class OverviewProvider extends AbstractHtml
                 </td>
                 <td>
                     
-    			</td>
-    		    <td>
-                    ' . $row['asBotDetected'] . '
                 </td>
                 <td>
-                    <a href="detected/' . $provider->name . '/bot-is-bot.html" class="btn waves-effect waves-light">
+                    ' . round($row['asBotDetected'] / $totalUserAgentsOnePercent, 2) . '%
+                    <div class="progress">
+                        <div class="determinate" style="width: ' . round($row['asBotDetected'] / $totalUserAgentsOnePercent, 0) . '"></div>
+                    </div>
+                </td>
+                <td>
+                    <a href="detected/' . $provider['proName'] . '/bot-is-bot.html" class="btn waves-effect waves-light">
                         Detected
                     </a>
-                    <a href="not-detected/' . $provider->name . '/bot-is-bot.html" class="btn waves-effect waves-light">
+                    <a href="not-detected/' . $provider['proName'] . '/bot-is-bot.html" class="btn waves-effect waves-light">
                         Not detected
                     </a>
                 </td>
@@ -443,22 +438,25 @@ class OverviewProvider extends AbstractHtml
         /*
          * Bot name
          */
-        if ($provider->canDetectBotName === true) {
+        if ($provider['proCanDetectBotName']) {
             $html .= '
                 <tr>
                 <td>
                     Bot names
                 </td>
                 <td>
-    			</td>
-    		    <td>
-                    ' . $row['botNameFound'] . '
                 </td>
                 <td>
-                    <a href="detected/' . $provider->name . '/bot-names.html" class="btn waves-effect waves-light">
+                    ' . round($row['botNameFound'] / $totalUserAgentsOnePercent, 2) . '%
+                    <div class="progress">
+                        <div class="determinate" style="width: ' . round($row['botNameFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
+                    </div>
+                </td>
+                <td>
+                    <a href="detected/' . $provider['proName'] . '/bot-names.html" class="btn waves-effect waves-light">
                         Detected
                     </a>
-                    <a href="not-detected/' . $provider->name . '/bot-names.html" class="btn waves-effect waves-light">
+                    <a href="not-detected/' . $provider['proName'] . '/bot-names.html" class="btn waves-effect waves-light">
                         Not detected
                     </a>
                 </td>
@@ -480,22 +478,25 @@ class OverviewProvider extends AbstractHtml
         /*
          * Bot type
          */
-        if ($provider->canDetectBotType === true) {
+        if ($provider['proCanDetectBotType']) {
             $html .= '
                 <tr>
                 <td>
                     Bot types
                 </td>
                 <td>
-    			</td>
-    		    <td>
-                    ' . $row['botTypeFound'] . '
                 </td>
                 <td>
-                    <a href="detected/' . $provider->name . '/bot-types.html" class="btn waves-effect waves-light">
+                    ' . round($row['botTypeFound'] / $totalUserAgentsOnePercent, 2) . '%
+                    <div class="progress">
+                        <div class="determinate" style="width: ' . round($row['botTypeFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
+                    </div>
+                </td>
+                <td>
+                    <a href="detected/' . $provider['proName'] . '/bot-types.html" class="btn waves-effect waves-light">
                         Detected
                     </a>
-                    <a href="not-detected/' . $provider->name . '/bot-types.html" class="btn waves-effect waves-light">
+                    <a href="not-detected/' . $provider['proName'] . '/bot-types.html" class="btn waves-effect waves-light">
                         Not detected
                     </a>
                 </td>
@@ -521,11 +522,11 @@ class OverviewProvider extends AbstractHtml
         return $html;
     }
 
-    public function getHtml()
+    public function getHtml(): string
     {
         $body = '
 <div class="section">
-    <h1 class="header center orange-text">' . $this->getProvider()->name . ' overview - <small>' . $this->getProvider()->version . '</small></h1>
+    <h1 class="header center orange-text">' . $this->provider['proName'] . ' overview - <small>' . $this->provider['proVersion'] . '</small></h1>
 
     <div class="row center">
         <h5 class="header light">

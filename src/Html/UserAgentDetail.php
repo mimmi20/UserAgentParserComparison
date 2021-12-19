@@ -89,7 +89,7 @@ class UserAgentDetail extends AbstractHtml
         return $canDetect;
     }
 
-    private function getProvidersTable()
+    private function getProvidersTable(): string
     {
         $html = '<table class="striped">';
         
@@ -131,7 +131,7 @@ class UserAgentDetail extends AbstractHtml
         
         foreach ($this->getResults() as $result) {
             /* @var $result \UserAgentParserComparison\Entity\Result */
-            if ($result->getProvider()->type == 'testSuite') {
+            if ($result->getProvider()->type === 'testSuite') {
                 $html .= $this->getRow($result);
             }
         }
@@ -144,7 +144,7 @@ class UserAgentDetail extends AbstractHtml
         $html .= '</th></tr>';
         
         foreach ($this->getResults() as $result) {
-            if ($result->getProvider()->type == 'real') {
+            if ($result->getProvider()->type === 'real') {
                 $html .= $this->getRow($result);
             }
         }
@@ -154,16 +154,16 @@ class UserAgentDetail extends AbstractHtml
         return $html;
     }
 
-    private function getRow(Result $result)
+    private function getRow(Result $result): string
     {
         $provider = $result->getProvider();
         
         $html = '<tr>';
         
         $html .= '<td>' . $provider->name . '<br />';
-        $html .= '<small>' . $result->getProviderVersion() . '</small><br />';
+        $html .= '<small>' . $result->getProviderVersion() . '</small>';
         if ($result->getFilename() != '') {
-            $html .= '<small>' . $result->getFilename() . '</small>';
+            $html .= '<br /><small>' . $result->getFilename() . '</small>';
         }
         $html .= '</td>';
         
@@ -290,7 +290,7 @@ class UserAgentDetail extends AbstractHtml
         return $html;
     }
 
-    public function getHtml()
+    public function getHtml(): string
     {
         $additionalHeaders = $this->getUserAgent()->additionalHeaders;
         
@@ -304,13 +304,13 @@ class UserAgentDetail extends AbstractHtml
         
         $body = '
 <div class="section">
-	<h1 class="header center orange-text">User agent detail</h1>
-	<div class="row center">
+    <h1 class="header center orange-text">User agent detail</h1>
+    <div class="row center">
         <h5 class="header light">
             ' . htmlspecialchars($this->getUserAgent()->string) . '<br />
             ' . $addStr . '
         </h5>
-	</div>
+    </div>
 </div>   
 
 <div class="section">

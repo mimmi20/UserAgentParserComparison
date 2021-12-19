@@ -4,7 +4,7 @@ namespace UserAgentParserComparison\Html;
 class Index extends AbstractHtml
 {
 
-    private function getButtons()
+    private function getButtons(): string
     {
         $html = '';
         
@@ -25,11 +25,11 @@ class Index extends AbstractHtml
         return $html;
     }
 
-    public function getHtml()
+    public function getHtml(): string
     {
         $body = '
 <div class="section">
-    <h1 class="header center orange-text">UserAgentParser comparison</h1>
+    <h1 class="header center orange-text">UserAgentParserComparison comparison</h1>
 
     <div class="row center">
         <p>
