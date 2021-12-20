@@ -285,8 +285,17 @@ foreach ($chain->getProviders() as $provider) {
                 $statementUpdateResult->bindValue(':resBotName', null);
             }
 
-            $statementUpdateResult->bindValue(':resBotType', $res['resBotType'] ?? null);
-            $statementUpdateResult->bindValue(':resRawResult', $res['resRawResult'] ?? null);
+            if (array_key_exists('resBotType', $res) && !in_array($res['resBotType'], ['UNKNOWN', 'unknown', ''], true)) {
+                $statementUpdateResult->bindValue(':resBotType', $res['resBotType']);
+            } else {
+                $statementUpdateResult->bindValue(':resBotType', null);
+            }
+
+            if (array_key_exists('resRawResult', $res) && !in_array($res['resRawResult'], ['UNKNOWN', 'unknown', ''], true)) {
+                $statementUpdateResult->bindValue(':resRawResult', $res['resRawResult']);
+            } else {
+                $statementUpdateResult->bindValue(':resRawResult', null);
+            }
 
             $statementUpdateResult->execute();
 
@@ -371,8 +380,17 @@ foreach ($chain->getProviders() as $provider) {
                 $statementInsertResult->bindValue(':resBotName', null);
             }
 
-            $statementInsertResult->bindValue(':resBotType', $res['resBotType'] ?? null);
-            $statementInsertResult->bindValue(':resRawResult', $res['resRawResult'] ?? null);
+            if (array_key_exists('resBotType', $res) && !in_array($res['resBotType'], ['UNKNOWN', 'unknown', ''], true)) {
+                $statementInsertResult->bindValue(':resBotType', $res['resBotType']);
+            } else {
+                $statementInsertResult->bindValue(':resBotType', null);
+            }
+
+            if (array_key_exists('resRawResult', $res) && !in_array($res['resRawResult'], ['UNKNOWN', 'unknown', ''], true)) {
+                $statementInsertResult->bindValue(':resRawResult', $res['resRawResult']);
+            } else {
+                $statementInsertResult->bindValue(':resRawResult', null);
+            }
 
             $statementInsertResult->execute();
 

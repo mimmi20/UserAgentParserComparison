@@ -239,8 +239,17 @@ do {
                     $statementInsertResult->bindValue(':resBotName', null);
                 }
 
-                $statementInsertResult->bindValue(':resBotType', $row2['resBotType'] ?? null);
-                $statementInsertResult->bindValue(':resRawResult', $row2['resRawResult'] ?? null);
+                if (array_key_exists('resBotType', $row2) && !in_array($row2['resBotType'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementInsertResult->bindValue(':resBotType', $row2['resBotType']);
+                } else {
+                    $statementInsertResult->bindValue(':resBotType', null);
+                }
+
+                if (array_key_exists('resRawResult', $row2) && !in_array($row2['resRawResult'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementInsertResult->bindValue(':resRawResult', $row2['resRawResult']);
+                } else {
+                    $statementInsertResult->bindValue(':resRawResult', null);
+                }
 
                 $statementInsertResult->execute();
             } else {
@@ -323,8 +332,17 @@ do {
                     $statementUpdateResult->bindValue(':resBotName', null);
                 }
 
-                $statementUpdateResult->bindValue(':resBotType', $row2['resBotType'] ?? null);
-                $statementUpdateResult->bindValue(':resRawResult', $row2['resRawResult'] ?? null);
+                if (array_key_exists('resBotType', $row2) && !in_array($row2['resBotType'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementUpdateResult->bindValue(':resBotType', $row2['resBotType']);
+                } else {
+                    $statementUpdateResult->bindValue(':resBotType', null);
+                }
+
+                if (array_key_exists('resRawResult', $row2) && !in_array($row2['resRawResult'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementUpdateResult->bindValue(':resRawResult', $row2['resRawResult']);
+                } else {
+                    $statementUpdateResult->bindValue(':resRawResult', null);
+                }
 
                 $statementUpdateResult->execute();
             }
