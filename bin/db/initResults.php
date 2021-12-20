@@ -164,29 +164,83 @@ do {
                 $statementInsertResult->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
                 $statementInsertResult->bindValue(':uaId', $row['uaId'], \PDO::PARAM_STR);
                 $statementInsertResult->bindValue(':resProviderVersion', $row2['resProviderVersion'], \PDO::PARAM_STR);
-                if (isset($row['resFilename'])) {
-                    $statementInsertResult->bindValue(':resFilename', str_replace('\\', '/', $row['resFilename'] ?? ''), \PDO::PARAM_STR);
+
+                if (array_key_exists('resFilename', $row)) {
+                    $statementInsertResult->bindValue(':resFilename', str_replace('\\', '/', $row['resFilename']));
                 } else {
                     $statementInsertResult->bindValue(':resFilename', null);
                 }
+
                 $statementInsertResult->bindValue(':resParseTime', $row2['resParseTime']);
                 $statementInsertResult->bindValue(':resLastChangeDate', $row2['resLastChangeDate'], \PDO::PARAM_STR);
                 $statementInsertResult->bindValue(':resResultFound', $row2['resResultFound'], \PDO::PARAM_INT);
-                $statementInsertResult->bindValue(':resBrowserName', $row2['resBrowserName'] ?? '', \PDO::PARAM_STR);
-                $statementInsertResult->bindValue(':resBrowserVersion', $row2['resBrowserVersion'] ?? '', \PDO::PARAM_STR);
-                $statementInsertResult->bindValue(':resEngineName', $row2['resEngineName'] ?? '', \PDO::PARAM_STR);
-                $statementInsertResult->bindValue(':resEngineVersion', $row2['resEngineVersion'] ?? '', \PDO::PARAM_STR);
-                $statementInsertResult->bindValue(':resOsName', $row2['resOsName'] ?? '', \PDO::PARAM_STR);
-                $statementInsertResult->bindValue(':resOsVersion', $row2['resOsVersion'] ?? '', \PDO::PARAM_STR);
-                $statementInsertResult->bindValue(':resDeviceModel', $row2['resDeviceModel'] ?? '', \PDO::PARAM_STR);
-                $statementInsertResult->bindValue(':resDeviceBrand', $row2['resDeviceBrand'] ?? '', \PDO::PARAM_STR);
-                $statementInsertResult->bindValue(':resDeviceType', $row2['resDeviceType'] ?? '', \PDO::PARAM_STR);
-                $statementInsertResult->bindValue(':resDeviceIsMobile', $row2['resDeviceIsMobile'] ?? 0, \PDO::PARAM_INT);
-                $statementInsertResult->bindValue(':resDeviceIsTouch', $row2['resDeviceIsTouch'] ?? 0, \PDO::PARAM_INT);
-                $statementInsertResult->bindValue(':resBotIsBot', $row2['resBotIsBot'] ?? 0, \PDO::PARAM_INT);
-                $statementInsertResult->bindValue(':resBotName', $row2['resBotName'] ?? '', \PDO::PARAM_STR);
-                $statementInsertResult->bindValue(':resBotType', $row2['resBotType'] ?? '', \PDO::PARAM_STR);
-                $statementInsertResult->bindValue(':resRawResult', $row2['resRawResult'] ?? '', \PDO::PARAM_STR);
+
+                if (array_key_exists('resBrowserName', $row2) && !in_array($row2['resBrowserName'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementInsertResult->bindValue(':resBrowserName', $row2['resBrowserName']);
+                } else {
+                    $statementInsertResult->bindValue(':resBrowserName', null);
+                }
+
+                if (array_key_exists('resBrowserVersion', $row2) && !in_array($row2['resBrowserVersion'], ['UNKNOWN', 'unknown', '0.0', ''], true)) {
+                    $statementInsertResult->bindValue(':resBrowserVersion', $row2['resBrowserVersion']);
+                } else {
+                    $statementInsertResult->bindValue(':resBrowserVersion', null);
+                }
+
+                if (array_key_exists('resEngineName', $row2) && !in_array($row2['resEngineName'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementInsertResult->bindValue(':resEngineName', $row2['resEngineName']);
+                } else {
+                    $statementInsertResult->bindValue(':resEngineName', null);
+                }
+
+                if (array_key_exists('resEngineVersion', $row2) && !in_array($row2['resEngineVersion'], ['UNKNOWN', 'unknown', '0.0', ''], true)) {
+                    $statementInsertResult->bindValue(':resEngineVersion', $row2['resEngineVersion']);
+                } else {
+                    $statementInsertResult->bindValue(':resEngineVersion', null);
+                }
+
+                if (array_key_exists('resOsName', $row2) && !in_array($row2['resOsName'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementInsertResult->bindValue(':resOsName', $row2['resOsName']);
+                } else {
+                    $statementInsertResult->bindValue(':resOsName', null);
+                }
+
+                if (array_key_exists('resOsVersion', $row2) && !in_array($row2['resOsVersion'], ['UNKNOWN', 'unknown', '0.0', ''], true)) {
+                    $statementInsertResult->bindValue(':resOsVersion', $row2['resOsVersion']);
+                } else {
+                    $statementInsertResult->bindValue(':resOsVersion', null);
+                }
+
+                if (array_key_exists('resDeviceModel', $row2) && !in_array($row2['resDeviceModel'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementInsertResult->bindValue(':resDeviceModel', $row2['resDeviceModel']);
+                } else {
+                    $statementInsertResult->bindValue(':resDeviceModel', null);
+                }
+
+                if (array_key_exists('resDeviceBrand', $row2) && !in_array($row2['resDeviceBrand'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementInsertResult->bindValue(':resDeviceBrand', $row2['resDeviceBrand']);
+                } else {
+                    $statementInsertResult->bindValue(':resDeviceBrand', null);
+                }
+
+                if (array_key_exists('resDeviceType', $row2) && !in_array($row2['resDeviceType'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementInsertResult->bindValue(':resDeviceType', $row2['resDeviceType']);
+                } else {
+                    $statementInsertResult->bindValue(':resDeviceType', null);
+                }
+
+                $statementInsertResult->bindValue(':resDeviceIsMobile', $row2['resDeviceIsMobile'] ?? null);
+                $statementInsertResult->bindValue(':resDeviceIsTouch', $row2['resDeviceIsTouch'] ?? null);
+                $statementInsertResult->bindValue(':resBotIsBot', $row2['resBotIsBot'] ?? null);
+
+                if (array_key_exists('resBotName', $row2) && !in_array($row2['resBotName'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementInsertResult->bindValue(':resBotName', $row2['resBotName']);
+                } else {
+                    $statementInsertResult->bindValue(':resBotName', null);
+                }
+
+                $statementInsertResult->bindValue(':resBotType', $row2['resBotType'] ?? null);
+                $statementInsertResult->bindValue(':resRawResult', $row2['resRawResult'] ?? null);
 
                 $statementInsertResult->execute();
             } else {
@@ -194,25 +248,83 @@ do {
                 $statementUpdateResult->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
                 $statementUpdateResult->bindValue(':uaId', $row['uaId'], \PDO::PARAM_STR);
                 $statementUpdateResult->bindValue(':resProviderVersion', $row2['resProviderVersion'], \PDO::PARAM_STR);
-                $statementUpdateResult->bindValue(':resFilename', str_replace('\\', '/', $row2['resFilename'] ?? ''), \PDO::PARAM_STR);
+
+                if (array_key_exists('resFilename', $row)) {
+                    $statementUpdateResult->bindValue(':resFilename', str_replace('\\', '/', $row['resFilename']));
+                } else {
+                    $statementUpdateResult->bindValue(':resFilename', null);
+                }
+
                 $statementUpdateResult->bindValue(':resParseTime', $row2['resParseTime']);
                 $statementUpdateResult->bindValue(':resLastChangeDate', $row2['resLastChangeDate'], \PDO::PARAM_STR);
                 $statementUpdateResult->bindValue(':resResultFound', $row2['resResultFound'], \PDO::PARAM_INT);
-                $statementUpdateResult->bindValue(':resBrowserName', $row2['resBrowserName'] ?? '', \PDO::PARAM_STR);
-                $statementUpdateResult->bindValue(':resBrowserVersion', $row2['resBrowserVersion'] ?? '', \PDO::PARAM_STR);
-                $statementUpdateResult->bindValue(':resEngineName', $row2['resEngineName'] ?? '', \PDO::PARAM_STR);
-                $statementUpdateResult->bindValue(':resEngineVersion', $row2['resEngineVersion'] ?? '', \PDO::PARAM_STR);
-                $statementUpdateResult->bindValue(':resOsName', $row2['resOsName'] ?? '', \PDO::PARAM_STR);
-                $statementUpdateResult->bindValue(':resOsVersion', $row2['resOsVersion'] ?? '', \PDO::PARAM_STR);
-                $statementUpdateResult->bindValue(':resDeviceModel', $row2['resDeviceModel'] ?? '', \PDO::PARAM_STR);
-                $statementUpdateResult->bindValue(':resDeviceBrand', $row2['resDeviceBrand'] ?? '', \PDO::PARAM_STR);
-                $statementUpdateResult->bindValue(':resDeviceType', $row2['resDeviceType'] ?? '', \PDO::PARAM_STR);
-                $statementUpdateResult->bindValue(':resDeviceIsMobile', $row2['resDeviceIsMobile'] ?? 0, \PDO::PARAM_INT);
-                $statementUpdateResult->bindValue(':resDeviceIsTouch', $row2['resDeviceIsTouch'] ?? 0, \PDO::PARAM_INT);
-                $statementUpdateResult->bindValue(':resBotIsBot', $row2['resBotIsBot'] ?? 0, \PDO::PARAM_INT);
-                $statementUpdateResult->bindValue(':resBotName', $row2['resBotName'] ?? '', \PDO::PARAM_STR);
-                $statementUpdateResult->bindValue(':resBotType', $row2['resBotType'] ?? '', \PDO::PARAM_STR);
-                $statementUpdateResult->bindValue(':resRawResult', $row2['resRawResult'] ?? '', \PDO::PARAM_STR);
+
+                if (array_key_exists('resBrowserName', $row2) && !in_array($row2['resBrowserName'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementUpdateResult->bindValue(':resBrowserName', $row2['resBrowserName']);
+                } else {
+                    $statementUpdateResult->bindValue(':resBrowserName', null);
+                }
+
+                if (array_key_exists('resBrowserVersion', $row2) && !in_array($row2['resBrowserVersion'], ['UNKNOWN', 'unknown', '0.0', ''], true)) {
+                    $statementUpdateResult->bindValue(':resBrowserVersion', $row2['resBrowserVersion']);
+                } else {
+                    $statementUpdateResult->bindValue(':resBrowserVersion', null);
+                }
+
+                if (array_key_exists('resEngineName', $row2) && !in_array($row2['resEngineName'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementUpdateResult->bindValue(':resEngineName', $row2['resEngineName']);
+                } else {
+                    $statementUpdateResult->bindValue(':resEngineName', null);
+                }
+
+                if (array_key_exists('resEngineVersion', $row2) && !in_array($row2['resEngineVersion'], ['UNKNOWN', 'unknown', '0.0', ''], true)) {
+                    $statementUpdateResult->bindValue(':resEngineVersion', $row2['resEngineVersion']);
+                } else {
+                    $statementUpdateResult->bindValue(':resEngineVersion', null);
+                }
+
+                if (array_key_exists('resOsName', $row2) && !in_array($row2['resOsName'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementUpdateResult->bindValue(':resOsName', $row2['resOsName']);
+                } else {
+                    $statementUpdateResult->bindValue(':resOsName', null);
+                }
+
+                if (array_key_exists('resOsVersion', $row2) && !in_array($row2['resOsVersion'], ['UNKNOWN', 'unknown', '0.0', ''], true)) {
+                    $statementUpdateResult->bindValue(':resOsVersion', $row2['resOsVersion']);
+                } else {
+                    $statementUpdateResult->bindValue(':resOsVersion', null);
+                }
+
+                if (array_key_exists('resDeviceModel', $row2) && !in_array($row2['resDeviceModel'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementUpdateResult->bindValue(':resDeviceModel', $row2['resDeviceModel']);
+                } else {
+                    $statementUpdateResult->bindValue(':resDeviceModel', null);
+                }
+
+                if (array_key_exists('resDeviceBrand', $row2) && !in_array($row2['resDeviceBrand'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementUpdateResult->bindValue(':resDeviceBrand', $row2['resDeviceBrand']);
+                } else {
+                    $statementUpdateResult->bindValue(':resDeviceBrand', null);
+                }
+
+                if (array_key_exists('resDeviceType', $row2) && !in_array($row2['resDeviceType'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementUpdateResult->bindValue(':resDeviceType', $row2['resDeviceType']);
+                } else {
+                    $statementUpdateResult->bindValue(':resDeviceType', null);
+                }
+
+                $statementUpdateResult->bindValue(':resDeviceIsMobile', $row2['resDeviceIsMobile'] ?? null);
+                $statementUpdateResult->bindValue(':resDeviceIsTouch', $row2['resDeviceIsTouch'] ?? null);
+                $statementUpdateResult->bindValue(':resBotIsBot', $row2['resBotIsBot'] ?? null);
+
+                if (array_key_exists('resBotName', $row2) && !in_array($row2['resBotName'], ['UNKNOWN', 'unknown', ''], true)) {
+                    $statementUpdateResult->bindValue(':resBotName', $row2['resBotName']);
+                } else {
+                    $statementUpdateResult->bindValue(':resBotName', null);
+                }
+
+                $statementUpdateResult->bindValue(':resBotType', $row2['resBotType'] ?? null);
+                $statementUpdateResult->bindValue(':resRawResult', $row2['resRawResult'] ?? null);
 
                 $statementUpdateResult->execute();
             }

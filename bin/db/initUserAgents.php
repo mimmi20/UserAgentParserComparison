@@ -210,11 +210,13 @@ foreach ($chain->getProviders() as $provider) {
             $statementUpdateResult->bindValue(':proId', $proId, \PDO::PARAM_STR);
             $statementUpdateResult->bindValue(':uaId', $uaId, \PDO::PARAM_STR);
             $statementUpdateResult->bindValue(':resProviderVersion', $provider->getVersion(), \PDO::PARAM_STR);
-            if (isset($res['resFilename'])) {
-                $statementUpdateResult->bindValue(':resFilename', str_replace('\\', '/', $res['resFilename'] ?? ''), \PDO::PARAM_STR);
+
+            if (array_key_exists('resFilename', $res)) {
+                $statementUpdateResult->bindValue(':resFilename', str_replace('\\', '/', $res['resFilename']));
             } else {
                 $statementUpdateResult->bindValue(':resFilename', null);
             }
+
             $statementUpdateResult->bindValue(':resParseTime', null);
             $statementUpdateResult->bindValue(':resLastChangeDate', $date->format('Y-m-d H:i:s'), \PDO::PARAM_STR);
             $statementUpdateResult->bindValue(':resResultFound', 1, \PDO::PARAM_INT);
@@ -276,7 +278,13 @@ foreach ($chain->getProviders() as $provider) {
             $statementUpdateResult->bindValue(':resDeviceIsMobile', $res['resDeviceIsMobile'] ?? null);
             $statementUpdateResult->bindValue(':resDeviceIsTouch', $res['resDeviceIsTouch'] ?? null);
             $statementUpdateResult->bindValue(':resBotIsBot', $res['resBotIsBot'] ?? null);
-            $statementUpdateResult->bindValue(':resBotName', $res['resBotName'] ?? null);
+
+            if (array_key_exists('resBotName', $res) && !in_array($res['resBotName'], ['UNKNOWN', 'unknown', ''], true)) {
+                $statementUpdateResult->bindValue(':resBotName', $res['resBotName']);
+            } else {
+                $statementUpdateResult->bindValue(':resBotName', null);
+            }
+
             $statementUpdateResult->bindValue(':resBotType', $res['resBotType'] ?? null);
             $statementUpdateResult->bindValue(':resRawResult', $res['resRawResult'] ?? null);
 
@@ -288,11 +296,13 @@ foreach ($chain->getProviders() as $provider) {
             $statementInsertResult->bindValue(':proId', $proId, \PDO::PARAM_STR);
             $statementInsertResult->bindValue(':uaId', $uaId, \PDO::PARAM_STR);
             $statementInsertResult->bindValue(':resProviderVersion', $provider->getVersion(), \PDO::PARAM_STR);
-            if (isset($res['resFilename'])) {
-                $statementInsertResult->bindValue(':resFilename', str_replace('\\', '/', $res['resFilename'] ?? ''), \PDO::PARAM_STR);
+
+            if (array_key_exists('resFilename', $res)) {
+                $statementInsertResult->bindValue(':resFilename', str_replace('\\', '/', $res['resFilename']));
             } else {
                 $statementInsertResult->bindValue(':resFilename', null);
             }
+
             $statementInsertResult->bindValue(':resParseTime', null);
             $statementInsertResult->bindValue(':resLastChangeDate', $date->format('Y-m-d H:i:s'), \PDO::PARAM_STR);
             $statementInsertResult->bindValue(':resResultFound', 1, \PDO::PARAM_INT);
@@ -354,7 +364,13 @@ foreach ($chain->getProviders() as $provider) {
             $statementInsertResult->bindValue(':resDeviceIsMobile', $res['resDeviceIsMobile'] ?? null);
             $statementInsertResult->bindValue(':resDeviceIsTouch', $res['resDeviceIsTouch'] ?? null);
             $statementInsertResult->bindValue(':resBotIsBot', $res['resBotIsBot'] ?? null);
-            $statementInsertResult->bindValue(':resBotName', $res['resBotName'] ?? null);
+
+            if (array_key_exists('resBotName', $res) && !in_array($res['resBotName'], ['UNKNOWN', 'unknown', ''], true)) {
+                $statementInsertResult->bindValue(':resBotName', $res['resBotName']);
+            } else {
+                $statementInsertResult->bindValue(':resBotName', null);
+            }
+
             $statementInsertResult->bindValue(':resBotType', $res['resBotType'] ?? null);
             $statementInsertResult->bindValue(':resRawResult', $res['resRawResult'] ?? null);
 
