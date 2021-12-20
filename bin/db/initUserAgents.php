@@ -35,16 +35,16 @@ $statementUpdateResult   = $pdo->prepare('UPDATE `result` SET `provider_id` = :p
 echo '~~~ Load all UAs ~~~' . PHP_EOL;
 
 $chain = new Provider\Chain([
-//    new Provider\Test\Browscap(),
-//    new Provider\Test\Donatj(),
-//    new Provider\Test\JensSegers(),
-//    new Provider\Test\MobileDetect(),
-//    new Provider\Test\Matomo(),
-//    new Provider\Test\Sinergi(),
-//    new Provider\Test\UapCore(),
-//    new Provider\Test\WhichBrowser(),
-//    new Provider\Test\Woothee(),
-//    new Provider\Test\ZsxSoft(),
+    new Provider\Test\Browscap(),
+    new Provider\Test\Donatj(),
+    new Provider\Test\JensSegers(),
+    new Provider\Test\MobileDetect(),
+    new Provider\Test\Matomo(),
+    new Provider\Test\Sinergi(),
+    new Provider\Test\UapCore(),
+    new Provider\Test\WhichBrowser(),
+    new Provider\Test\Woothee(),
+    new Provider\Test\ZsxSoft(),
     new Provider\Test\BrowserDetector(new \Psr\Log\NullLogger()),
 ]);
 
