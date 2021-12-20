@@ -159,7 +159,7 @@ class Endorphin extends AbstractParseProvider
     private function hydrateBrowser(Model\Browser $browser, EndorphinDetector\Browser $resultRaw): void
     {
         $browser->setName($this->getRealResult($resultRaw->getName()));
-        $browser->getVersion()->setComplete((string) $this->getRealResult($resultRaw->getVersion()));
+        $browser->getVersion()->setComplete($this->getRealResult($resultRaw->getVersion()));
     }
 
     /**
@@ -170,7 +170,7 @@ class Endorphin extends AbstractParseProvider
     private function hydrateOperatingSystem(Model\OperatingSystem $os, EndorphinDetector\OS $resultRaw): void
     {
         $os->setName($this->getRealResult($resultRaw->getName()));
-        $os->getVersion()->setComplete((string) $this->getRealResult($resultRaw->getVersion()));
+        $os->getVersion()->setComplete($this->getRealResult($resultRaw->getVersion()));
     }
 
     /**

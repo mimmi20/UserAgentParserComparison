@@ -69,22 +69,6 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         $this->parser = $parser;
     }
 
-//    public function getVersion(): ?string
-//    {
-//        return $this->getParser()
-//            ->getCache()
-//            ->getVersion();
-//    }
-//
-//    public function getUpdateDate(): ?\DateTimeImmutable
-//    {
-//        $releaseDate = $this->getParser()
-//            ->getCache()
-//            ->getReleaseDate();
-//
-//        return \DateTimeImmutable::createFromFormat('D, d M Y H:i:s O', $releaseDate);
-//    }
-
     /**
      *
      * @return Browscap
@@ -155,7 +139,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         }
 
         if (isset($resultRaw->version)) {
-            $browser->getVersion()->setComplete((string) $this->getRealResult($resultRaw->version));
+            $browser->getVersion()->setComplete($this->getRealResult($resultRaw->version));
         }
     }
 
@@ -171,7 +155,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         }
 
         if (isset($resultRaw->renderingengine_version)) {
-            $engine->getVersion()->setComplete((string) $this->getRealResult($resultRaw->renderingengine_version));
+            $engine->getVersion()->setComplete($this->getRealResult($resultRaw->renderingengine_version));
         }
     }
 
@@ -187,7 +171,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         }
 
         if (isset($resultRaw->platform_version)) {
-            $os->getVersion()->setComplete((string) $this->getRealResult($resultRaw->platform_version));
+            $os->getVersion()->setComplete($this->getRealResult($resultRaw->platform_version));
         }
     }
 
@@ -214,7 +198,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
             $device->setIsMobile(true);
         }
 
-        if (isset($resultRaw->device_pointing_method) && $resultRaw->device_pointing_method == 'touchscreen') {
+        if (isset($resultRaw->device_pointing_method) && $resultRaw->device_pointing_method === 'touchscreen') {
             $device->setIsTouch(true);
         }
     }

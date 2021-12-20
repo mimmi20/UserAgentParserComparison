@@ -7,133 +7,74 @@ namespace UserAgentParserComparison\Model;
  * @author Martin Keckeis <martin.keckeis1@gmail.com>
  * @license MIT
  */
-class Device
+final class Device
 {
-    /**
-     *
-     * @var string
-     */
-    private $model;
+    private ?string $model = null;
 
-    /**
-     *
-     * @var string
-     */
-    private $brand;
+    private ?string $brand = null;
 
-    /**
-     *
-     * @var string
-     */
-    private $type;
+    private ?string $type = null;
 
-    /**
-     *
-     * @var boolean
-     */
-    private $isMobile;
+    private bool $isMobile = false;
 
-    /**
-     *
-     * @var boolean
-     */
-    private $isTouch;
+    private bool $isTouch = false;
 
-    /**
-     *
-     * @param string $model
-     */
-    public function setModel($model)
+    public function setModel(?string $model): void
     {
         $this->model = $model;
     }
 
-    /**
-     *
-     * @return string
-     */
-    public function getModel()
+    public function getModel(): ?string
     {
         return $this->model;
     }
 
-    /**
-     *
-     * @param string $brand
-     */
-    public function setBrand($brand)
+    public function setBrand(?string $brand): void
     {
         $this->brand = $brand;
     }
 
-    /**
-     *
-     * @return string
-     */
-    public function getBrand()
+    public function getBrand(): ?string
     {
         return $this->brand;
     }
 
-    /**
-     *
-     * @param string $type
-     */
-    public function setType($type)
+    public function setType(?string $type): void
     {
         $this->type = $type;
     }
 
-    /**
-     *
-     * @return string
-     */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->type;
     }
 
-    /**
-     *
-     * @param boolean $isMobile
-     */
-    public function setIsMobile($isMobile)
+    public function setIsMobile(bool $isMobile): void
     {
         $this->isMobile = $isMobile;
     }
 
-    /**
-     *
-     * @return boolean
-     */
-    public function getIsMobile()
+    public function getIsMobile(): bool
     {
         return $this->isMobile;
     }
 
-    /**
-     *
-     * @param boolean $isTouch
-     */
-    public function setIsTouch($isTouch)
+    public function setIsTouch(bool $isTouch): void
     {
         $this->isTouch = $isTouch;
     }
 
-    /**
-     *
-     * @return boolean
-     */
-    public function getIsTouch()
+    public function getIsTouch(): bool
     {
         return $this->isTouch;
     }
 
     /**
      *
-     * @return array
+     * @return string[]|int[]|bool[]|null[]
+     * @phpstan-return array{model: string|null, brand: string|null, type: string|null, isMobile: bool, isTouch: bool}
      */
-    public function toArray()
+    public function toArray(): array
     {
         return [
             'model'    => $this->getModel(),

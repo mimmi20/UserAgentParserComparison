@@ -119,7 +119,7 @@ class WhichBrowser extends AbstractParseProvider
     {
         if ($this->isRealResult($browserRaw->getName(), 'browser', 'name') === true) {
             $browser->setName($browserRaw->getName());
-            $browser->getVersion()->setComplete((string) $this->getRealResult($browserRaw->getVersion()));
+            $browser->getVersion()->setComplete($this->getRealResult($browserRaw->getVersion()));
 
             return;
         }
@@ -131,7 +131,7 @@ class WhichBrowser extends AbstractParseProvider
             if ($this->isRealResult($usingRaw->getName()) === true) {
                 $browser->setName($usingRaw->getName());
 
-                $browser->getVersion()->setComplete((string) $this->getRealResult($usingRaw->getVersion()));
+                $browser->getVersion()->setComplete($this->getRealResult($usingRaw->getVersion()));
             }
         }
     }
@@ -144,7 +144,7 @@ class WhichBrowser extends AbstractParseProvider
     private function hydrateRenderingEngine(Model\RenderingEngine $engine, \WhichBrowser\Model\Engine $engineRaw): void
     {
         $engine->setName($this->getRealResult($engineRaw->getName()));
-        $engine->getVersion()->setComplete((string) $this->getRealResult($engineRaw->getVersion()));
+        $engine->getVersion()->setComplete($this->getRealResult($engineRaw->getVersion()));
     }
 
     /**
@@ -155,7 +155,7 @@ class WhichBrowser extends AbstractParseProvider
     private function hydrateOperatingSystem(Model\OperatingSystem $os, \WhichBrowser\Model\Os $osRaw): void
     {
         $os->setName($this->getRealResult($osRaw->getName()));
-        $os->getVersion()->setComplete((string) $this->getRealResult($osRaw->getVersion()));
+        $os->getVersion()->setComplete($this->getRealResult($osRaw->getVersion()));
     }
 
     /**

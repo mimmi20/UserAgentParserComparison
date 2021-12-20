@@ -232,7 +232,7 @@ class MatomoDeviceDetector extends AbstractParseProvider
         }
 
         if (isset($clientRaw['version'])) {
-            $browser->getVersion()->setComplete((string) $this->getRealResult($clientRaw['version']));
+            $browser->getVersion()->setComplete($this->getRealResult($clientRaw['version']));
         }
     }
 
@@ -260,7 +260,7 @@ class MatomoDeviceDetector extends AbstractParseProvider
         }
 
         if (isset($osRaw['version'])) {
-            $os->getVersion()->setComplete((string) $this->getRealResult($osRaw['version']));
+            $os->getVersion()->setComplete($this->getRealResult($osRaw['version']));
         }
     }
 

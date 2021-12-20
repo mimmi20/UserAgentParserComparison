@@ -7,61 +7,42 @@ namespace UserAgentParserComparison\Model;
  * @author Martin Keckeis <martin.keckeis1@gmail.com>
  * @license MIT
  */
-class RenderingEngine
+final class RenderingEngine
 {
-    /**
-     * @var string
-     */
-    private $name;
+    private ?string $name = null;
 
-    /**
-     * @var Version
-     */
-    private $version;
+    private Version $version;
 
     public function __construct()
     {
         $this->version = new Version();
     }
 
-    /**
-     *
-     * @param string $name
-     */
-    public function setName($name)
+    public function setName(?string $name): void
     {
         $this->name = $name;
     }
 
-    /**
-     *
-     * @return string
-     */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * @param Version $version
-     */
-    public function setVersion(Version $version)
+    public function setVersion(Version $version): void
     {
         $this->version = $version;
     }
 
-    /**
-     * @return Version
-     */
-    public function getVersion()
+    public function getVersion(): Version
     {
         return $this->version;
     }
 
     /**
-     * @return array
+     * @return string[]|array[]|null[]
+     * @phpstan-return array{name: string|null, version: array{major: int|string|null, minor: int|string|null, patch: int|string|null, alias: string|null, complete: string|null}}
      */
-    public function toArray()
+    public function toArray(): array
     {
         return [
             'name'    => $this->getName(),

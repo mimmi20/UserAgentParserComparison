@@ -11,53 +11,30 @@ class UserAgent
 {
     /**
      * Provider name
-     *
-     * @var string
      */
-    private $providerName;
+    private ?string $providerName;
 
     /**
      * Provider version
-     *
-     * @var string
      */
-    private $providerVersion;
+    private ?string $providerVersion;
 
-    /**
-     * @var Browser
-     */
-    private $browser;
+    private Browser $browser;
 
-    /**
-     * @var RenderingEngine
-     */
-    private $renderingEngine;
+    private RenderingEngine $renderingEngine;
 
-    /**
-     * @var OperatingSystem
-     */
-    private $operatingSystem;
+    private OperatingSystem $operatingSystem;
 
-    /**
-     * @var Device
-     */
-    private $device;
+    private Device $device;
 
-    /**
-     * @var Bot
-     */
-    private $bot;
+    private Bot $bot;
 
     /**
      * @var mixed
      */
     private $providerResultRaw;
 
-    /**
-     *
-     * @param string $provider
-     */
-    public function __construct($providerName = null, $providerVersion = null)
+    public function __construct(?string $providerName = null, ?string $providerVersion = null)
     {
         $this->providerName    = $providerName;
         $this->providerVersion = $providerVersion;
@@ -69,128 +46,74 @@ class UserAgent
         $this->bot             = new Bot();
     }
 
-    /**
-     *
-     * @return string
-     */
-    public function getProviderName()
+    public function getProviderName(): ?string
     {
         return $this->providerName;
     }
 
-    /**
-     *
-     * @return string
-     */
-    public function getProviderVersion()
+    public function getProviderVersion(): ?string
     {
         return $this->providerVersion;
     }
 
-    /**
-     * @param Browser $browser
-     */
-    public function setBrowser(Browser $browser)
+    public function setBrowser(Browser $browser): void
     {
         $this->browser = $browser;
     }
 
-    /**
-     * @return Browser
-     */
-    public function getBrowser()
+    public function getBrowser(): Browser
     {
         return $this->browser;
     }
 
-    /**
-     * @param RenderingEngine $renderingEngine
-     */
-    public function setRenderingEngine(RenderingEngine $renderingEngine)
+    public function setRenderingEngine(RenderingEngine $renderingEngine): void
     {
         $this->renderingEngine = $renderingEngine;
     }
 
-    /**
-     * @return RenderingEngine
-     */
-    public function getRenderingEngine()
+    public function getRenderingEngine(): RenderingEngine
     {
         return $this->renderingEngine;
     }
 
-    /**
-     * @param OperatingSystem $operatingSystem
-     */
-    public function setOperatingSystem(OperatingSystem $operatingSystem)
+    public function setOperatingSystem(OperatingSystem $operatingSystem): void
     {
         $this->operatingSystem = $operatingSystem;
     }
 
-    /**
-     * @return OperatingSystem
-     */
-    public function getOperatingSystem()
+    public function getOperatingSystem(): OperatingSystem
     {
         return $this->operatingSystem;
     }
 
-    /**
-     * @param Device $device
-     */
-    public function setDevice(Device $device)
+    public function setDevice(Device $device): void
     {
         $this->device = $device;
     }
 
-    /**
-     * @return Device
-     */
-    public function getDevice()
+    public function getDevice(): Device
     {
         return $this->device;
     }
 
-    /**
-     * @param Bot $bot
-     */
-    public function setBot(Bot $bot)
+    public function setBot(Bot $bot): void
     {
         $this->bot = $bot;
     }
 
-    /**
-     * @return Bot
-     */
-    public function getBot()
+    public function getBot(): Bot
     {
         return $this->bot;
     }
 
-    /**
-     *
-     * @return boolean
-     */
-    public function isBot()
+    public function isBot(): bool
     {
-        if ($this->getBot()->getIsBot() === true) {
-            return true;
-        }
-
-        return false;
+        return $this->getBot()->getIsBot();
     }
 
-    /**
-     *
-     * @return boolean
-     */
-    public function isMobile()
+    public function isMobile(): bool
     {
-        if ($this->getDevice()->getIsMobile() === true) {
-            return true;
-        }
-
-        return false;
+        return $this->getDevice()->getIsMobile();
     }
 
     /**
@@ -210,9 +133,10 @@ class UserAgent
     }
 
     /**
-     * @return array
+     * @return mixed[]
+     * @phpstan-return array{browser: array{name: string|null, version: array{major: int|string|null, minor: int|string|null, patch: int|string|null, alias: string|null, complete: string|null}}, renderingEngine: array{name: string|null, version: array{major: int|string|null, minor: int|string|null, patch: int|string|null, alias: string|null, complete: string|null}}, operatingSystem: array{name: string|null, version: array{major: int|string|null, minor: int|string|null, patch: int|string|null, alias: string|null, complete: string|null}}, device: array{model: string|null, brand: string|null, type: string|null, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: string|null, type: string|null}, providerResultRaw?: mixed}
      */
-    public function toArray($includeResultRaw = false)
+    public function toArray(bool $includeResultRaw = false): array
     {
         $data = [
             'browser'          => $this->getBrowser()->toArray(),

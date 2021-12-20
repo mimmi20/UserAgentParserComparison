@@ -2645,7 +2645,8 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "BrowserDetector\\": "src/"
+                    "BrowserDetector\\": "src/",
+                    "UserAgentsTest\\": "tests/UserAgentsTest/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",

@@ -15,21 +15,21 @@ class ZsxSoft extends AbstractTestProvider
      *
      * @var string
      */
-    protected $name = 'Browscap';
+    protected $name = 'Zsxsoft';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/browscap/browscap-php';
+    protected $homepage = 'https://github.com/zsxsoft/php-useragent';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'browscap/browscap-php';
+    protected $packageName = 'zsxsoft/php-useragent';
 
     protected $detectionCapabilities = [
 

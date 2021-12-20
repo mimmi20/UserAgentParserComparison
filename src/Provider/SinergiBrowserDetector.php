@@ -190,7 +190,7 @@ class SinergiBrowserDetector extends AbstractParseProvider
     private function hydrateBrowser(Model\Browser $browser, BrowserDetector\Browser $browserRaw): void
     {
         $browser->setName($this->getRealResult($browserRaw->getName()));
-        $browser->getVersion()->setComplete((string) $this->getRealResult($browserRaw->getVersion()));
+        $browser->getVersion()->setComplete($this->getRealResult($browserRaw->getVersion()));
     }
 
     /**
@@ -201,7 +201,7 @@ class SinergiBrowserDetector extends AbstractParseProvider
     private function hydrateOperatingSystem(Model\OperatingSystem $os, BrowserDetector\Os $osRaw): void
     {
         $os->setName($this->getRealResult($osRaw->getName()));
-        $os->getVersion()->setComplete((string) $this->getRealResult($osRaw->getVersion()));
+        $os->getVersion()->setComplete($this->getRealResult($osRaw->getVersion()));
     }
 
     /**

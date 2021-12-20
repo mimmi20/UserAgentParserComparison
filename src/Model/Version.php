@@ -7,7 +7,7 @@ namespace UserAgentParserComparison\Model;
  * @author Martin Keckeis <martin.keckeis1@gmail.com>
  * @license MIT
  */
-class Version
+final class Version
 {
     /**
      * @var int|string
@@ -28,7 +28,7 @@ class Version
 
     private ?string $complete = null;
 
-    private static $notAllowedAlias = [
+    private static array $notAllowedAlias = [
         'a',
         'alpha',
         'prealpha',
@@ -41,7 +41,7 @@ class Version
     ];
 
     /**
-     * @param int|string $major
+     * @param int|string|null $major
      * @return void
      */
     public function setMajor($major): void
@@ -52,7 +52,7 @@ class Version
     }
 
     /**
-     * @return int|string
+     * @return int|string|null
      */
     public function getMajor()
     {
@@ -60,7 +60,7 @@ class Version
     }
 
     /**
-     * @param int|string|null $major
+     * @param int|string|null $minor
      * @return void
      */
     public function setMinor($minor): void
@@ -112,13 +112,15 @@ class Version
     /**
      * Set from the complete version string.
      */
-    public function setComplete(string $complete): void
+    public function setComplete(?string $complete): void
     {
-        // check if the version has only 0 -> so no real result
-        // maybe move this out to the Providers itself?
-        $left = preg_replace('/[0._]/', '', $complete);
-        if ($left === '') {
-            $complete = '';
+        if (null !== $complete) {
+            // check if the version has only 0 -> so no real result
+            // maybe move this out to the Providers itself?
+            $left = preg_replace('/[0._]/', '', $complete);
+            if ($left === '') {
+                $complete = null;
+            }
         }
 
         $this->hydrateFromComplete($complete);
@@ -131,6 +133,10 @@ class Version
         return $this->complete;
     }
 
+    /**
+     * @return int[]|string[]|null[]
+     * @phpstan-return array{major: int|string|null, minor: int|string|null, patch: int|string|null, alias: string|null, complete: string|null}
+     */
     public function toArray(): array
     {
         return [
@@ -167,7 +173,7 @@ class Version
         $this->complete = $version;
     }
 
-    private function hydrateFromComplete(string $complete): void
+    private function hydrateFromComplete(?string $complete): void
     {
         $parts = $this->getCompleteParts($complete);
 
@@ -179,49 +185,53 @@ class Version
 
     /**
      *
-     * @return array
+     * @return int[]|string[]|null[]
+     * @phpstan-return array{major: int|string|null, minor: int|string|null, patch: int|string|null, alias: string|null, complete: string|null}
      */
-    private function getCompleteParts(string $complete): array
+    private function getCompleteParts(?string $complete): array
     {
         $versionParts = [
             'major' => null,
             'minor' => null,
             'patch' => null,
-
             'alias' => null,
         ];
 
-        // only digits
-        preg_match("/\d+(?:[._]*\d*)*/", $complete, $result);
-        if (count($result) > 0) {
-            $parts = preg_split("/[._]/", $result[0]);
+        if (null !== $complete) {
+            // only digits
+            preg_match("/\d+(?:[._]*\d*)*/", $complete, $result);
 
-            if (isset($parts[0]) && $parts[0] != '') {
-                $versionParts['major'] = (int) $parts[0];
-            }
-            if (isset($parts[1]) && $parts[1] != '') {
-                $versionParts['minor'] = (int) $parts[1];
-            }
-            if (isset($parts[2]) && $parts[2] != '') {
-                $versionParts['patch'] = (int) $parts[2];
-            }
-        }
+            if (count($result) > 0) {
+                $parts = preg_split("/[._]/", $result[0]);
 
-        // grab alias
-        $result = preg_split("/\d+(?:[._]*\d*)*/", $complete);
-        foreach ($result as $row) {
-            $row = trim($row);
-
-            if ($row === '') {
-                continue;
+                if (isset($parts[0]) && $parts[0] != '') {
+                    $versionParts['major'] = $parts[0];
+                }
+                if (isset($parts[1]) && $parts[1] != '') {
+                    $versionParts['minor'] = $parts[1];
+                }
+                if (isset($parts[2]) && $parts[2] != '') {
+                    $versionParts['patch'] = $parts[2];
+                }
             }
 
-            // do not use beta and other things
-            if (in_array($row, self::$notAllowedAlias)) {
-                continue;
-            }
+            // grab alias
+            $result = preg_split("/\d+(?:[._]*\d*)*/", $complete);
 
-            $versionParts['alias'] = $row;
+            foreach ($result as $row) {
+                $row = trim($row);
+
+                if ($row === '') {
+                    continue;
+                }
+
+                // do not use beta and other things
+                if (in_array($row, self::$notAllowedAlias, true)) {
+                    continue;
+                }
+
+                $versionParts['alias'] = $row;
+            }
         }
 
         return $versionParts;

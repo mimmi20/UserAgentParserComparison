@@ -143,7 +143,7 @@ class HandsetDetection extends AbstractParseProvider
             $browser->setName($this->getRealResult($resultRaw['general_browser']));
         }
         if (isset($resultRaw['general_browser_version'])) {
-            $browser->getVersion()->setComplete((string) $this->getRealResult($resultRaw['general_browser_version']));
+            $browser->getVersion()->setComplete($this->getRealResult($resultRaw['general_browser_version']));
         }
     }
 
@@ -158,7 +158,7 @@ class HandsetDetection extends AbstractParseProvider
             $os->setName($this->getRealResult($resultRaw['general_platform']));
         }
         if (isset($resultRaw['general_platform_version'])) {
-            $os->getVersion()->setComplete((string) $this->getRealResult($resultRaw['general_platform_version']));
+            $os->getVersion()->setComplete($this->getRealResult($resultRaw['general_platform_version']));
         }
     }
 

@@ -9,82 +9,48 @@ namespace UserAgentParserComparison\Model;
  */
 class Bot
 {
-    /**
-     *
-     * @var boolean
-     */
-    private $isBot;
+    private bool $isBot = false;
 
-    /**
-     *
-     * @var string
-     */
-    private $name;
+    private ?string $name = null;
 
-    /**
-     *
-     * @var string
-     */
-    private $type;
+    private ?string $type = null;
 
-    /**
-     *
-     * @param boolean $mode
-     */
-    public function setIsBot($mode)
+    public function setIsBot(bool $mode): void
     {
         $this->isBot = $mode;
     }
 
-    /**
-     *
-     * @return boolean
-     */
-    public function getIsBot()
+    public function getIsBot(): bool
     {
         return $this->isBot;
     }
 
-    /**
-     *
-     * @param string $name
-     */
-    public function setName($name)
+    public function setName(?string $name): void
     {
         $this->name = $name;
     }
 
-    /**
-     *
-     * @return string
-     */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     *
-     * @param string $type
-     */
-    public function setType($type)
+    public function setType(?string $type): void
     {
         $this->type = $type;
     }
 
-    /**
-     * @return string
-     */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->type;
     }
 
     /**
      *
-     * @return array
+     * @return bool[]|string[]|null[]
+     * @phpstan-return array{isBot: bool, name: string|null, type: string|null}
      */
-    public function toArray()
+    public function toArray(): array
     {
         return [
             'isBot' => $this->getIsBot(),

@@ -133,58 +133,58 @@ class Browscap extends AbstractTestProvider
 
         $row = $row['properties'];
 
-        if (isset($row['Browser']) && stripos($row['Browser'], 'Fake') !== false) {
+        if (array_key_exists('Browser', $row) && stripos($row['Browser'], 'Fake') !== false) {
             throw new \Exception('skip...');
         }
 
-        if (isset($row['Crawler']) && $row['Crawler'] === true) {
+        if (array_key_exists('Crawler', $row) && $row['Crawler'] === true) {
             $data['resBotIsBot'] = 1;
 
-            if (isset($row['Browser']) && $row['Browser'] != '') {
+            if (array_key_exists('Browser', $row) && $row['Browser'] !== '') {
                 $data['resBotName'] = $row['Browser'];
             }
 
-            if (isset($row['Browser_Type']) && $row['Browser_Type'] != '') {
+            if (array_key_exists('Browser_Type', $row) && $row['Browser_Type'] !== '') {
                 $data['resBotType'] = $row['Browser_Type'];
             }
 
             return $data;
         }
 
-        if (isset($row['Browser']) && $row['Browser'] != '') {
+        if (array_key_exists('Browser', $row) && $row['Browser'] !== '') {
             $data['resBrowserName'] = $row['Browser'];
         }
-        if (isset($row['Version']) && $row['Version'] != '') {
+        if (array_key_exists('Version', $row) && $row['Version'] !== '') {
             $data['resBrowserVersion'] = $row['Version'];
         }
 
-        if (isset($row['RenderingEngine_Name']) && $row['RenderingEngine_Name'] != '') {
+        if (array_key_exists('RenderingEngine_Name', $row) && $row['RenderingEngine_Name'] !== '') {
             $data['resEngineName'] = $row['RenderingEngine_Name'];
         }
-        if (isset($row['RenderingEngine_Version']) && $row['RenderingEngine_Version'] != '') {
+        if (array_key_exists('RenderingEngine_Version', $row) && $row['RenderingEngine_Version'] !== '') {
             $data['resEngineVersion'] = $row['RenderingEngine_Version'];
         }
 
-        if (isset($row['Platform']) && $row['Platform'] != '') {
+        if (array_key_exists('Platform', $row) && $row['Platform'] !== '') {
             $data['resOsName'] = $row['Platform'];
         }
-        if (isset($row['Platform_Version']) && $row['Platform_Version'] != '') {
+        if (array_key_exists('Platform_Version', $row) && $row['Platform_Version'] !== '') {
             $data['resOsVersion'] = $row['Platform_Version'];
         }
 
-        if (isset($row['Device_Name']) && $row['Device_Name'] != '') {
+        if (array_key_exists('Device_Name', $row) && $row['Device_Name'] !== '') {
             $data['resDeviceModel'] = $row['Device_Name'];
         }
-        if (isset($row['Device_Brand_Name']) && $row['Device_Brand_Name'] != '') {
+        if (array_key_exists('Device_Brand_Name', $row) && $row['Device_Brand_Name'] !== '') {
             $data['resDeviceBrand'] = $row['Device_Brand_Name'];
         }
-        if (isset($row['Device_Type']) && $row['Device_Type'] != '') {
+        if (array_key_exists('Device_Type', $row) && $row['Device_Type'] !== '') {
             $data['resDeviceType'] = $row['Device_Type'];
         }
-        if (isset($row['isMobileDevice']) && $row['isMobileDevice'] != '') {
-            $data['resDeviceIsMobile'] = $row['isMobileDevice'];
+        if (array_key_exists('isMobileDevice', $row) && $row['isMobileDevice'] === true) {
+            $data['resDeviceIsMobile'] = 1;
         }
-        if (isset($row['Device_Pointing_Method']) && $row['Device_Pointing_Method'] == 'touchscreen') {
+        if (array_key_exists('Device_Pointing_Method', $row) && $row['Device_Pointing_Method'] === 'touchscreen') {
             $data['resDeviceIsTouch'] = 1;
         }
 
