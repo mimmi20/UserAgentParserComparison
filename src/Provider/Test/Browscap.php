@@ -129,6 +129,10 @@ class Browscap extends AbstractTestProvider
 
     private function hydrateBrowscap(array $data, array $row): array
     {
+        if (!$row['full']) {
+            throw new \Exception('skip...');
+        }
+
         $data['resRawResult'] = serialize($row['properties']);
 
         $row = $row['properties'];
