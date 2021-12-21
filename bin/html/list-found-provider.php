@@ -6,17 +6,26 @@ use UserAgentParserComparison\Html\SimpleList;
  */
 include_once 'bootstrap.php';
 
-/* @var $entityManager \Doctrine\ORM\EntityManager */
-$conn = $entityManager->getConnection();
+/* @var $pdo \PDO */
 
-$providerRepo = $entityManager->getRepository('UserAgentParserComparison\Entity\Provider');
+/*
+ * select all real providers
+ */
+$statementSelectProvider = $pdo->prepare('SELECT * FROM `provider` WHERE `proType` = :proType');
 
-foreach ($providerRepo->findBy(['type' => 'real']) as $provider) {
-    /* @var $provider \UserAgentParserComparison\Entity\Provider */
+$statementSelectProvider->bindValue(':proType', 'real', \PDO::PARAM_STR);
+
+$statementSelectProvider->execute();
+
+/*
+ * Start for each provider
+ */
+
+while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT)) {
+
+    echo $dbResultProvider['proName'] . PHP_EOL;
     
-    echo $provider->name . PHP_EOL;
-    
-    $folder = $basePath . '/detected/' . $provider->name . '';
+    $folder = $basePath . '/detected/' . $dbResultProvider['proName'];
     if (! file_exists($folder)) {
         mkdir($folder, 0777, true);
     }
@@ -24,26 +33,28 @@ foreach ($providerRepo->findBy(['type' => 'real']) as $provider) {
     /*
      * detected - browserNames
      */
-    if ($provider->canDetectBrowserName === true) {
+    if ($dbResultProvider['proCanDetectBrowserName']) {
         $sql = "
             SELECT 
-                resBrowserName as name,
-                uaId,
-            	uaString,
-                COUNT(1) `detectionCount`
-            FROM result
-            JOIN userAgent
-                ON uaId = userAgent_id
+                `resBrowserName` AS `name`,
+                `uaId`,
+                `uaString`,
+                COUNT(*) AS `detectionCount`
+            FROM `result`
+            INNER JOIN `userAgent`
+                ON `uaId` = `userAgent_id`
             WHERE
-                resBrowserName IS NOT NULL
-                AND provider_id = '" . $provider->id . "'
-            GROUP BY resBrowserName
+                `resBrowserName` IS NOT NULL
+                AND `provider_id` = :proId
+            GROUP BY `resBrowserName`
         ";
-        $result = $conn->fetchAll($sql);
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+
+        $statement->execute();
         
-        $generate = new SimpleList($entityManager);
-        $generate->setTitle('Detected browser names - ' . $provider->name . ' <small>' . $provider->version . '</small>');
-        $generate->setElements($result);
+        $generate = new SimpleList($pdo, 'Detected browser names - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
+        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
         
         file_put_contents($folder . '/browser-names.html', $generate->getHtml());
     }
@@ -52,220 +63,238 @@ foreach ($providerRepo->findBy(['type' => 'real']) as $provider) {
     /*
      * detected - renderingEngines
      */
-    if ($provider->canDetectEngineName === true) {
+    if ($dbResultProvider['proCanDetectEngineName']) {
         $sql = "
             SELECT
-                resEngineName as name,
-                uaId,
-            	uaString,
-                COUNT(1) `detectionCount`
-            FROM result
-            JOIN userAgent
-                ON uaId = userAgent_id
+                `resEngineName` AS `name`,
+                `uaId`,
+                `uaString`,
+                COUNT(*) AS `detectionCount`
+            FROM `result`
+            INNER JOIN `userAgent`
+                ON `uaId` = `userAgent_id`
             WHERE
-                resEngineName IS NOT NULL
-                AND provider_id = '" . $provider->id . "'
-            GROUP BY resEngineName
+                `resEngineName` IS NOT NULL
+                AND `provider_id` = :proId
+            GROUP BY `resEngineName`
         ";
-        $result = $conn->fetchAll($sql);
-        
-        $generate = new SimpleList($entityManager);
-        $generate->setTitle('Detected rendering engines - ' . $provider->name . ' <small>' . $provider->version . '</small>');
-        $generate->setElements($result);
-        
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+
+        $statement->execute();
+
+        $generate = new SimpleList($pdo, 'Detected rendering engines - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
+        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/rendering-engines.html', $generate->getHtml());
     }
     echo '.';
-    
+
     /*
      * detected - OSnames
      */
-    if ($provider->canDetectOsName === true) {
+    if ($dbResultProvider['proCanDetectOsName']) {
         $sql = "
             SELECT
-                resOsName as name,
-                uaId,
-            	uaString,
-                COUNT(1) `detectionCount`
-            FROM result
-            JOIN userAgent
-                ON uaId = userAgent_id
+                `resOsName` AS `name`,
+                `uaId`,
+                `uaString`,
+                COUNT(*) AS `detectionCount`
+            FROM `result`
+            INNER JOIN `userAgent`
+                ON `uaId` = `userAgent_id`
             WHERE
-                resOsName IS NOT NULL
-                AND provider_id = '" . $provider->id . "'
-            GROUP BY resOsName
+                `resOsName` IS NOT NULL
+                AND `provider_id` = :proId
+            GROUP BY `resOsName`
         ";
-        $result = $conn->fetchAll($sql);
-        
-        $generate = new SimpleList($entityManager);
-        $generate->setTitle('Detected operating systems - ' . $provider->name . ' <small>' . $provider->version . '</small>');
-        $generate->setElements($result);
-        
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+
+        $statement->execute();
+
+        $generate = new SimpleList($pdo, 'Detected operating systems - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
+        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/operating-systems.html', $generate->getHtml());
     }
     echo '.';
-    
-    /*
-     * detected - deviceModel
-     */
-    if ($provider->canDetectDeviceModel === true) {
-        $sql = "
-            SELECT
-                resDeviceModel as name,
-                uaId,
-            	uaString,
-                COUNT(1) `detectionCount`
-            FROM result
-            JOIN userAgent
-                ON uaId = userAgent_id
-            WHERE
-                resDeviceModel IS NOT NULL
-                AND provider_id = '" . $provider->id . "'
-            GROUP BY resDeviceModel
-        ";
-        $result = $conn->fetchAll($sql);
-        
-        $generate = new SimpleList($entityManager);
-        $generate->setTitle('Detected device models - ' . $provider->name . ' <small>' . $provider->version . '</small>');
-        $generate->setElements($result);
-        
-        file_put_contents($folder . '/device-models.html', $generate->getHtml());
-    }
-    echo '.';
-    
+
     /*
      * detected - deviceBrand
      */
-    if ($provider->canDetectDeviceBrand === true) {
+    if ($dbResultProvider['proCanDetectDeviceBrand']) {
         $sql = "
             SELECT
-                resDeviceBrand as name,
-                uaId,
-            	uaString,
-                COUNT(1) `detectionCount`
-            FROM result
-            JOIN userAgent
-                ON uaId = userAgent_id
+                `resDeviceBrand` AS `name`,
+                `uaId`,
+                `uaString`,
+                COUNT(*) AS `detectionCount`
+            FROM `result`
+            INNER JOIN `userAgent`
+                ON `uaId` = `userAgent_id`
             WHERE
-                resDeviceBrand IS NOT NULL
-                AND provider_id = '" . $provider->id . "'
-            GROUP BY resDeviceBrand
+                `resDeviceBrand` IS NOT NULL
+                AND `provider_id` = :proId
+            GROUP BY `resDeviceBrand`
         ";
-        $result = $conn->fetchAll($sql);
-        
-        $generate = new SimpleList($entityManager);
-        $generate->setTitle('Detected device brands - ' . $provider->name . ' <small>' . $provider->version . '</small>');
-        $generate->setElements($result);
-        
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+
+        $statement->execute();
+
+        $generate = new SimpleList($pdo, 'Detected device brands - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
+        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/device-brands.html', $generate->getHtml());
     }
     echo '.';
-    
+
+    /*
+     * detected - deviceModel
+     */
+    if ($dbResultProvider['proCanDetectDeviceModel']) {
+        $sql = "
+            SELECT
+                `resDeviceModel` AS `name`,
+                `uaId`,
+                `uaString`,
+                COUNT(*) AS `detectionCount`
+            FROM `result`
+            INNER JOIN `userAgent`
+                ON `uaId` = `userAgent_id`
+            WHERE
+                `resDeviceModel` IS NOT NULL
+                AND `provider_id` = :proId
+            GROUP BY `resDeviceModel`
+        ";
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+
+        $statement->execute();
+
+        $generate = new SimpleList($pdo, 'Detected device models - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
+        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
+
+        file_put_contents($folder . '/device-models.html', $generate->getHtml());
+    }
+    echo '.';
+
     /*
      * detected - deviceTypes
      */
-    if ($provider->canDetectDeviceType === true) {
+    if ($dbResultProvider['proCanDetectDeviceType']) {
         $sql = "
             SELECT
-                resDeviceType as name,
-                uaId,
-            	uaString,
-                COUNT(1) `detectionCount`
-            FROM result
-            JOIN userAgent
-                ON uaId = userAgent_id
+                `resDeviceType` AS `name`,
+                `uaId`,
+                `uaString`,
+                COUNT(*) AS `detectionCount`
+            FROM `result`
+            INNER JOIN `userAgent`
+                ON `uaId` = `userAgent_id`
             WHERE
-                resDeviceType IS NOT NULL
-                AND provider_id = '" . $provider->id . "'
-            GROUP BY resDeviceType
+                `resDeviceType` IS NOT NULL
+                AND `provider_id` = :proId
+            GROUP BY `resDeviceType`
         ";
-        $result = $conn->fetchAll($sql);
-        
-        $generate = new SimpleList($entityManager);
-        $generate->setTitle('Detected device types - ' . $provider->name . ' <small>' . $provider->version . '</small>');
-        $generate->setElements($result);
-        
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+
+        $statement->execute();
+
+        $generate = new SimpleList($pdo, 'Detected device types - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
+        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/device-types.html', $generate->getHtml());
     }
     echo '.';
-    
+
     /*
      * detected - bots
      */
-    if ($provider->canDetectBotIsBot === true) {
+    if ($dbResultProvider['proCanDetectBotIsBot']) {
         $sql = "
             SELECT
-                resBotName as name,
-                uaId,
-            	uaString
-            FROM result
-            JOIN userAgent
-                ON uaId = userAgent_id
+                `resBotName` AS `name`,
+                `uaId`,
+                `uaString`,
+                COUNT(*) AS `detectionCount`
+            FROM `result`
+            INNER JOIN `userAgent`
+                ON `uaId` = `userAgent_id`
             WHERE
-                resBotIsBot IS NOT NULL
-                AND provider_id = '" . $provider->id . "'
+                `resBotName` IS NOT NULL
+                AND `provider_id` = :proId
+            GROUP BY `resBotName`
         ";
-        $result = $conn->fetchAll($sql);
-    
-        $generate = new SimpleList($entityManager);
-        $generate->setTitle('Detected as bot - ' . $provider->name . ' <small>' . $provider->version . '</small>');
-        $generate->setElements($result);
-    
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+
+        $statement->execute();
+
+        $generate = new SimpleList($pdo, 'Detected as bot - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
+        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/bot-is-bot.html', $generate->getHtml());
     }
     echo '.';
-    
+
     /*
      * detected - botNames
      */
-    if ($provider->canDetectBotName === true) {
+    if ($dbResultProvider['proCanDetectBotName']) {
         $sql = "
             SELECT
-                resBotName as name,
-                uaId,
-            	uaString,
-                COUNT(1) `detectionCount`
-            FROM result
-            JOIN userAgent
-                ON uaId = userAgent_id
+                `resBotName` AS `name`,
+                `uaId`,
+                `uaString`,
+                COUNT(*) AS `detectionCount`
+            FROM `result`
+            INNER JOIN `userAgent`
+                ON `uaId` = `userAgent_id`
             WHERE
-                resBotName IS NOT NULL
-                AND provider_id = '" . $provider->id . "'
-            GROUP BY resBotName
+                `resBotName` IS NOT NULL
+                AND `provider_id` = :proId
+            GROUP BY `resBotName`
         ";
-        $result = $conn->fetchAll($sql);
-        
-        $generate = new SimpleList($entityManager);
-        $generate->setTitle('Detected bot names - ' . $provider->name . ' <small>' . $provider->version . '</small>');
-        $generate->setElements($result);
-        
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+
+        $statement->execute();
+
+        $generate = new SimpleList($pdo, 'Detected bot names - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
+        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/bot-names.html', $generate->getHtml());
     }
     echo '.';
-    
+
     /*
      * detected - botTypes
      */
-    if ($provider->canDetectBotType === true) {
+    if ($dbResultProvider['proCanDetectBotType']) {
         $sql = "
             SELECT
-                resBotType as name,
-                uaId,
-            	uaString,
-                COUNT(1) `detectionCount`
-            FROM result
-            JOIN userAgent
-                ON uaId = userAgent_id
+                `resBotType` AS `name`,
+                `uaId`,
+                `uaString`,
+                COUNT(*) AS `detectionCount`
+            FROM `result`
+            INNER JOIN `userAgent`
+                ON `uaId` = `userAgent_id`
             WHERE
-                resBotType IS NOT NULL
-                AND provider_id = '" . $provider->id . "'
-            GROUP BY resBotType
+                `resBotType` IS NOT NULL
+                AND `provider_id` = :proId
+            GROUP BY `resBotType`
         ";
-        $result = $conn->fetchAll($sql);
-        
-        $generate = new SimpleList($entityManager);
-        $generate->setTitle('Detected bot types - ' . $provider->name . ' <small>' . $provider->version . '</small>');
-        $generate->setElements($result);
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+
+        $statement->execute();
+
+        $generate = new SimpleList($pdo, 'Detected bot types - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
+        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
         
         file_put_contents($folder . '/bot-types.html', $generate->getHtml());
     }
