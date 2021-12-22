@@ -210,8 +210,8 @@ $pdo->prepare('CREATE TABLE IF NOT EXISTS `useragentevaluation` (
   CONSTRAINT `FK_D98F3DB4E127EC2A` FOREIGN KEY (`userAgent_id`) REFERENCES `useragent` (`uaId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=DYNAMIC CHECKSUM=1')->execute();
 
-$pdo->prepare('CREATE OR REPLACE VIEW `real-provider` AS SELECT * FROM `provider` WHERE `proType` = :proType')->bindValue(':proType', 'real', \PDO::PARAM_STR)->execute();
-$pdo->prepare('CREATE OR REPLACE VIEW `test-provider` AS SELECT * FROM `provider` WHERE `proType` = :proType')->bindValue(':proType', 'testSuite', \PDO::PARAM_STR)->execute();
+$pdo->prepare('CREATE OR REPLACE VIEW `real-provider` AS SELECT * FROM `provider` WHERE `proType` = \'real\'')->execute();
+$pdo->prepare('CREATE OR REPLACE VIEW `test-provider` AS SELECT * FROM `provider` WHERE `proType` = \'testSuite\'')->execute();
 
 $pdo->prepare('CREATE OR REPLACE VIEW `providers-general-overview` AS SELECT
                 `real-provider`.*,
@@ -319,6 +319,7 @@ $pdo->prepare('CREATE OR REPLACE VIEW `found-general-device-types` AS SELECT
     GROUP BY `resDeviceType`')->execute();
 $pdo->prepare('CREATE OR REPLACE VIEW `list-found-general-device-ismobile` AS SELECT * FROM `result` WHERE `provider_id` IN (SELECT `proId` FROM `real-provider`) AND `resDeviceIsMobile` IS NOT NULL')->execute();
 $pdo->prepare('CREATE OR REPLACE VIEW `list-found-general-bot-isbot` AS SELECT * FROM `result` WHERE `provider_id` IN (SELECT `proId` FROM `real-provider`) AND `resBotIsBot` IS NOT NULL')->execute();
+$pdo->prepare('CREATE OR REPLACE VIEW `list-found-general-bot-names` AS SELECT * FROM `result` WHERE `provider_id` IN (SELECT `proId` FROM `real-provider`) AND `resBotName` IS NOT NULL')->execute();
 $pdo->prepare('CREATE OR REPLACE VIEW `found-general-bot-names` AS SELECT
         `resBotName` AS `name`,
         `uaId`,
