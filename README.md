@@ -48,7 +48,7 @@ And adjust your configuration
 ### Step 6) Init database
 
 ```
-vendor/bin/doctrine orm:schema-tool:update --force
+php bin/db/initDb.php
 php bin/db/initProviders.php
 php bin/db/initUserAgents.php
 php bin/db/initResults.php

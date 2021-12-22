@@ -6,46 +6,7 @@ class OverviewGeneral extends AbstractHtml
 
     private function getProviders(): iterable
     {
-        $sql = "
-            SELECT
-                `provider`.*,
-            
-                SUM(`resResultFound`) AS `resultFound`,
-            
-                COUNT(`resBrowserName`) AS `browserFound`,
-                COUNT(DISTINCT `resBrowserName`) AS `browserFoundUnique`,
-            
-                COUNT(`resEngineName`) AS `engineFound`,
-                COUNT(DISTINCT `resEngineName`) AS `engineFoundUnique`,
-            
-                COUNT(`resOsName`) AS `osFound`,
-                COUNT(DISTINCT `resOsName`) AS `osFoundUnique`,
-            
-                COUNT(`resDeviceModel`) AS `deviceModelFound`,
-                COUNT(DISTINCT `resDeviceModel`) AS `deviceModelFoundUnique`,
-            
-                COUNT(`resDeviceBrand`) AS `deviceBrandFound`,
-                COUNT(DISTINCT `resDeviceBrand`) AS `deviceBrandFoundUnique`,
-            
-                COUNT(`resDeviceType`) AS `deviceTypeFound`,
-                COUNT(DISTINCT `resDeviceType`) AS `deviceTypeFoundUnique`,
-            
-                COUNT(`resDeviceIsMobile`) AS `asMobileDetected`,
-            
-                COUNT(`resBotIsBot`) AS `asBotDetected`,
-            
-                AVG(`resParseTime`) AS `avgParseTime`
-            FROM `result`
-            INNER JOIN `provider` 
-                ON `proId` = `provider_id`
-                AND `proType` = 'real'
-            GROUP BY
-                `proId`
-            ORDER BY 
-                `proName`
-        ";
-
-        $statement = $this->pdo->prepare($sql);
+        $statement = $this->pdo->prepare('SELECT * FROM `providers-general-overview`');
 
         $statement->execute();
         
@@ -54,19 +15,7 @@ class OverviewGeneral extends AbstractHtml
 
     private function getUserAgentPerProviderCount(): iterable
     {
-        $sql = "
-            SELECT 
-                `proName`,
-                COUNT(*) AS `countNumber`
-            FROM `provider`
-            JOIN `result`
-                ON `provider_id` = `proId`
-            where `proType` = 'testSuite'
-            GROUP BY `proId`
-            ORDER BY `proName`
-        ";
-
-        $statement = $this->pdo->prepare($sql);
+        $statement = $this->pdo->prepare('SELECT * FROM `useragents-general-overview`');
 
         $statement->execute();
 

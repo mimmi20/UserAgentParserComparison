@@ -11,10 +11,7 @@ include_once 'bootstrap.php';
 /*
  * select all real providers
  */
-$statementSelectProvider = $pdo->prepare('SELECT * FROM `provider` WHERE `proType` = :proType');
-
-$statementSelectProvider->bindValue(':proType', 'real', \PDO::PARAM_STR);
-
+$statementSelectProvider = $pdo->prepare('SELECT * FROM `real-provider`');
 $statementSelectProvider->execute();
 
 /*
@@ -39,13 +36,12 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `resBrowserName` AS `name`,
                 `uaId`,
                 `uaString`,
-                COUNT(*) AS `detectionCount`
-            FROM `result`
+                COUNT(`resBrowserName`) AS `detectionCount`
+            FROM `list-found-general-browser-names`
             INNER JOIN `userAgent`
                 ON `uaId` = `userAgent_id`
             WHERE
-                `resBrowserName` IS NOT NULL
-                AND `provider_id` = :proId
+                `provider_id` = :proId
             GROUP BY `resBrowserName`
         ";
         $statement = $pdo->prepare($sql);
@@ -69,13 +65,12 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `resEngineName` AS `name`,
                 `uaId`,
                 `uaString`,
-                COUNT(*) AS `detectionCount`
-            FROM `result`
+                COUNT(`resEngineName`) AS `detectionCount`
+            FROM `list-found-general-engine-names`
             INNER JOIN `userAgent`
                 ON `uaId` = `userAgent_id`
             WHERE
-                `resEngineName` IS NOT NULL
-                AND `provider_id` = :proId
+                `provider_id` = :proId
             GROUP BY `resEngineName`
         ";
         $statement = $pdo->prepare($sql);
@@ -99,13 +94,12 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `resOsName` AS `name`,
                 `uaId`,
                 `uaString`,
-                COUNT(*) AS `detectionCount`
-            FROM `result`
+                COUNT(`resOsName`) AS `detectionCount`
+            FROM `list-found-general-os-names`
             INNER JOIN `userAgent`
                 ON `uaId` = `userAgent_id`
             WHERE
-                `resOsName` IS NOT NULL
-                AND `provider_id` = :proId
+                `provider_id` = :proId
             GROUP BY `resOsName`
         ";
         $statement = $pdo->prepare($sql);
@@ -129,13 +123,12 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `resDeviceBrand` AS `name`,
                 `uaId`,
                 `uaString`,
-                COUNT(*) AS `detectionCount`
-            FROM `result`
+                COUNT(`resDeviceBrand`) AS `detectionCount`
+            FROM `list-found-general-device-brands`
             INNER JOIN `userAgent`
                 ON `uaId` = `userAgent_id`
             WHERE
-                `resDeviceBrand` IS NOT NULL
-                AND `provider_id` = :proId
+                `provider_id` = :proId
             GROUP BY `resDeviceBrand`
         ";
         $statement = $pdo->prepare($sql);
@@ -159,13 +152,12 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `resDeviceModel` AS `name`,
                 `uaId`,
                 `uaString`,
-                COUNT(*) AS `detectionCount`
-            FROM `result`
+                COUNT(`resDeviceModel`) AS `detectionCount`
+            FROM `list-found-general-device-models`
             INNER JOIN `userAgent`
                 ON `uaId` = `userAgent_id`
             WHERE
-                `resDeviceModel` IS NOT NULL
-                AND `provider_id` = :proId
+                `provider_id` = :proId
             GROUP BY `resDeviceModel`
         ";
         $statement = $pdo->prepare($sql);
@@ -189,13 +181,12 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `resDeviceType` AS `name`,
                 `uaId`,
                 `uaString`,
-                COUNT(*) AS `detectionCount`
-            FROM `result`
+                COUNT(`resDeviceType`) AS `detectionCount`
+            FROM `list-found-general-device-types`
             INNER JOIN `userAgent`
                 ON `uaId` = `userAgent_id`
             WHERE
-                `resDeviceType` IS NOT NULL
-                AND `provider_id` = :proId
+                `provider_id` = :proId
             GROUP BY `resDeviceType`
         ";
         $statement = $pdo->prepare($sql);
@@ -220,12 +211,11 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `uaId`,
                 `uaString`,
                 COUNT(*) AS `detectionCount`
-            FROM `result`
+            FROM `list-found-general-bot-isbot`
             INNER JOIN `userAgent`
                 ON `uaId` = `userAgent_id`
             WHERE
-                `resBotName` IS NOT NULL
-                AND `provider_id` = :proId
+                `provider_id` = :proId
             GROUP BY `resBotName`
         ";
         $statement = $pdo->prepare($sql);
@@ -249,13 +239,12 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `resBotName` AS `name`,
                 `uaId`,
                 `uaString`,
-                COUNT(*) AS `detectionCount`
-            FROM `result`
+                COUNT(`resBotName`) AS `detectionCount`
+            FROM `list-found-general-bot-names`
             INNER JOIN `userAgent`
                 ON `uaId` = `userAgent_id`
             WHERE
-                `resBotName` IS NOT NULL
-                AND `provider_id` = :proId
+                `provider_id` = :proId
             GROUP BY `resBotName`
         ";
         $statement = $pdo->prepare($sql);
@@ -279,13 +268,12 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `resBotType` AS `name`,
                 `uaId`,
                 `uaString`,
-                COUNT(*) AS `detectionCount`
-            FROM `result`
+                COUNT(`resBotType`) AS `detectionCount`
+            FROM `list-found-general-bot-types`
             INNER JOIN `userAgent`
                 ON `uaId` = `userAgent_id`
             WHERE
-                `resBotType` IS NOT NULL
-                AND `provider_id` = :proId
+                `provider_id` = :proId
             GROUP BY `resBotType`
         ";
         $statement = $pdo->prepare($sql);

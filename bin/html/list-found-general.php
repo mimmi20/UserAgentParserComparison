@@ -17,35 +17,9 @@ if (! file_exists($folder)) {
 }
 
 /*
- * select all real providers
- */
-$statementSelectProvider = $pdo->prepare('SELECT * FROM `provider` WHERE `proType` = :proType');
-
-$statementSelectProvider->bindValue(':proType', 'real', \PDO::PARAM_STR);
-
-$statementSelectProvider->execute();
-
-$proIds = array_column($statementSelectProvider->fetchAll(\PDO::FETCH_ASSOC), 'proId');
-
-/*
  * detected - browserNames
  */
-$sql = "
-    SELECT 
-        `resBrowserName` AS `name`,
-        `uaId`,
-        `uaString`,
-        COUNT(1) AS `detectionCount`
-    FROM `result`
-    INNER JOIN `userAgent`
-        ON `uaId` = `userAgent_id`
-    WHERE
-        `provider_id` IN('" . implode('\', \'', $proIds) . "')
-        AND `resBrowserName` IS NOT NULL
-    GROUP BY `resBrowserName`
-";
-$statement = $pdo->prepare($sql);
-
+$statement = $pdo->prepare('SELECT * FROM `found-general-browser-names`');
 $statement->execute();
 
 $generate = new SimpleList($pdo, 'Detected browser names');
@@ -57,22 +31,7 @@ echo '.';
 /*
  * detected - renderingEngines
  */
-$sql = "
-    SELECT
-        `resEngineName` AS `name`,
-        `uaId`,
-        `uaString`,
-        COUNT(1) AS `detectionCount`
-    FROM `result`
-    INNER JOIN `userAgent`
-        ON `uaId` = `userAgent_id`
-    WHERE
-        `provider_id` IN('" . implode('\', \'', $proIds) . "')
-        AND `resEngineName` IS NOT NULL
-    GROUP BY `resEngineName`
-";
-$statement = $pdo->prepare($sql);
-
+$statement = $pdo->prepare('SELECT * FROM `found-general-engine-names`');
 $statement->execute();
 
 $generate = new SimpleList($pdo, 'Detected rendering engines');
@@ -84,22 +43,7 @@ echo '.';
 /*
  * detected - OSnames
  */
-$sql = "
-    SELECT
-        `resOsName` AS `name`,
-        `uaId`,
-        `uaString`,
-        COUNT(1) AS `detectionCount`
-    FROM `result`
-    INNER JOIN `userAgent`
-        ON `uaId` = `userAgent_id`
-    WHERE
-        `provider_id` IN('" . implode('\', \'', $proIds) . "')
-        AND `resOsName` IS NOT NULL
-    GROUP BY `resOsName`
-";
-$statement = $pdo->prepare($sql);
-
+$statement = $pdo->prepare('SELECT * FROM `found-general-os-names`');
 $statement->execute();
 
 $generate = new SimpleList($pdo, 'Detected operating systems');
@@ -111,22 +55,7 @@ echo '.';
 /*
  * detected - deviceModel
  */
-$sql = "
-    SELECT
-        `resDeviceModel` AS `name`,
-        `uaId`,
-        `uaString`,
-        COUNT(1) AS `detectionCount`
-    FROM `result`
-    INNER JOIN `userAgent`
-        ON `uaId` = `userAgent_id`
-    WHERE
-        `provider_id` IN('" . implode('\', \'', $proIds) . "')
-        AND `resDeviceModel` IS NOT NULL
-    GROUP BY `resDeviceModel`
-";
-$statement = $pdo->prepare($sql);
-
+$statement = $pdo->prepare('SELECT * FROM `found-general-device-models`');
 $statement->execute();
 
 $generate = new SimpleList($pdo, 'Detected device models');
@@ -138,22 +67,7 @@ echo '.';
 /*
  * detected - deviceBrand
  */
-$sql = "
-    SELECT
-        `resDeviceBrand` AS `name`,
-        `uaId`,
-        `uaString`,
-        COUNT(1) AS `detectionCount`
-    FROM `result`
-    INNER JOIN `userAgent`
-        ON `uaId` = `userAgent_id`
-    WHERE
-        `provider_id` IN('" . implode('\', \'', $proIds) . "')
-        AND `resDeviceBrand` IS NOT NULL
-    GROUP BY `resDeviceBrand`
-";
-$statement = $pdo->prepare($sql);
-
+$statement = $pdo->prepare('SELECT * FROM `found-general-device-brands`');
 $statement->execute();
 
 $generate = new SimpleList($pdo, 'Detected device brands');
@@ -165,22 +79,7 @@ echo '.';
 /*
  * detected - deviceTypes
  */
-$sql = "
-    SELECT
-        `resDeviceType` AS `name`,
-        `uaId`,
-        `uaString`,
-        COUNT(1) AS `detectionCount`
-    FROM `result`
-    INNER JOIN `userAgent`
-        ON `uaId` = `userAgent_id`
-    WHERE
-        `provider_id` IN('" . implode('\', \'', $proIds) . "')
-        AND `resDeviceType` IS NOT NULL
-    GROUP BY `resDeviceType`
-";
-$statement = $pdo->prepare($sql);
-
+$statement = $pdo->prepare('SELECT * FROM `found-general-device-types`');
 $statement->execute();
 
 $generate = new SimpleList($pdo, 'Detected device types');
@@ -192,22 +91,7 @@ echo '.';
 /*
  * detected - botNames
  */
-$sql = "
-    SELECT
-        `resBotName` AS `name`,
-        `uaId`,
-        `uaString`,
-        COUNT(1) AS `detectionCount`
-    FROM `result`
-    INNER JOIN `userAgent`
-        ON `uaId` = `userAgent_id`
-    WHERE
-        `provider_id` IN('" . implode('\', \'', $proIds) . "')
-        AND `resBotName` IS NOT NULL
-    GROUP BY `resBotName`
-";
-$statement = $pdo->prepare($sql);
-
+$statement = $pdo->prepare('SELECT * FROM `found-general-bot-names`');
 $statement->execute();
 
 $generate = new SimpleList($pdo, 'Detected bot names');
@@ -219,22 +103,7 @@ echo '.';
 /*
  * detected - botTypes
  */
-$sql = "
-    SELECT
-        `resBotType` AS `name`,
-        `uaId`,
-        `uaString`,
-        COUNT(1) AS `detectionCount`
-    FROM `result`
-    INNER JOIN `userAgent`
-        ON `uaId` = `userAgent_id`
-    WHERE
-        `provider_id` IN('" . implode('\', \'', $proIds) . "')
-        AND `resBotType` IS NOT NULL
-    GROUP BY `resBotType`
-";
-$statement = $pdo->prepare($sql);
-
+$statement = $pdo->prepare('SELECT * FROM `found-general-bot-types`');
 $statement->execute();
 
 $generate = new SimpleList($pdo, 'Detected bot types');

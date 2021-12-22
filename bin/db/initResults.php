@@ -11,7 +11,7 @@ $chain = include 'bin/getChainProvider.php';
 
 /* @var $pdo \PDO */
 
-$statementSelectProvider = $pdo->prepare('SELECT * FROM `provider` WHERE `proType` = :proType AND `proName` = :proName');
+$statementSelectProvider = $pdo->prepare('SELECT * FROM `real-provider` WHERE `proName` = :proName');
 
 $statementCreateTempUas  = $pdo->prepare('CREATE TEMPORARY TABLE IF NOT EXISTS `temp_userAgent` AS (SELECT * FROM `userAgent` LIMIT :start, :count)');
 
@@ -25,11 +25,9 @@ $statementUpdateResult   = $pdo->prepare('UPDATE `result` SET `provider_id` = :p
  * Load providers
  */
 $providers  = [];
-$proType    = 'real';
 $nameLength = 0;
 
 foreach ($chain->getProviders() as $provider) {
-    $statementSelectProvider->bindValue(':proType', $proType, \PDO::PARAM_STR);
     $statementSelectProvider->bindValue(':proName', $provider->getName(), \PDO::PARAM_STR);
 
     $statementSelectProvider->execute();

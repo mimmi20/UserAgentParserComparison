@@ -8,10 +8,7 @@ include_once 'bootstrap.php';
 
 /* @var $pdo \PDO */
 
-$statementSelectProvider = $pdo->prepare('SELECT * FROM `provider` WHERE `proType` = :proType');
-
-$statementSelectProvider->bindValue(':proType', 'real', \PDO::PARAM_STR);
-
+$statementSelectProvider = $pdo->prepare('SELECT * FROM `real-provider`');
 $statementSelectProvider->execute();
 
 while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT)) {

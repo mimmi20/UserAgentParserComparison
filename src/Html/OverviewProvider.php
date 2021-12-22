@@ -34,7 +34,7 @@ class OverviewProvider extends AbstractHtml
     
                 AVG(`resParseTime`) AS `avgParseTime`
             FROM `result`
-            INNER JOIN `provider` ON `proId` = `provider_id`
+            INNER JOIN `real-provider` ON `proId` = `provider_id`
             WHERE
                 `provider_id` = :proId
             GROUP BY
