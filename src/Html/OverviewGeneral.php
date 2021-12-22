@@ -30,60 +30,61 @@ class OverviewGeneral extends AbstractHtml
          * Header
          */
         $html .= '
-            <tr>
-                <th>
-                    Provider
-                </th>
-                <th>
-                    Results
-                </th>
-                <th>
-                    Browser
-                </th>
-               <th>
-                    Engine
-                </th>
-               <th>
-                    Operating system
-                </th>
-               <th>
-                    Device brand
-                </th>
-                <th>
-                    Device model
-                </th>
-                <th>
-                    Device type
-                </th>
-               <th>
-                    Is mobile
-                </th>
-               <th>
-                    Is bot
-                </th>
-               <th>
-                    Parse time
-                </th>
-                <th>
-                    Actions
-                </th>
-            </tr>
+            <thead>
+                <tr>
+                    <th>
+                        Provider
+                    </th>
+                    <th>
+                        Results
+                    </th>
+                    <th>
+                        Browser
+                    </th>
+                   <th>
+                        Engine
+                    </th>
+                   <th>
+                        Operating system
+                    </th>
+                   <th>
+                        Device brand
+                    </th>
+                    <th>
+                        Device model
+                    </th>
+                    <th>
+                        Device type
+                    </th>
+                   <th>
+                        Is mobile
+                    </th>
+                   <th>
+                        Is bot
+                    </th>
+                   <th>
+                        Parse time
+                    </th>
+                    <th>
+                        Actions
+                    </th>
+                </tr>
+            </thead>
         ';
         
         /*
          * body
          */
-        $totalUserAgentsOnePercent = $this->getUserAgentCount() / 100;
-        
-        $html .= '<tbdoy>';
+        $html .= '<tbody>';
         foreach ($this->getProviders() as $row) {
             $html .= '<tr>';
             
             $html .= '<th>';
             
-            if ($row['proPackageName'] != '') {
+            if ($row['proPackageName'] !== '') {
                 $html .= '<a href="https://packagist.org/packages/' . $row['proPackageName'] . '">' . $row['proName'] . '</a>';
                 $html .= '<br /><small>' . $row['proVersion'] . '</small>';
+                $html .= '<br /><small>' . $row['proLastReleaseDate'] . '</small>';
             } else {
                 $html .= '<a href="' . $row['proHomepage'] . '">' . $row['proName'] . '</a>';
                 $html .= '<br /><small>Cloud API</small>';
@@ -187,7 +188,7 @@ class OverviewGeneral extends AbstractHtml
             
             $html .= '</tr>';
         }
-        $html .= '</tbdoy>';
+        $html .= '</tbody>';
         
         $html .= '</table>';
         

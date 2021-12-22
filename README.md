@@ -51,7 +51,7 @@ And adjust your configuration
 php bin/db/initDb.php
 php bin/db/initProviders.php
 php bin/db/initUserAgents.php
-php bin/db/initResults.php
+php -d browscap=data/full_php_browscap.ini bin/db/initResults.php
 ```
 
 #### For vNEXT (not needed until yet)

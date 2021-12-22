@@ -101,6 +101,7 @@ return new Provider\Chain([
     $browscapProviderStandard,
     $browscapProviderLite,
     $browscapProviderFull,
+    new Provider\GetBrowser(),
     $matomoProvider,
     $browserDetectorProvider,
     new Provider\DonatjUAParser(),
@@ -108,6 +109,11 @@ return new Provider\Chain([
     new Provider\UAParser(),
     new Provider\WhichBrowser(),
     new Provider\Woothee(),
+    new Provider\Cbschuld(),
+    new Provider\Wolfcast(),
+    new Provider\Zsxsoft(),
+    //new Provider\Endorphin(),
+    new Provider\MobileDetect(),
 
 //     $userAgentString,
 ]);

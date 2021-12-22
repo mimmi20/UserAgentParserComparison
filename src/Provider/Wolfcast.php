@@ -1,40 +1,39 @@
 <?php
 namespace UserAgentParserComparison\Provider;
 
-use Jenssegers\Agent\Agent;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
 
 /**
- * Abstraction for jenssegers/agent
+ * Abstraction for donatj/PhpUserAgent
  *
  * @author Martin Keckeis <martin.keckeis1@gmail.com>
  * @license MIT
- * @see https://github.com/jenssegers/agent
+ * @see https://github.com/donatj/PhpUserAgent
  */
-class JenssegersAgent extends AbstractParseProvider
+class Wolfcast extends AbstractParseProvider
 {
     /**
      * Name of the provider
      *
      * @var string
      */
-    protected $name = 'JenssegersAgent';
+    protected $name = 'wolfcast';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/jenssegers/agent';
+    protected $homepage = 'https://github.com/wolfcast/browser-detection';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'jenssegers/agent';
+    protected $packageName = 'wolfcast/browser-detection';
 
     protected $detectionCapabilities = [
 
@@ -62,29 +61,13 @@ class JenssegersAgent extends AbstractParseProvider
         ],
 
         'bot' => [
-            'isBot' => true,
-            'name'  => true,
+            'isBot' => false,
+            'name'  => false,
             'type'  => false,
         ],
     ];
 
-    protected $defaultValues = [
-
-        'general' => [],
-
-        'browser' => [
-            'name' => [
-                '/^GenericBrowser$/i',
-            ],
-        ],
-    ];
-
-    /**
-     * Used for unitTests mocking
-     *
-     * @var Agent
-     */
-    private $parser;
+    private $functionName = '\parse_user_agent';
 
     /**
      *
@@ -97,45 +80,17 @@ class JenssegersAgent extends AbstractParseProvider
 
     /**
      *
-     * @return Agent
-     */
-    public function getParser()
-    {
-        if ($this->parser === null) {
-            $this->parser = new Agent();
-        }
-
-        return $this->parser;
-    }
-
-    /**
-     *
      * @param array $resultRaw
      *
      * @return bool
      */
     private function hasResult(array $resultRaw): bool
     {
-        if ($resultRaw['isMobile'] === true || $resultRaw['isRobot'] === true) {
-            return true;
-        }
-
-        if ($this->isRealResult($resultRaw['browserName'], 'browser', 'name') === true || $this->isRealResult($resultRaw['osName']) === true || $this->isRealResult($resultRaw['botName']) === true) {
+        if ($this->isRealResult($resultRaw['browserName']) || $this->isRealResult($resultRaw['osName'])) {
             return true;
         }
 
         return false;
-    }
-
-    /**
-     *
-     * @param Model\Bot $bot
-     * @param array     $resultRaw
-     */
-    private function hydrateBot(Model\Bot $bot, array $resultRaw): void
-    {
-        $bot->setIsBot(true);
-        $bot->setName($this->getRealResult($resultRaw['botName']));
     }
 
     /**
@@ -145,10 +100,8 @@ class JenssegersAgent extends AbstractParseProvider
      */
     private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
     {
-        if ($this->isRealResult($resultRaw['browserName'], 'browser', 'name') === true) {
-            $browser->setName($resultRaw['browserName']);
-            $browser->getVersion()->setComplete($this->getRealResult($resultRaw['browserVersion']));
-        }
+        $browser->setName($this->getRealResult($resultRaw['browserName']));
+        $browser->getVersion()->setComplete($this->getRealResult($resultRaw['browserVersion']));
     }
 
     /**
@@ -178,34 +131,18 @@ class JenssegersAgent extends AbstractParseProvider
 
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $parser = $this->getParser();
-        $parser->setHttpHeaders($headers);
-        $parser->setUserAgent($userAgent);
-
-        /*
-         * Since Mobile_Detect to a regex comparison on every call
-         * We cache it here for all checks and hydration
-         */
-        $browserName = $parser->browser();
-        $osName      = $parser->platform();
+        $result = new \Wolfcast\BrowserDetection($userAgent);
 
         $resultCache = [
-            'browserName'    => $browserName,
-            'browserVersion' => $parser->version($browserName),
+            'browserName'    => $result->getName(),
+            'browserVersion' => $result->getVersion(),
 
-            'osName'    => $osName,
-            'osVersion' => $parser->version($osName),
+            'osName'    => $result->getPlatform(),
+            'osVersion' => $result->getPlatformVersion(true),
 
-            'deviceModel' => $parser->device(),
-            'isMobile'    => $parser->isMobile(),
-
-            'isRobot' => $parser->isRobot(),
-            'botName' => $parser->robot(),
+            'isMobile'    => $result->isMobile(),
         ];
 
-        /*
-         * No result found?
-         */
         if ($this->hasResult($resultCache) !== true) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
@@ -217,13 +154,8 @@ class JenssegersAgent extends AbstractParseProvider
         $result->setProviderResultRaw($resultCache);
 
         /*
-         * Bot detection
+         * Bot detection - is currently not possible!
          */
-        if ($parser->isRobot() === true) {
-            $this->hydrateBot($result->getBot(), $resultCache);
-
-            return $result;
-        }
 
         /*
          * hydrate the result

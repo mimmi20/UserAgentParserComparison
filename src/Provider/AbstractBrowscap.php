@@ -84,7 +84,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
      *
      * @return bool
      */
-    private function hasResult(stdClass $resultRaw): bool
+    protected function hasResult(stdClass $resultRaw): bool
     {
         if (isset($resultRaw->browser) && $this->isRealResult($resultRaw->browser, 'browser', 'name') === true) {
             return true;
@@ -98,7 +98,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
      * @param  stdClass $resultRaw
      * @return boolean
      */
-    private function isBot(stdClass $resultRaw): bool
+    protected function isBot(stdClass $resultRaw): bool
     {
         if (isset($resultRaw->crawler) && $resultRaw->crawler === true) {
             return true;
@@ -112,7 +112,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
      * @param Model\Bot $bot
      * @param stdClass  $resultRaw
      */
-    private function hydrateBot(Model\Bot $bot, stdClass $resultRaw): void
+    protected function hydrateBot(Model\Bot $bot, stdClass $resultRaw): void
     {
         $bot->setIsBot(true);
 
@@ -132,7 +132,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
      * @param Model\Browser $browser
      * @param stdClass      $resultRaw
      */
-    private function hydrateBrowser(Model\Browser $browser, stdClass $resultRaw): void
+    protected function hydrateBrowser(Model\Browser $browser, stdClass $resultRaw): void
     {
         if (isset($resultRaw->browser)) {
             $browser->setName($this->getRealResult($resultRaw->browser, 'browser', 'name'));
@@ -148,7 +148,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
      * @param Model\RenderingEngine $engine
      * @param stdClass              $resultRaw
      */
-    private function hydrateRenderingEngine(Model\RenderingEngine $engine, stdClass $resultRaw): void
+    protected function hydrateRenderingEngine(Model\RenderingEngine $engine, stdClass $resultRaw): void
     {
         if (isset($resultRaw->renderingengine_name)) {
             $engine->setName($this->getRealResult($resultRaw->renderingengine_name));
@@ -164,7 +164,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
      * @param Model\OperatingSystem $os
      * @param stdClass              $resultRaw
      */
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, stdClass $resultRaw): void
+    protected function hydrateOperatingSystem(Model\OperatingSystem $os, stdClass $resultRaw): void
     {
         if (isset($resultRaw->platform)) {
             $os->setName($this->getRealResult($resultRaw->platform));
@@ -180,7 +180,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
      * @param Model\Device $device
      * @param stdClass     $resultRaw
      */
-    private function hydrateDevice(Model\Device $device, stdClass $resultRaw): void
+    protected function hydrateDevice(Model\Device $device, stdClass $resultRaw): void
     {
         if (isset($resultRaw->device_name)) {
             $device->setModel($this->getRealResult($resultRaw->device_name, 'device', 'model'));

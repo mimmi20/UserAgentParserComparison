@@ -147,6 +147,12 @@ abstract class AbstractProvider
             return null;
         }
 
+        $filtered = reset($filtered);
+
+        if ([] === $filtered || !array_key_exists('time', $filtered)) {
+            return null;
+        }
+
         return new \DateTimeImmutable($filtered['time']);
     }
 

@@ -9,13 +9,11 @@ use BrowserDetector\Factory\PlatformFactory;
 use BrowserDetector\Loader\CompanyLoader;
 use BrowserDetector\Loader\CompanyLoaderFactory;
 use BrowserDetector\Loader\CompanyLoaderInterface;
-use BrowserDetector\Loader\Helper\Filter;
 use BrowserDetector\Loader\NotFoundException;
 use BrowserDetector\RequestBuilder;
 use BrowserDetector\Version\NotNumericException;
 use BrowserDetector\Version\Version;
 use BrowserDetector\Version\VersionFactory;
-use JsonClass\Json;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use UaBrowserType\TypeLoader;
@@ -112,9 +110,7 @@ class BrowserDetector extends AbstractTestProvider
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
         $files = new \RegexIterator($iterator, '/^.+\.json$/i', \RegexIterator::GET_MATCH);
 
-        $jsonParser = new Json();
-
-        $companyLoaderFactory = new CompanyLoaderFactory($jsonParser, new Filter());
+        $companyLoaderFactory = new CompanyLoaderFactory();
 
         $companyLoader = $companyLoaderFactory();
         assert($companyLoader instanceof CompanyLoader, sprintf('$companyLoader should be an instance of %s, but is %s', CompanyLoader::class, get_class($companyLoader)));

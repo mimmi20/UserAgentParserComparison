@@ -2,6 +2,7 @@
 namespace UserAgentParserComparison\Provider;
 
 use EndorphinStudio\Detector as EndorphinDetector;
+use EndorphinStudio\Detector\Data\Result;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -100,39 +101,38 @@ class Endorphin extends AbstractParseProvider
 
     /**
      *
-     * @param  string                           $userAgent
-     * @return EndorphinDetector\DetectorResult
+     * @return EndorphinDetector\Detector
      */
-    public function getParser($userAgent)
+    public function getParser()
     {
-        if ($this->parser !== null) {
-            return $this->parser;
+        if ($this->parser === null) {
+            $this->parser = new EndorphinDetector\Detector();
         }
 
-        return EndorphinDetector\Detector::analyse($userAgent);
+        return $this->parser;
     }
 
     /**
      *
-     * @param EndorphinDetector\DetectorResult $resultRaw
+     * @param Result $resultRaw
      *
      * @return bool
      */
-    private function hasResult(EndorphinDetector\DetectorResult $resultRaw): bool
+    private function hasResult(Result $resultRaw): bool
     {
-        if ($this->isRealResult($resultRaw->OS->getName()) === true) {
+        if ($this->isRealResult($resultRaw->getOs()->getName()) === true) {
             return true;
         }
 
-        if ($this->isRealResult($resultRaw->Browser->getName()) === true) {
+        if ($this->isRealResult($resultRaw->getBrowser()->getName()) === true) {
             return true;
         }
 
-        if ($this->isRealResult($resultRaw->Device->getName(), 'device', 'model') === true) {
+        if ($this->isRealResult($resultRaw->getDevice()->getName(), 'device', 'model') === true) {
             return true;
         }
 
-        if ($this->isRealResult($resultRaw->Robot->getType()) === true) {
+        if ($this->isRealResult($resultRaw->getRobot()->getType()) === true) {
             return true;
         }
 
@@ -142,9 +142,9 @@ class Endorphin extends AbstractParseProvider
     /**
      *
      * @param Model\Bot               $bot
-     * @param EndorphinDetector\Robot $resultRaw
+     * @param EndorphinDetector\Data\Robot $resultRaw
      */
-    private function hydrateBot(Model\Bot $bot, EndorphinDetector\Robot $resultRaw): void
+    private function hydrateBot(Model\Bot $bot, EndorphinDetector\Data\Robot $resultRaw): void
     {
         $bot->setIsBot(true);
         $bot->setName($this->getRealResult($resultRaw->getName()));
@@ -154,9 +154,9 @@ class Endorphin extends AbstractParseProvider
     /**
      *
      * @param Model\Browser             $browser
-     * @param EndorphinDetector\Browser $resultRaw
+     * @param EndorphinDetector\Data\Browser $resultRaw
      */
-    private function hydrateBrowser(Model\Browser $browser, EndorphinDetector\Browser $resultRaw): void
+    private function hydrateBrowser(Model\Browser $browser, EndorphinDetector\Data\Browser $resultRaw): void
     {
         $browser->setName($this->getRealResult($resultRaw->getName()));
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw->getVersion()));
@@ -165,9 +165,9 @@ class Endorphin extends AbstractParseProvider
     /**
      *
      * @param Model\OperatingSystem $os
-     * @param EndorphinDetector\OS  $resultRaw
+     * @param EndorphinDetector\Data\Os  $resultRaw
      */
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, EndorphinDetector\OS $resultRaw): void
+    private function hydrateOperatingSystem(Model\OperatingSystem $os, EndorphinDetector\Data\Os $resultRaw): void
     {
         $os->setName($this->getRealResult($resultRaw->getName()));
         $os->getVersion()->setComplete($this->getRealResult($resultRaw->getVersion()));
@@ -176,17 +176,19 @@ class Endorphin extends AbstractParseProvider
     /**
      *
      * @param Model\Device             $device
-     * @param EndorphinDetector\Device $resultRaw
+     * @param EndorphinDetector\Data\Device $resultRaw
      */
-    private function hydrateDevice(Model\Device $device, EndorphinDetector\Device $resultRaw): void
+    private function hydrateDevice(Model\Device $device, EndorphinDetector\Data\Device $resultRaw): void
     {
-        // $device->setModel($this->getRealResult($resultRaw->ModelName));
+        $device->setModel($this->getRealResult($resultRaw->getModel() ? $resultRaw->getModel()->getModel() : null));
         $device->setType($this->getRealResult($resultRaw->getType()));
     }
 
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $resultRaw = $this->getParser($userAgent);
+        $parser = $this->getParser();
+
+        $resultRaw = $parser->analyse($userAgent);
 
         /*
          * No result found?
@@ -204,8 +206,8 @@ class Endorphin extends AbstractParseProvider
         /*
          * Bot detection
          */
-        if ($this->isRealResult($resultRaw->Robot->getType()) === true) {
-            $this->hydrateBot($result->getBot(), $resultRaw->Robot);
+        if ($this->isRealResult($resultRaw->getRobot()->getType()) === true) {
+            $this->hydrateBot($result->getBot(), $resultRaw->getRobot());
 
             return $result;
         }
@@ -213,14 +215,14 @@ class Endorphin extends AbstractParseProvider
         /*
          * hydrate the result
          */
-        if ($resultRaw->Browser instanceof EndorphinDetector\Browser) {
-            $this->hydrateBrowser($result->getBrowser(), $resultRaw->Browser);
+        if ($resultRaw->getBrowser() instanceof EndorphinDetector\Data\Browser) {
+            $this->hydrateBrowser($result->getBrowser(), $resultRaw->getBrowser());
         }
-        if ($resultRaw->OS instanceof EndorphinDetector\OS) {
-            $this->hydrateOperatingSystem($result->getOperatingSystem(), $resultRaw->OS);
+        if ($resultRaw->getOs() instanceof EndorphinDetector\Data\OS) {
+            $this->hydrateOperatingSystem($result->getOperatingSystem(), $resultRaw->getOs());
         }
-        if ($resultRaw->Device instanceof EndorphinDetector\Device) {
-            $this->hydrateDevice($result->getDevice(), $resultRaw->Device);
+        if ($resultRaw->getDevice() instanceof EndorphinDetector\Data\Device) {
+            $this->hydrateDevice($result->getDevice(), $resultRaw->getDevice());
         }
 
         return $result;
