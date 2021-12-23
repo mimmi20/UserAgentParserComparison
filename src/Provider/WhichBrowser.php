@@ -38,6 +38,8 @@ class WhichBrowser extends AbstractParseProvider
      */
     protected string $packageName = 'whichbrowser/parser';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

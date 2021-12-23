@@ -37,6 +37,8 @@ class Woothee extends AbstractParseProvider
      */
     protected string $packageName = 'woothee/woothee';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

@@ -33,6 +33,8 @@ class Matomo extends AbstractTestProvider
      */
     protected string $packageName = 'matomo/device-detector';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

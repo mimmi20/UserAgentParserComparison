@@ -35,6 +35,8 @@ class Cbschuld extends AbstractParseProvider
      */
     protected string $packageName = 'cbschuld/browser.php';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

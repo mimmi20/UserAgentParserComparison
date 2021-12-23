@@ -30,6 +30,10 @@ class DeviceAtlasCom extends AbstractHttpParseProvider
      */
     protected string $homepage = 'https://deviceatlas.com/';
 
+    protected bool $local = false;
+
+    protected bool $api = true;
+
     protected array $detectionCapabilities = [
 
         'browser' => [

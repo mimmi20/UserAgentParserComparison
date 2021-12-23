@@ -30,6 +30,10 @@ class FiftyOneDegreesCom extends AbstractHttpParseProvider
      */
     protected string $homepage = 'https://51degrees.com';
 
+    protected bool $local = false;
+
+    protected bool $api = true;
+
     protected array $detectionCapabilities = [
 
         'browser' => [

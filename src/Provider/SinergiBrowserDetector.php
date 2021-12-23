@@ -36,6 +36,8 @@ class SinergiBrowserDetector extends AbstractParseProvider
      */
     protected string $packageName = 'sinergi/browser-detector';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

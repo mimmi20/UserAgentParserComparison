@@ -32,6 +32,8 @@ class UapCore extends AbstractTestProvider
      */
     protected string $packageName = 'thadafinser/uap-core';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

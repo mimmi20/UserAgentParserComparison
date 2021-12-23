@@ -30,6 +30,10 @@ class UserAgentApiCom extends AbstractHttpParseProvider
      */
     protected string $homepage = 'http://useragentapi.com/';
 
+    protected bool $local = false;
+
+    protected bool $api = true;
+
     protected array $detectionCapabilities = [
 
         'browser' => [

@@ -35,6 +35,8 @@ class Wolfcast extends AbstractParseProvider
      */
     protected string $packageName = 'wolfcast/browser-detection';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

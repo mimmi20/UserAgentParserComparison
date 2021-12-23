@@ -36,6 +36,8 @@ class HandsetDetection extends AbstractParseProvider
      */
     protected string $packageName = 'handsetdetection/php-apikit';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

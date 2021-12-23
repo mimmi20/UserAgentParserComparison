@@ -30,6 +30,10 @@ class WhatIsMyBrowserCom extends AbstractHttpParseProvider
      */
     protected string $homepage = 'https://www.whatismybrowser.com/';
 
+    protected bool $local = false;
+
+    protected bool $api = true;
+
     protected array $detectionCapabilities = [
 
         'browser' => [

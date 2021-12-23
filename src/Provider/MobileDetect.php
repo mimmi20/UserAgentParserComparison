@@ -33,6 +33,8 @@ class MobileDetect extends AbstractParseProvider
      */
     protected string $packageName = 'mobiledetect/mobiledetectlib';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

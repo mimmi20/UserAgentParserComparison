@@ -36,6 +36,8 @@ class MatomoDeviceDetector extends AbstractParseProvider
      */
     protected string $packageName = 'matomo/device-detector';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

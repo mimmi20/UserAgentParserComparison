@@ -28,6 +28,12 @@ abstract class AbstractProvider
      */
     protected string $packageName = '';
 
+    protected string $language = '';
+
+    protected bool $local = true;
+
+    protected bool $api = false;
+
     /**
      * Per default the provider cannot detect anything
      * Activate them in $detectionCapabilities
@@ -102,6 +108,30 @@ abstract class AbstractProvider
     public function getPackageName(): ?string
     {
         return $this->packageName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLanguage(): string
+    {
+        return $this->language;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLocal(): bool
+    {
+        return $this->local;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isApi(): bool
+    {
+        return $this->api;
     }
 
     /**

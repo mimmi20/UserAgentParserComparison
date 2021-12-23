@@ -42,6 +42,8 @@ class BrowserDetector extends AbstractParseProvider
      */
     protected string $packageName = 'mimmi20/browser-detector';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

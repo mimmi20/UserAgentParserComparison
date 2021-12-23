@@ -37,6 +37,8 @@ class Endorphin extends AbstractParseProvider
      */
     protected string $packageName = 'endorphin-studio/browser-detector';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

@@ -31,6 +31,8 @@ class Donatj extends AbstractTestProvider
      */
     protected string $packageName = 'donatj/phpuseragentparser';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

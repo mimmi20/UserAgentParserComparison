@@ -36,6 +36,8 @@ class JenssegersAgent extends AbstractParseProvider
      */
     protected string $packageName = 'jenssegers/agent';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

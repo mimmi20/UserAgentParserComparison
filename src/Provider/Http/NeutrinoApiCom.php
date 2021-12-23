@@ -30,6 +30,10 @@ class NeutrinoApiCom extends AbstractHttpParseProvider
      */
     protected string $homepage = 'https://www.neutrinoapi.com/';
 
+    protected bool $local = false;
+
+    protected bool $api = true;
+
     protected array $detectionCapabilities = [
 
         'browser' => [

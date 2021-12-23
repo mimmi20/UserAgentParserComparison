@@ -31,6 +31,8 @@ class MobileDetect extends AbstractTestProvider
      */
     protected string $packageName = 'mobiledetect/mobiledetectlib';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

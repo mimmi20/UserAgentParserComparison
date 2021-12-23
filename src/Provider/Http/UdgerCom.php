@@ -30,6 +30,10 @@ class UdgerCom extends AbstractHttpParseProvider
      */
     protected string $homepage = 'https://udger.com/';
 
+    protected bool $local = false;
+
+    protected bool $api = true;
+
     protected array $detectionCapabilities = [
 
         'browser' => [

@@ -31,6 +31,8 @@ class Browscap extends AbstractTestProvider
      */
     protected string $packageName = 'browscap/browscap';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

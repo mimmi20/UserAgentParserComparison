@@ -32,6 +32,8 @@ class Woothee extends AbstractTestProvider
      */
     protected string $packageName = 'woothee/woothee';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

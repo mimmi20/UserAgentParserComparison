@@ -31,6 +31,8 @@ class Sinergi extends AbstractTestProvider
      */
     protected string $packageName = 'sinergi/browser-detector';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

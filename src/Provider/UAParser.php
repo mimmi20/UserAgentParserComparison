@@ -36,6 +36,8 @@ class UAParser extends AbstractParseProvider
      */
     protected string $packageName = 'ua-parser/uap-php';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

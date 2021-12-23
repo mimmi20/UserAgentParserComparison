@@ -36,6 +36,8 @@ class WhichBrowser extends AbstractTestProvider
      */
     protected string $packageName = 'whichbrowser/parser';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

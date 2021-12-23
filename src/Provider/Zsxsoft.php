@@ -36,6 +36,8 @@ class Zsxsoft extends AbstractParseProvider
      */
     protected string $packageName = 'zsxsoft/php-useragent';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [

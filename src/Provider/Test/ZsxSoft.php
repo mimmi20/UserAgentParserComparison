@@ -31,6 +31,8 @@ class ZsxSoft extends AbstractTestProvider
      */
     protected string $packageName = 'zsxsoft/php-useragent';
 
+    protected string $language = 'PHP';
+
     protected array $detectionCapabilities = [
 
         'browser' => [
