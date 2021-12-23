@@ -20,23 +20,23 @@ class WhichBrowser extends AbstractTestProvider
      *
      * @var string
      */
-    protected $name = 'WhichBrowser';
+    protected string $name = 'WhichBrowser';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/WhichBrowser/Parser';
+    protected string $homepage = 'https://github.com/WhichBrowser/Parser';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'whichbrowser/parser';
+    protected string $packageName = 'whichbrowser/parser';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,

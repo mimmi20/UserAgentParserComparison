@@ -1,6 +1,7 @@
 <?php
 namespace UserAgentParserComparison\Provider;
 
+use Psr\Cache\CacheItemPoolInterface;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -21,23 +22,23 @@ class WhichBrowser extends AbstractParseProvider
      *
      * @var string
      */
-    protected $name = 'WhichBrowser';
+    protected string $name = 'WhichBrowser';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/WhichBrowser/Parser';
+    protected string $homepage = 'https://github.com/WhichBrowser/Parser';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'whichbrowser/parser';
+    protected string $packageName = 'whichbrowser/parser';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -71,29 +72,29 @@ class WhichBrowser extends AbstractParseProvider
 
     /**
      * Used for unitTests mocking
-     *
-     * @var WhichBrowserParser
      */
-    private $parser;
+    private ?WhichBrowserParser $parser = null;
+
+    private ?CacheItemPoolInterface $cache = null;
 
     /**
      *
      * @throws PackageNotLoadedException
      */
-    public function __construct()
+    public function __construct(?CacheItemPoolInterface $cache = null)
     {
         $this->checkIfInstalled();
+
+        $this->cache = $cache;
     }
 
     /**
-     *
-     * @param  array              $headers
      * @return WhichBrowserParser
      */
-    public function getParser(array $headers)
+    public function getParser()
     {
         if ($this->parser === null) {
-            $this->parser = new WhichBrowserParser($headers);
+            $this->parser = new WhichBrowserParser();
         }
 
         return $this->parser;
@@ -179,7 +180,8 @@ class WhichBrowser extends AbstractParseProvider
     {
         $headers['User-Agent'] = $userAgent;
 
-        $parser = $this->getParser($headers);
+        $parser = $this->getParser();
+        $parser->analyse($headers, ['cache' => $this->cache]);
 
         /*
          * No result found?

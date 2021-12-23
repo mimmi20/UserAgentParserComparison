@@ -15,32 +15,24 @@ abstract class AbstractProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
-    protected $name;
+    protected string $name = '';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
-    protected $homepage;
+    protected string $homepage = '';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
-    protected $packageName;
+    protected string $packageName = '';
 
     /**
      * Per default the provider cannot detect anything
      * Activate them in $detectionCapabilities
-     *
-     * @var array
      */
-    protected $allDetectionCapabilities = [
+    protected array $allDetectionCapabilities = [
         'browser' => [
             'name'    => false,
             'version' => false,
@@ -76,9 +68,9 @@ abstract class AbstractProvider
      *
      * @var array
      */
-    protected $detectionCapabilities = [];
+    protected array $detectionCapabilities = [];
 
-    protected $defaultValues = [
+    protected array $defaultValues = [
         'general' => [],
     ];
 

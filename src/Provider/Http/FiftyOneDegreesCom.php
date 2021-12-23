@@ -21,16 +21,16 @@ class FiftyOneDegreesCom extends AbstractHttpParseProvider
      *
      * @var string
      */
-    protected $name = 'FiftyOneDegreesCom';
+    protected string $name = 'FiftyOneDegreesCom';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://51degrees.com';
+    protected string $homepage = 'https://51degrees.com';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -62,17 +62,17 @@ class FiftyOneDegreesCom extends AbstractHttpParseProvider
         ],
     ];
 
-    protected $defaultValues = [
+    protected array $defaultValues = [
         'general' => [
             '/^Unknown$/i',
         ],
     ];
 
-    private static $uri = 'https://cloud.51degrees.com/api/v1';
+    private static string $uri = 'https://cloud.51degrees.com/api/v1';
 
-    private $apiKey;
+    private string $apiKey;
 
-    public function __construct(Client $client, $apiKey)
+    public function __construct(Client $client, string $apiKey)
     {
         parent::__construct($client);
 

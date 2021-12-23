@@ -15,23 +15,23 @@ class Sinergi extends AbstractTestProvider
      *
      * @var string
      */
-    protected $name = 'SinergiBrowserDetector';
+    protected string $name = 'SinergiBrowserDetector';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/sinergi/php-browser-detector';
+    protected string $homepage = 'https://github.com/sinergi/php-browser-detector';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'sinergi/browser-detector';
+    protected string $packageName = 'sinergi/browser-detector';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,

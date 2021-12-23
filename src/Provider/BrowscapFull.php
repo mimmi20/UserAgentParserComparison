@@ -14,12 +14,10 @@ class BrowscapFull extends AbstractBrowscap
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
-    protected $name = 'BrowscapFull';
+    protected string $name = 'BrowscapFull';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,

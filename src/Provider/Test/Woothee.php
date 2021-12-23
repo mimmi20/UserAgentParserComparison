@@ -16,23 +16,23 @@ class Woothee extends AbstractTestProvider
      *
      * @var string
      */
-    protected $name = 'Woothee';
+    protected string $name = 'Woothee';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/woothee/woothee-php';
+    protected string $homepage = 'https://github.com/woothee/woothee-php';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'woothee/woothee';
+    protected string $packageName = 'woothee/woothee';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,

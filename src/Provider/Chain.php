@@ -17,13 +17,13 @@ class Chain extends AbstractParseProvider
      *
      * @var string
      */
-    protected $name = 'Chain';
+    protected string $name = 'Chain';
 
     /**
      *
      * @var AbstractProvider[]
      */
-    private $providers = [];
+    private array $providers = [];
 
     /**
      *

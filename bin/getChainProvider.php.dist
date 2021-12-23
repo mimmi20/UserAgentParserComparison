@@ -78,6 +78,13 @@ $browserDetectorProvider = new Provider\BrowserDetector(
     $browserDetectorFactory()
 );
 
+$whichbrowserAdapter = new \League\Flysystem\Local\LocalFilesystemAdapter('data/cache/.tmp/whichbrowser');
+$whichbrowserCache   = new \MatthiasMullie\Scrapbook\Psr6\Pool(
+    new \MatthiasMullie\Scrapbook\Adapters\Flysystem(
+        new \League\Flysystem\Filesystem($whichbrowserAdapter)
+    )
+);
+
 /*
  * HTTP
  */
@@ -101,13 +108,13 @@ return new Provider\Chain([
     $browscapProviderStandard,
     $browscapProviderLite,
     $browscapProviderFull,
-    new Provider\GetBrowser(),
+    //new Provider\GetBrowser(),
     $matomoProvider,
     $browserDetectorProvider,
     new Provider\DonatjUAParser(),
     new Provider\SinergiBrowserDetector(),
     new Provider\UAParser(),
-    new Provider\WhichBrowser(),
+    new Provider\WhichBrowser($whichbrowserCache),
     new Provider\Woothee(),
     new Provider\Cbschuld(),
     new Provider\Wolfcast(),

@@ -21,16 +21,16 @@ class WhatIsMyBrowserCom extends AbstractHttpParseProvider
      *
      * @var string
      */
-    protected $name = 'WhatIsMyBrowserCom';
+    protected string $name = 'WhatIsMyBrowserCom';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://www.whatismybrowser.com/';
+    protected string $homepage = 'https://www.whatismybrowser.com/';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -63,7 +63,7 @@ class WhatIsMyBrowserCom extends AbstractHttpParseProvider
         ],
     ];
 
-    protected $defaultValues = [
+    protected array $defaultValues = [
 
         'general' => [],
 
@@ -94,11 +94,11 @@ class WhatIsMyBrowserCom extends AbstractHttpParseProvider
         ],
     ];
 
-    private static $uri = 'http://api.whatismybrowser.com/api/v1/user_agent_parse';
+    private static string $uri = 'http://api.whatismybrowser.com/api/v1/user_agent_parse';
 
-    private $apiKey;
+    private string $apiKey;
 
-    public function __construct(Client $client, $apiKey)
+    public function __construct(Client $client, string $apiKey)
     {
         parent::__construct($client);
 

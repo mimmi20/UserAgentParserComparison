@@ -19,23 +19,23 @@ class DonatjUAParser extends AbstractParseProvider
      *
      * @var string
      */
-    protected $name = 'DonatjUAParser';
+    protected string $name = 'DonatjUAParser';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/donatj/PhpUserAgent';
+    protected string $homepage = 'https://github.com/donatj/PhpUserAgent';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'donatj/phpuseragentparser';
+    protected string $packageName = 'donatj/phpuseragentparser';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -67,7 +67,7 @@ class DonatjUAParser extends AbstractParseProvider
         ],
     ];
 
-    private $functionName = '\parse_user_agent';
+    private string $functionName = '\parse_user_agent';
 
     /**
      *

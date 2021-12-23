@@ -14,12 +14,10 @@ class BrowscapLite extends AbstractBrowscap
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
-    protected $name = 'BrowscapLite';
+    protected string $name = 'BrowscapLite';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,

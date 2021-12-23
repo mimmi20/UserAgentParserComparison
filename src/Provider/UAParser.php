@@ -20,23 +20,23 @@ class UAParser extends AbstractParseProvider
      *
      * @var string
      */
-    protected $name = 'UAParser';
+    protected string $name = 'UAParser';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/ua-parser/uap-php';
+    protected string $homepage = 'https://github.com/ua-parser/uap-php';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'ua-parser/uap-php';
+    protected string $packageName = 'ua-parser/uap-php';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -68,7 +68,7 @@ class UAParser extends AbstractParseProvider
         ],
     ];
 
-    protected $defaultValues = [
+    protected array $defaultValues = [
 
         'general' => [
             '/^Other$/i',

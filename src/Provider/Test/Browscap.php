@@ -15,23 +15,23 @@ class Browscap extends AbstractTestProvider
      *
      * @var string
      */
-    protected $name = 'Browscap';
+    protected string $name = 'Browscap';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/browscap/browscap-php';
+    protected string $homepage = 'https://github.com/browscap/browscap-php';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'browscap/browscap-php';
+    protected string $packageName = 'browscap/browscap-php';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,

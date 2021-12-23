@@ -21,23 +21,23 @@ class Endorphin extends AbstractParseProvider
      *
      * @var string
      */
-    protected $name = 'Endorphin';
+    protected string $name = 'Endorphin';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/endorphin-studio/browser-detector';
+    protected string $homepage = 'https://github.com/endorphin-studio/browser-detector';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'endorphin-studio/browser-detector';
+    protected string $packageName = 'endorphin-studio/browser-detector';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -69,7 +69,7 @@ class Endorphin extends AbstractParseProvider
         ],
     ];
 
-    protected $defaultValues = [
+    protected array $defaultValues = [
 
         'general' => [
             '/^N\\\\A$/i',
@@ -85,10 +85,8 @@ class Endorphin extends AbstractParseProvider
 
     /**
      * Used for unitTests mocking
-     *
-     * @var EndorphinDetector\Detector
      */
-    private $parser;
+    private ?EndorphinDetector\Detector $parser = null;
 
     /**
      *

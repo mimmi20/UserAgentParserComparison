@@ -20,23 +20,23 @@ class SinergiBrowserDetector extends AbstractParseProvider
      *
      * @var string
      */
-    protected $name = 'SinergiBrowserDetector';
+    protected string $name = 'SinergiBrowserDetector';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/sinergi/php-browser-detector';
+    protected string $homepage = 'https://github.com/sinergi/php-browser-detector';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'sinergi/browser-detector';
+    protected string $packageName = 'sinergi/browser-detector';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -68,7 +68,7 @@ class SinergiBrowserDetector extends AbstractParseProvider
         ],
     ];
 
-    protected $defaultValues = [
+    protected array $defaultValues = [
 
         'general' => [
             '/^unknown$/i',
@@ -80,27 +80,6 @@ class SinergiBrowserDetector extends AbstractParseProvider
             ],
         ],
     ];
-
-    /**
-     * Used for unitTests mocking
-     *
-     * @var BrowserDetector\Browser
-     */
-    private $browserParser;
-
-    /**
-     * Used for unitTests mocking
-     *
-     * @var BrowserDetector\Os
-     */
-    private $osParser;
-
-    /**
-     * Used for unitTests mocking
-     *
-     * @var BrowserDetector\Device
-     */
-    private $deviceParser;
 
     /**
      *
@@ -118,10 +97,6 @@ class SinergiBrowserDetector extends AbstractParseProvider
      */
     public function getBrowserParser($userAgent)
     {
-        if ($this->browserParser !== null) {
-            return $this->browserParser;
-        }
-
         return new BrowserDetector\Browser($userAgent);
     }
 
@@ -132,10 +107,6 @@ class SinergiBrowserDetector extends AbstractParseProvider
      */
     public function getOperatingSystemParser($userAgent)
     {
-        if ($this->osParser !== null) {
-            return $this->osParser;
-        }
-
         return new BrowserDetector\Os($userAgent);
     }
 
@@ -146,10 +117,6 @@ class SinergiBrowserDetector extends AbstractParseProvider
      */
     public function getDeviceParser($userAgent)
     {
-        if ($this->deviceParser !== null) {
-            return $this->deviceParser;
-        }
-
         return new BrowserDetector\Device($userAgent);
     }
 

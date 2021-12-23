@@ -40,7 +40,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     COUNT(`found-results`.`resBrowserName`)
                 FROM `found-results`
                 WHERE
-                    `found-results`.`userAgent_id` = `uaId`
+                    `found-results`.`userAgent_id` = `userAgent`.`uaId`
                 AND `found-results`.`provider_id` != `result`.`provider_id`
             ) AS `detectionCount`
         FROM `result`

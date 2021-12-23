@@ -19,23 +19,23 @@ class Wolfcast extends AbstractParseProvider
      *
      * @var string
      */
-    protected $name = 'wolfcast';
+    protected string $name = 'wolfcast';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/wolfcast/browser-detection';
+    protected string $homepage = 'https://github.com/wolfcast/browser-detection';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'wolfcast/browser-detection';
+    protected string $packageName = 'wolfcast/browser-detection';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -66,8 +66,6 @@ class Wolfcast extends AbstractParseProvider
             'type'  => false,
         ],
     ];
-
-    private $functionName = '\parse_user_agent';
 
     /**
      *

@@ -19,23 +19,23 @@ class Cbschuld extends AbstractParseProvider
      *
      * @var string
      */
-    protected $name = 'cbschuld';
+    protected string $name = 'cbschuld';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/cbschuld/browser.php';
+    protected string $homepage = 'https://github.com/cbschuld/browser.php';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'cbschuld/browser.php';
+    protected string $packageName = 'cbschuld/browser.php';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -66,8 +66,6 @@ class Cbschuld extends AbstractParseProvider
             'type'  => false,
         ],
     ];
-
-    private $functionName = '\parse_user_agent';
 
     /**
      *

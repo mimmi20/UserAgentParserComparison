@@ -15,6 +15,9 @@ $detectorCache   = new \MatthiasMullie\Scrapbook\Psr16\SimpleCache(
         new \League\Flysystem\Filesystem($detectorAdapter)
     )
 );
+
+$detectorCache->clear();
+
 $logger = new \Psr\Log\NullLogger();
 
 $browserDetectorFactory  = new \BrowserDetector\DetectorFactory($detectorCache, $logger);

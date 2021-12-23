@@ -15,23 +15,23 @@ class MobileDetect extends AbstractTestProvider
      *
      * @var string
      */
-    protected $name = 'MobileDetect';
+    protected string $name = 'MobileDetect';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/serbanghita/Mobile-Detect';
+    protected string $homepage = 'https://github.com/serbanghita/Mobile-Detect';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'mobiledetect/mobiledetectlib';
+    protected string $packageName = 'mobiledetect/mobiledetectlib';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,

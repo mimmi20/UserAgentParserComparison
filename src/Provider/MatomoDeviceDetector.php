@@ -20,23 +20,23 @@ class MatomoDeviceDetector extends AbstractParseProvider
      *
      * @var string
      */
-    protected $name = 'MatomoDeviceDetector';
+    protected string $name = 'MatomoDeviceDetector';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/matomo/device-detector';
+    protected string $homepage = 'https://github.com/matomo/device-detector';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'matomo/device-detector';
+    protected string $packageName = 'matomo/device-detector';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -68,7 +68,7 @@ class MatomoDeviceDetector extends AbstractParseProvider
         ],
     ];
 
-    protected $defaultValues = [
+    protected array $defaultValues = [
 
         'general' => [
             '/^UNK$/i',
@@ -82,11 +82,7 @@ class MatomoDeviceDetector extends AbstractParseProvider
         ],
     ];
 
-    /**
-     *
-     * @var DeviceDetector
-     */
-    private $parser;
+    private DeviceDetector $parser;
 
     /**
      *

@@ -26,23 +26,23 @@ class BrowserDetector extends AbstractParseProvider
      *
      * @var string
      */
-    protected $name = 'BrowserDetector';
+    protected string $name = 'BrowserDetector';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/mimmi20/browser-detector';
+    protected string $homepage = 'https://github.com/mimmi20/browser-detector';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'mimmi20/browser-detector';
+    protected string $packageName = 'mimmi20/browser-detector';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -74,7 +74,7 @@ class BrowserDetector extends AbstractParseProvider
         ],
     ];
 
-    protected $defaultValues = [
+    protected array $defaultValues = [
 
         'general' => [
             '/^UNK$/i',
@@ -88,11 +88,7 @@ class BrowserDetector extends AbstractParseProvider
         ],
     ];
 
-    /**
-     *
-     * @var Detector
-     */
-    private $parser;
+    private Detector $parser;
 
     /**
      *
@@ -139,31 +135,6 @@ class BrowserDetector extends AbstractParseProvider
 
             'extra' => [
                 'isBot' => $result->getBrowser()->getType()->isBot(),
-
-                // client
-                'isBrowser'     => null,
-                'isFeedReader'  => null,
-                'isMobileApp'   => null,
-                'isPIM'         => null,
-                'isLibrary'     => null,
-                'isMediaPlayer' => null,
-
-                // deviceType
-                'isCamera'              => null,
-                'isCarBrowser'          => null,
-                'isConsole'             => null,
-                'isFeaturePhone'        => null,
-                'isPhablet'             => null,
-                'isPortableMediaPlayer' => null,
-                'isSmartDisplay'        => null,
-                'isSmartphone'          => null,
-                'isTablet'              => null,
-                'isTV'                  => null,
-
-                // other special
-                'isDesktop'      => null,
-                'isMobile'       => null,
-                'isTouchEnabled' => null,
             ],
         ];
 
@@ -183,17 +154,17 @@ class BrowserDetector extends AbstractParseProvider
         }
 
         $client = $result->getBrowser()->getName();
-        if (isset($client) && $this->isRealResult($client)) {
+        if (null !== $client && $this->isRealResult($client)) {
             return true;
         }
 
         $os = $result->getOs()->getName();
-        if (isset($os) && $this->isRealResult($os)) {
+        if (null !== $os && $this->isRealResult($os)) {
             return true;
         }
 
         $device = $result->getDevice()->getDeviceName();
-        if (isset($device) && $this->isRealResult($device)) {
+        if (null !== $device && false === stripos($device, 'general') && $this->isRealResult($device)) {
             return true;
         }
 
@@ -268,12 +239,21 @@ class BrowserDetector extends AbstractParseProvider
      */
     private function hydrateDevice(Model\Device $device, DeviceInterface $result): void
     {
-        $device->setModel($this->getRealResult($result->getDeviceName()));
+        $deviceName = $result->getDeviceName();
+
+        if (null !== $deviceName && false !== stripos($deviceName, 'general')) {
+            $device->setModel($this->getRealResult($deviceName));
+        }
+
         $device->setBrand($this->getRealResult($result->getBrand()->getName()));
         $device->setType($this->getRealResult($result->getType()->getName()));
 
         if ($result->getType()->isMobile() === true) {
             $device->setIsMobile(true);
+        }
+
+        if ($result->getDisplay()->hasTouch() === true) {
+            $device->setIsTouch(true);
         }
     }
 

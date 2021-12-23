@@ -40,23 +40,23 @@ class BrowserDetector extends AbstractTestProvider
      *
      * @var string
      */
-    protected $name = 'BrowserDetector';
+    protected string $name = 'BrowserDetector';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/mimmi20/browser-detector';
+    protected string $homepage = 'https://github.com/mimmi20/browser-detector';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'mimmi20/browser-detector';
+    protected string $packageName = 'mimmi20/browser-detector';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,

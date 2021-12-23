@@ -15,9 +15,9 @@ class BrowscapPhp extends AbstractBrowscap
      *
      * @var string
      */
-    protected $name = 'BrowscapPhp';
+    protected string $name = 'BrowscapPhp';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,

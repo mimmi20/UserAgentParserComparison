@@ -21,16 +21,16 @@ class UdgerCom extends AbstractHttpParseProvider
      *
      * @var string
      */
-    protected $name = 'UdgerCom';
+    protected string $name = 'UdgerCom';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://udger.com/';
+    protected string $homepage = 'https://udger.com/';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -62,17 +62,17 @@ class UdgerCom extends AbstractHttpParseProvider
         ],
     ];
 
-    protected $defaultValues = [
+    protected array $defaultValues = [
         'general' => [
             '/^unknown$/i',
         ],
     ];
 
-    private static $uri = 'http://api.udger.com/parse';
+    private static string $uri = 'http://api.udger.com/parse';
 
-    private $apiKey;
+    private string $apiKey;
 
-    public function __construct(Client $client, $apiKey)
+    public function __construct(Client $client, string $apiKey)
     {
         parent::__construct($client);
 

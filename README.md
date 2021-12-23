@@ -34,6 +34,7 @@ And put it to `data/*.ini`
 php bin/cache/initBrowscap.php
 php bin/cache/initMatomo.php
 php bin/cache/initBrowserDetector.php
+php bin/cache/initWhichBrowser.php
 ```
 
 

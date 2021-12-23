@@ -20,23 +20,23 @@ class Zsxsoft extends AbstractParseProvider
      *
      * @var string
      */
-    protected $name = 'Zsxsoft';
+    protected string $name = 'Zsxsoft';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/zsxsoft/php-useragent';
+    protected string $homepage = 'https://github.com/zsxsoft/php-useragent';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'zsxsoft/php-useragent';
+    protected string $packageName = 'zsxsoft/php-useragent';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -68,7 +68,7 @@ class Zsxsoft extends AbstractParseProvider
         ],
     ];
 
-    protected $defaultValues = [
+    protected array $defaultValues = [
 
         'general' => [
             '/^Unknown$/i',
@@ -88,7 +88,7 @@ class Zsxsoft extends AbstractParseProvider
         ],
     ];
 
-    private $parser;
+    private ?UserAgent $parser = null;
 
     /**
      *

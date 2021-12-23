@@ -21,16 +21,16 @@ class DeviceAtlasCom extends AbstractHttpParseProvider
      *
      * @var string
      */
-    protected $name = 'DeviceAtlasCom';
+    protected string $name = 'DeviceAtlasCom';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://deviceatlas.com/';
+    protected string $homepage = 'https://deviceatlas.com/';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -62,11 +62,11 @@ class DeviceAtlasCom extends AbstractHttpParseProvider
         ],
     ];
 
-    private static $uri = 'http://region0.deviceatlascloud.com/v1/detect/properties';
+    private static string $uri = 'http://region0.deviceatlascloud.com/v1/detect/properties';
 
-    private $apiKey;
+    private string $apiKey;
 
-    public function __construct(Client $client, $apiKey)
+    public function __construct(Client $client, string $apiKey)
     {
         parent::__construct($client);
 

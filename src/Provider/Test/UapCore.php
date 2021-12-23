@@ -16,23 +16,23 @@ class UapCore extends AbstractTestProvider
      *
      * @var string
      */
-    protected $name = 'UAParser';
+    protected string $name = 'UAParser';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/ua-parser/uap-core';
+    protected string $homepage = 'https://github.com/ua-parser/uap-core';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'thadafinser/uap-core';
+    protected string $packageName = 'thadafinser/uap-core';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,

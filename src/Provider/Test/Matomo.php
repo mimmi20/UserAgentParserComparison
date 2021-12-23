@@ -17,23 +17,23 @@ class Matomo extends AbstractTestProvider
      *
      * @var string
      */
-    protected $name = 'MatomoDeviceDetector';
+    protected string $name = 'MatomoDeviceDetector';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/matomo/device-detector';
+    protected string $homepage = 'https://github.com/matomo/device-detector';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'matomo/device-detector';
+    protected string $packageName = 'matomo/device-detector';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,

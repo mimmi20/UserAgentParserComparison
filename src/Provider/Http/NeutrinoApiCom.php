@@ -21,16 +21,16 @@ class NeutrinoApiCom extends AbstractHttpParseProvider
      *
      * @var string
      */
-    protected $name = 'NeutrinoApiCom';
+    protected string $name = 'NeutrinoApiCom';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://www.neutrinoapi.com/';
+    protected string $homepage = 'https://www.neutrinoapi.com/';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -62,7 +62,7 @@ class NeutrinoApiCom extends AbstractHttpParseProvider
         ],
     ];
 
-    protected $defaultValues = [
+    protected array $defaultValues = [
 
         'general' => [
             '/^unknown$/i',
@@ -87,13 +87,13 @@ class NeutrinoApiCom extends AbstractHttpParseProvider
         ],
     ];
 
-    private static $uri = 'https://neutrinoapi.com/user-agent-info';
+    private static string $uri = 'https://neutrinoapi.com/user-agent-info';
 
-    private $apiUserId;
+    private string $apiUserId;
 
-    private $apiKey;
+    private string $apiKey;
 
-    public function __construct(Client $client, $apiUserId, $apiKey)
+    public function __construct(Client $client, string $apiUserId, string $apiKey)
     {
         parent::__construct($client);
 

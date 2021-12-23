@@ -20,23 +20,23 @@ class HandsetDetection extends AbstractParseProvider
      *
      * @var string
      */
-    protected $name = 'HandsetDetection';
+    protected string $name = 'HandsetDetection';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/HandsetDetection/php-apikit';
+    protected string $homepage = 'https://github.com/HandsetDetection/php-apikit';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'handsetdetection/php-apikit';
+    protected string $packageName = 'handsetdetection/php-apikit';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -68,7 +68,7 @@ class HandsetDetection extends AbstractParseProvider
         ],
     ];
 
-    protected $defaultValues = [
+    protected array $defaultValues = [
 
         'general' => [
             '/^generic$/i',
@@ -89,7 +89,7 @@ class HandsetDetection extends AbstractParseProvider
      *
      * @var Parser\HD4
      */
-    private $parser;
+    private Parser\HD4 $parser;
 
     /**
      *

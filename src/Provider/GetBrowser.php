@@ -19,23 +19,23 @@ class GetBrowser extends AbstractBrowscap
      *
      * @var string
      */
-    protected $name = 'PHP Native get_browser';
+    protected string $name = 'PHP Native get_browser';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = '';
+    protected string $homepage = '';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = '';
+    protected string $packageName = '';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,

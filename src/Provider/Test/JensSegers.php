@@ -15,23 +15,23 @@ class JensSegers extends AbstractTestProvider
      *
      * @var string
      */
-    protected $name = 'JenssegersAgent';
+    protected string $name = 'JenssegersAgent';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/jenssegers/agent';
+    protected string $homepage = 'https://github.com/jenssegers/agent';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'jenssegers/agent';
+    protected string $packageName = 'jenssegers/agent';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,

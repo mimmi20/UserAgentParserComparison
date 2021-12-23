@@ -21,16 +21,16 @@ class UserAgentApiCom extends AbstractHttpParseProvider
      *
      * @var string
      */
-    protected $name = 'UserAgentApiCom';
+    protected string $name = 'UserAgentApiCom';
 
     /**
      * Homepage of the provider
      *
      * @var string
      */
-    protected $homepage = 'http://useragentapi.com/';
+    protected string $homepage = 'http://useragentapi.com/';
 
-    protected $detectionCapabilities = [
+    protected array $detectionCapabilities = [
 
         'browser' => [
             'name'    => true,
@@ -62,11 +62,11 @@ class UserAgentApiCom extends AbstractHttpParseProvider
         ],
     ];
 
-    private static $uri = 'https://useragentapi.com/api/v3/json';
+    private static string $uri = 'https://useragentapi.com/api/v3/json';
 
-    private $apiKey;
+    private string $apiKey;
 
-    public function __construct(Client $client, $apiKey)
+    public function __construct(Client $client, string $apiKey)
     {
         parent::__construct($client);
 

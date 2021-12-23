@@ -8,85 +8,25 @@ use UserAgentParserComparison\Entity\UserAgent;
 class UserAgentDetail extends AbstractHtml
 {
 
-    /**
-     *
-     * @var UserAgent
-     */
-    private $userAgent;
+    private array $userAgent = [];
 
     /**
-     *
-     * @var Result[]
+     * @var array[]
      */
-    private $results = [];
+    private array $results = [];
 
-    public function setUserAgent(UserAgent $userAgent)
+    public function setUserAgent(array $userAgent)
     {
         $this->userAgent = $userAgent;
     }
 
     /**
      *
-     * @return \UserAgentParserComparison\Entity\UserAgent
-     */
-    public function getUserAgent()
-    {
-        return $this->userAgent;
-    }
-
-    /**
-     *
-     * @param array $results            
+     * @param array[] $results
      */
     public function setResults(array $results)
     {
         $this->results = $results;
-    }
-
-    /**
-     *
-     * @return Result[]
-     */
-    public function getResults()
-    {
-        return $this->results;
-    }
-
-    /**
-     *
-     * @return \UserAgentParserComparison\Entity\Provider[]
-     */
-    private function getProviders()
-    {
-        $providers = [];
-        
-        foreach ($this->getResults() as $result) {
-            $provider = $result->getProvider();
-            
-            $providers[$provider->name] = $provider;
-        }
-        
-        return $providers;
-    }
-
-    private function getProviderCapabilityCount($type)
-    {
-        $property = 'canDetect' . ucfirst($type);
-        
-        if (isset($this->{$property})) {
-            return $this->{$property};
-        }
-        
-        $canDetect = 0;
-        foreach ($this->getProviders() as $provider) {
-            if ($provider->{$property} === true) {
-                $canDetect ++;
-            }
-        }
-        
-        $this->{$property} = $canDetect;
-        
-        return $canDetect;
     }
 
     private function getProvidersTable(): string
@@ -129,9 +69,8 @@ class UserAgentDetail extends AbstractHtml
         $html .= 'Test suite';
         $html .= '</th></tr>';
         
-        foreach ($this->getResults() as $result) {
-            /* @var $result \UserAgentParserComparison\Entity\Result */
-            if ($result->getProvider()->type === 'testSuite') {
+        foreach ($this->results as $result) {
+            if (array_key_exists('proType', $result) && $result['proType'] === 'testSuite') {
                 $html .= $this->getRow($result);
             }
         }
@@ -143,8 +82,8 @@ class UserAgentDetail extends AbstractHtml
         $html .= 'Providers';
         $html .= '</th></tr>';
         
-        foreach ($this->getResults() as $result) {
-            if ($result->getProvider()->type === 'real') {
+        foreach ($this->results as $result) {
+            if (array_key_exists('proType', $result) && $result['proType'] === 'real') {
                 $html .= $this->getRow($result);
             }
         }
@@ -154,20 +93,18 @@ class UserAgentDetail extends AbstractHtml
         return $html;
     }
 
-    private function getRow(Result $result): string
+    private function getRow(array $result): string
     {
-        $provider = $result->getProvider();
-        
         $html = '<tr>';
         
-        $html .= '<td>' . $provider->name . '<br />';
-        $html .= '<small>' . $result->getProviderVersion() . '</small>';
-        if ($result->getFilename() != '') {
-            $html .= '<br /><small>' . $result->getFilename() . '</small>';
+        $html .= '<td>' . $result['proName'] . '<br />';
+        $html .= '<small>' . $result['proVersion'] . '</small><br /><small>' . $result['proLastReleaseDate'] . '</small>';
+        if ($result['resFilename']) {
+            $html .= '<br /><small>' . $result['resFilename'] . '</small>';
         }
         $html .= '</td>';
         
-        if ($result->getResultFound() !== true) {
+        if (!$result['resResultFound']) {
             $html .= '
                     <td colspan="12" class="center-align red lighten-1">
                         <strong>No result found</strong>
@@ -182,20 +119,20 @@ class UserAgentDetail extends AbstractHtml
         /*
          * General
          */
-        if ($provider->canDetectBrowserName === true) {
-            $html .= '<td>' . $result->getBrowserName() . ' ' . $result->getBrowserVersion() . '</td>';
+        if ($result['proCanDetectBrowserName']) {
+            $html .= '<td>' . $result['resBrowserName'] . ' ' . $result['resBrowserVersion'] . '</td>';
         } else {
             $html .= '<td><i class="material-icons">close</i></td>';
         }
         
-        if ($provider->canDetectEngineName === true) {
-            $html .= '<td>' . $result->getEngineName() . ' ' . $result->getEngineVersion() . '</td>';
+        if ($result['proCanDetectEngineName']) {
+            $html .= '<td>' . $result['resEngineName'] . ' ' . $result['resEngineVersion'] . '</td>';
         } else {
             $html .= '<td><i class="material-icons">close</i></td>';
         }
         
-        if ($provider->canDetectOsName === true) {
-            $html .= '<td>' . $result->getOsName() . ' ' . $result->getOsVersion() . '</td>';
+        if ($result['proCanDetectOsName']) {
+            $html .= '<td>' . $result['resOsName'] . ' ' . $result['resOsVersion'] . '</td>';
         } else {
             $html .= '<td><i class="material-icons">close</i></td>';
         }
@@ -203,26 +140,26 @@ class UserAgentDetail extends AbstractHtml
         /*
          * Device
          */
-        if ($provider->canDetectDeviceBrand === true) {
-            $html .= '<td style="border-left: 1px solid #555">' . $result->getDeviceBrand() . '</td>';
+        if ($result['proCanDetectDeviceBrand']) {
+            $html .= '<td style="border-left: 1px solid #555">' . $result['resDeviceBrand'] . '</td>';
         } else {
             $html .= '<td style="border-left: 1px solid #555"><i class="material-icons">close</i></td>';
         }
         
-        if ($provider->canDetectDeviceModel === true) {
-            $html .= '<td>' . $result->getDeviceModel() . '</td>';
+        if ($result['proCanDetectDeviceModel']) {
+            $html .= '<td>' . $result['resDeviceModel'] . '</td>';
         } else {
             $html .= '<td><i class="material-icons">close</i></td>';
         }
         
-        if ($provider->canDetectDeviceType === true) {
-            $html .= '<td>' . $result->getDeviceType() . '</td>';
+        if ($result['proCanDetectDeviceType']) {
+            $html .= '<td>' . $result['resDeviceType'] . '</td>';
         } else {
             $html .= '<td><i class="material-icons">close</i></td>';
         }
         
-        if ($provider->canDetectDeviceIsMobile === true) {
-            if ($result->getDeviceIsMobile() === true) {
+        if ($result['proCanDetectDeviceIsMobile']) {
+            if ($result['resDeviceIsMobile']) {
                 $html .= '<td>yes</td>';
             } else {
                 $html .= '<td></td>';
@@ -231,8 +168,8 @@ class UserAgentDetail extends AbstractHtml
             $html .= '<td><i class="material-icons">close</i></td>';
         }
         
-        if ($provider->canDetectDeviceIsTouch === true) {
-            if ($result->getDeviceIsTouch() === true) {
+        if ($result['proCanDetectDeviceIsTouch']) {
+            if ($result['resDeviceIsTouch']) {
                 $html .= '<td>yes</td>';
             } else {
                 $html .= '<td></td>';
@@ -244,8 +181,8 @@ class UserAgentDetail extends AbstractHtml
         /*
          * Bot
          */
-        if ($provider->canDetectBotIsBot === true) {
-            if ($result->getBotIsBot() === true) {
+        if ($result['proCanDetectBotIsBot']) {
+            if ($result['resBotIsBot']) {
                 $html .= '<td style="border-left: 1px solid #555">yes</td>';
             } else {
                 $html .= '<td style="border-left: 1px solid #555"></td>';
@@ -254,29 +191,33 @@ class UserAgentDetail extends AbstractHtml
             $html .= '<td style="border-left: 1px solid #555"><i class="material-icons">close</i></td>';
         }
         
-        if ($provider->canDetectBotName === true) {
-            $html .= '<td>' . $result->getBotName() . '</td>';
+        if ($result['proCanDetectBotName']) {
+            $html .= '<td>' . $result['resBotName'] . '</td>';
         } else {
             $html .= '<td><i class="material-icons">close</i></td>';
         }
-        if ($provider->canDetectBotType === true) {
-            $html .= '<td>' . $result->getBotType() . '</td>';
+        if ($result['proCanDetectBotType']) {
+            $html .= '<td>' . $result['resBotType'] . '</td>';
         } else {
             $html .= '<td><i class="material-icons">close</i></td>';
         }
-        
-        $html .= '<td>' . round($result->getParseTime(), 5) . '</td>';
+
+        if (null === $result['resParseTime']) {
+            $html .= '<td></td>';
+        } else {
+            $html .= '<td>' . round($result['resParseTime'], 5) . '</td>';
+        }
         
         $html .= '<td>
         
 <!-- Modal Trigger -->
-<a class="modal-trigger btn waves-effect waves-light" href="#modal-' . $provider->id . '">Detail</a>
+<a class="modal-trigger btn waves-effect waves-light" href="#modal-' . $result['proId'] . '">Detail</a>
         
 <!-- Modal Structure -->
-<div id="modal-' . $provider->id . '" class="modal modal-fixed-footer">
+<div id="modal-' . $result['proId'] . '" class="modal modal-fixed-footer">
     <div class="modal-content">
-        <h4>' . $provider->name . ' result detail</h4>
-        <p><pre><code class="php">' . print_r($result->getRawResult(), true) . '</code></pre></p>
+        <h4>' . $result['proName'] . ' result detail</h4>
+        <p><pre><code class="php">' . print_r($result['resRawResult'], true) . '</code></pre></p>
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat ">close</a>
@@ -292,13 +233,16 @@ class UserAgentDetail extends AbstractHtml
 
     public function getHtml(): string
     {
-        $additionalHeaders = $this->getUserAgent()->additionalHeaders;
-        
         $addStr = '';
-        if ($this->getUserAgent()->additionalHeaders !== null && count($this->getUserAgent()->additionalHeaders) > 0) {
-            $addStr = '<strong>Additional headers</strong><br />';
-            foreach ($this->getUserAgent()->additionalHeaders as $key => $value) {
-                $addStr .= '<strong>' . htmlspecialchars($key) . '</strong> ' . htmlspecialchars($value) . '<br />';
+        if ($this->userAgent['uaAdditionalHeaders'] !== null) {
+            $addHeaders = json_decode($this->userAgent['uaAdditionalHeaders'], true, 512, JSON_THROW_ON_ERROR);
+
+            if (count($addHeaders) > 0) {
+                $addStr = '<br /><strong>Additional headers</strong><br />';
+
+                foreach ($addHeaders as $key => $value) {
+                    $addStr .= '<strong>' . htmlspecialchars($key) . '</strong> ' . htmlspecialchars($value) . '<br />';
+                }
             }
         }
         
@@ -307,7 +251,7 @@ class UserAgentDetail extends AbstractHtml
     <h1 class="header center orange-text">User agent detail</h1>
     <div class="row center">
         <h5 class="header light">
-            ' . htmlspecialchars($this->getUserAgent()->string) . '<br />
+            ' . htmlspecialchars($this->userAgent['uaString']) . '
             ' . $addStr . '
         </h5>
     </div>
