@@ -5,123 +5,195 @@ use UserAgentParserComparison\Entity\ResultEvaluation;
 use UserAgentParserComparison\Evaluation\ResultsPerProviderResult;
 use Ramsey\Uuid\Uuid;
 
-include_once 'bootstrap.php';
+include 'bootstrap.php';
 
-/* @var $entityManager \Doctrine\ORM\EntityManager */
-$conn = $entityManager->getConnection();
+echo 'prepare loading..' . PHP_EOL;
 
-$resultEvaluationRepo = $entityManager->getRepository('UserAgentParserComparison\Entity\ResultEvaluation');
+/* @var $pdo \PDO */
+
+$statementCreateTempResults = $pdo->prepare('CREATE TEMPORARY TABLE IF NOT EXISTS `temp_result` AS (SELECT * FROM `result` ORDER BY `userAgent_id` LIMIT :start, :count)');
 
 $sql = "
-SELECT
-    *
-FROM result
-ORDER BY userAgent_id
-";
-$statement = $conn->prepare($sql);
-$statement->execute();
-
-echo 'done loading..' . PHP_EOL;
-
-$conn->beginTransaction();
-
-$i = 1;
-while ($row = $statement->fetch()) {
-    $sql = "
         SELECT
-            GROUP_CONCAT(resBrowserName SEPARATOR '~~~') browserName,
-            GROUP_CONCAT(resBrowserVersion SEPARATOR '~~~') browserVersion,
-            
-            GROUP_CONCAT(resEngineName SEPARATOR '~~~') engineName,
-            GROUP_CONCAT(resEngineVersion SEPARATOR '~~~') engineVersion,
-            
-            GROUP_CONCAT(resOsName SEPARATOR '~~~') osName,
-            GROUP_CONCAT(resOsVersion SEPARATOR '~~~') osVersion,
-            
-            GROUP_CONCAT(resDeviceModel SEPARATOR '~~~') deviceModel,
-            GROUP_CONCAT(resDeviceBrand SEPARATOR '~~~') deviceBrand,
-            GROUP_CONCAT(resDeviceType SEPARATOR '~~~') deviceType,
-            
-            IFNULL(SUM(resDeviceIsMobile), 0) as deviceIsMobileCount,
-        	IFNULL(SUM(resDeviceIsTouch), 0) as deviceIsTouchCount,
-            
-        	IFNULL(SUM(resBotIsBot), 0) as isBotCount,
-            
-            GROUP_CONCAT(resBotName SEPARATOR '~~~') botName,
-            GROUP_CONCAT(resBotType SEPARATOR '~~~') botType
-        FROM result
+            GROUP_CONCAT(`resBrowserName` SEPARATOR '~~~') AS `browserName`,
+    GROUP_CONCAT(`resBrowserVersion` SEPARATOR '~~~') AS `browserVersion`,
+    
+    GROUP_CONCAT(`resEngineName` SEPARATOR '~~~') AS `engineName`,
+    GROUP_CONCAT(`resEngineVersion` SEPARATOR '~~~') AS `engineVersion`,
+    
+    GROUP_CONCAT(`resOsName` SEPARATOR '~~~') AS `osName`,
+    GROUP_CONCAT(`resOsVersion` SEPARATOR '~~~') AS `osVersion`,
+    
+    GROUP_CONCAT(`resDeviceModel` SEPARATOR '~~~') AS `deviceModel`,
+    GROUP_CONCAT(`resDeviceBrand` SEPARATOR '~~~') AS `deviceBrand`,
+    GROUP_CONCAT(`resDeviceType` SEPARATOR '~~~') AS `deviceType`,
+    
+    IFNULL(SUM(`resDeviceIsMobile`), 0) AS `deviceIsMobileCount`,
+    IFNULL(SUM(`resDeviceIsTouch`), 0) AS `deviceIsTouchCount`,
+    
+    IFNULL(SUM(`resBotIsBot`), 0) AS `isBotCount`,
+    
+    GROUP_CONCAT(`resBotName` SEPARATOR '~~~') AS `botName`,
+    GROUP_CONCAT(`resBotType` SEPARATOR '~~~') AS `botType`
+        FROM `result`
         WHERE
-            userAgent_id = '" . $row['userAgent_id'] . "'
-            AND provider_id != '" . $row['provider_id'] . "'
+            `userAgent_id` = :uaId
+            AND `provider_id` != :proId
         GROUP BY 
-            userAgent_id
+            `userAgent_id`
     ";
-    $result = $conn->fetchAll($sql);
-    if (! isset($result[0])) {
-        throw new \Exception('no result found...' . $row['userAgent_id'] . ' | ' . $row['provider_id']);
-    }
-    $resultGrouped = $result[0];
-    
-    /*
-     * Check if already inserted
-     */
-    $sql = "
-        SELECT
-            *
-        FROM resultEvaluation
-        WHERE
-            result_id = '" . $row['resId'] . "'
-    ";
-    $result = $conn->fetchAll($sql);
-    if (count($result) === 1) {
-        $row2 = $result[0];
-    
-        // skip date is greater (generated after last result)
-        if ($row2['lastChangeDate'] >= $row['resLastChangeDate']) {
-            echo 'S';
+
+$statementSelectResultsByAgent = $pdo->prepare($sql);
+
+$statementSelectResultEvaluation = $pdo->prepare('SELECT * FROM `resultEvaluation` WHERE `result_id` = :resId');
+
+$statementInsertResultEvaluation   = $pdo->prepare('INSERT INTO `resultevaluation` (`result_id`, `revId`, `lastChangeDate`, `browserNameSameResult`, `browserNameHarmonizedSameResult`, `browserVersionSameResult`, `browserVersionHarmonizedSameResult`, `engineNameSameResult`, `engineNameHarmonizedSameResult`, `engineVersionSameResult`, `engineVersionHarmonizedSameResult`, `osNameSameResult`, `osNameHarmonizedSameResult`, `osVersionSameResult`, `osVersionHarmonizedSameResult`, `deviceModelSameResult`, `deviceModelHarmonizedSameResult`, `deviceBrandSameResult`, `deviceBrandHarmonizedSameResult`, `deviceTypeSameResult`, `deviceTypeHarmonizedSameResult`, `asMobileDetectedByOthers`, `asTouchDetectedByOthers`, `asBotDetectedByOthers`, `botNameSameResult`, `botNameHarmonizedSameResult`, `botTypeSameResult`, `botTypeHarmonizedSameResult`) VALUES (:resId, :revId, :lastChangeDate, :browserNameSameResult, :browserNameHarmonizedSameResult, :browserVersionSameResult, :browserVersionHarmonizedSameResult, :engineNameSameResult, :engineNameHarmonizedSameResult, :engineVersionSameResult, :engineVersionHarmonizedSameResult, :osNameSameResult, :osNameHarmonizedSameResult, :osVersionSameResult, :osVersionHarmonizedSameResult, :deviceModelSameResult, :deviceModelHarmonizedSameResult, :deviceBrandSameResult, :deviceBrandHarmonizedSameResult, :deviceTypeSameResult, :deviceTypeHarmonizedSameResult, :asMobileDetectedByOthers, :asTouchDetectedByOthers, :asBotDetectedByOthers, :botNameSameResult, :botNameHarmonizedSameResult, :botTypeSameResult, :botTypeHarmonizedSameResult)');
+$statementUpdateResultEvaluation   = $pdo->prepare('UPDATE `resultevaluation` SET `result_id` = :resId, `lastChangeDate` = :lastChangeDate, `browserNameSameResult` = :browserNameSameResult, `browserNameHarmonizedSameResult` = :browserNameHarmonizedSameResult, `browserVersionSameResult` = :browserVersionSameResult, `browserVersionHarmonizedSameResult` = :browserVersionHarmonizedSameResult, `engineNameSameResult` = :engineNameSameResult, `engineNameHarmonizedSameResult` = :engineNameHarmonizedSameResult, `engineVersionSameResult` = :engineVersionSameResult, `engineVersionHarmonizedSameResult` = :engineVersionHarmonizedSameResult, `osNameSameResult` = :osNameSameResult, `osNameHarmonizedSameResult` = :osNameHarmonizedSameResult, `osVersionSameResult` = :osVersionSameResult, `osVersionHarmonizedSameResult` = :osVersionHarmonizedSameResult, `deviceModelSameResult` = :deviceModelSameResult, `deviceModelHarmonizedSameResult` = :deviceModelHarmonizedSameResult, `deviceBrandSameResult` = :deviceBrandSameResult, `deviceBrandHarmonizedSameResult` = :deviceBrandHarmonizedSameResult, `deviceTypeSameResult` = :deviceTypeSameResult, `deviceTypeHarmonizedSameResult` = :deviceTypeHarmonizedSameResult, `asMobileDetectedByOthers` = :asMobileDetectedByOthers, `asTouchDetectedByOthers` = :asTouchDetectedByOthers, `asBotDetectedByOthers` = :asBotDetectedByOthers, `botNameSameResult` = :botNameSameResult, `botNameHarmonizedSameResult` = :botNameHarmonizedSameResult, `botTypeSameResult` = :botTypeSameResult, `botTypeHarmonizedSameResult` = :botTypeHarmonizedSameResult WHERE `revId` = :revId');
+
+echo 'start loading..' . PHP_EOL;
+
+$count    = 1000;
+$start    = 0;
+$colCount = $count;
+
+do {
+    $pdo->prepare('DROP TEMPORARY TABLE IF EXISTS `temp_result`')->execute();
+
+    $statementCreateTempResults->bindValue(':start', $start, \PDO::PARAM_INT);
+    $statementCreateTempResults->bindValue(':count', $count, \PDO::PARAM_INT);
+
+    $statementCreateTempResults->execute();
+
+    $statementSelectAllResults = $pdo->prepare('SELECT * FROM `temp_result` ORDER BY `userAgent_id`');
+    $statementSelectAllResults->execute();
+
+    $pdo->beginTransaction();
+
+    while ($row = $statementSelectAllResults->fetch(\PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT)) {
+
+        $statementSelectResultsByAgent->bindValue(':uaId', $row['userAgent_id'], \PDO::PARAM_STR);
+        $statementSelectResultsByAgent->bindValue(':proId', $row['provider_id'], \PDO::PARAM_STR);
+
+        $statementSelectResultsByAgent->execute();
+
+        $dbResultResult = $statementSelectResultsByAgent->fetch(\PDO::FETCH_ASSOC);
+
+        if (false === $dbResultResult) {
+            echo 'E';
             continue;
         }
-    
-        // so go update!
-    } else {
-        // create
-        $row2 = [
-            'result_id' => $row['resId']
-        ];
-    }
-    
-    $date = new \DateTime(null, new \DateTimeZone('UTC'));
-    $row2['lastChangeDate'] = $date->format('Y-m-d H:i:s');
-    ;
-    
-    $row2 = hydrateResult($row2, $row, $resultGrouped);
-    
-    if (! isset($row2['revId'])) {
-        $row2['revId'] = Uuid::uuid4()->toString();
-    
-        $conn->insert('resultEvaluation', $row2);
-    } else {
-        $conn->update('resultEvaluation', $row2, [
-            'revId' => $row2['revId']
-        ]);
-    }
-    
-    echo '.';
-    
-    if ($i % 100 === 0) {
-        $conn->commit();
-        
-        $conn->beginTransaction();
-    }
-    
-    $i ++;
-}
 
-if ($conn->getTransactionNestingLevel() !== 0) {
-    $conn->commit();
-}
+        /*
+         * Check if already inserted
+         */
+        $statementSelectResultEvaluation->bindValue(':resId', $row['resId'], \PDO::PARAM_STR);
 
-function hydrateResult(array $row2, array $row, array $resultGrouped)
+        $statementSelectResultEvaluation->execute();
+
+        $dbResultResultEvaluation = $statementSelectResultEvaluation->fetch(\PDO::FETCH_ASSOC);
+
+        if (false !== $dbResultResultEvaluation) {
+            // skip date is greater (generated after last result)
+            if ($dbResultResultEvaluation['lastChangeDate'] >= $row['resLastChangeDate']) {
+                echo 'S';
+                continue;
+            }
+
+            $row2 = $dbResultResultEvaluation;
+
+            // so go update!
+        } else {
+            // create
+            $row2 = [
+                'result_id' => $row['resId']
+            ];
+        }
+
+        $date = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        $row2['lastChangeDate'] = $date->format('Y-m-d H:i:s');
+
+        $row2 = hydrateResult($row2, $row, $dbResultResult);
+
+        if (! isset($row2['revId'])) {
+            $statementInsertResultEvaluation->bindValue(':resId', $row2['result_id'], \PDO::PARAM_STR);
+            $statementInsertResultEvaluation->bindValue(':revId', Uuid::uuid4()->toString(), \PDO::PARAM_STR);
+            $statementInsertResultEvaluation->bindValue(':lastChangeDate', $date->format('Y-m-d H:i:s'), \PDO::PARAM_STR);
+            $statementInsertResultEvaluation->bindValue(':browserNameSameResult', $row2['browserNameSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':browserNameHarmonizedSameResult', $row2['browserNameHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':browserVersionSameResult', $row2['browserVersionSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':browserVersionHarmonizedSameResult', $row2['browserVersionHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':engineNameSameResult', $row2['engineNameSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':engineNameHarmonizedSameResult', $row2['engineNameHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':engineVersionSameResult', $row2['engineVersionSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':engineVersionHarmonizedSameResult', $row2['engineVersionHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':osNameSameResult', $row2['osNameSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':osNameHarmonizedSameResult', $row2['osNameHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':osVersionSameResult', $row2['osVersionSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':osVersionHarmonizedSameResult', $row2['osVersionHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':deviceModelSameResult', $row2['deviceModelSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':deviceModelHarmonizedSameResult', $row2['deviceModelHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':deviceBrandSameResult', $row2['deviceBrandSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':deviceBrandHarmonizedSameResult', $row2['deviceBrandHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':deviceTypeSameResult', $row2['deviceTypeSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':deviceTypeHarmonizedSameResult', $row2['deviceTypeHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':asMobileDetectedByOthers', $row2['asMobileDetectedByOthers'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':asTouchDetectedByOthers', $row2['asTouchDetectedByOthers'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':asBotDetectedByOthers', $row2['asBotDetectedByOthers'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':botNameSameResult', $row2['botNameSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':botNameHarmonizedSameResult', $row2['botNameHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':botTypeSameResult', $row2['botTypeSameResult'], \PDO::PARAM_INT);
+            $statementInsertResultEvaluation->bindValue(':botTypeHarmonizedSameResult', $row2['botTypeHarmonizedSameResult'], \PDO::PARAM_INT);
+
+            $statementInsertResultEvaluation->execute();
+        } else {
+            $statementUpdateResultEvaluation->bindValue(':resId', $row2['result_id'], \PDO::PARAM_STR);
+            $statementUpdateResultEvaluation->bindValue(':revId', Uuid::uuid4()->toString(), \PDO::PARAM_STR);
+            $statementUpdateResultEvaluation->bindValue(':lastChangeDate', $date->format('Y-m-d H:i:s'), \PDO::PARAM_STR);
+            $statementUpdateResultEvaluation->bindValue(':browserNameSameResult', $row2['browserNameSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':browserNameHarmonizedSameResult', $row2['browserNameHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':browserVersionSameResult', $row2['browserVersionSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':browserVersionHarmonizedSameResult', $row2['browserVersionHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':engineNameSameResult', $row2['engineNameSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':engineNameHarmonizedSameResult', $row2['engineNameHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':engineVersionSameResult', $row2['engineVersionSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':engineVersionHarmonizedSameResult', $row2['engineVersionHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':osNameSameResult', $row2['osNameSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':osNameHarmonizedSameResult', $row2['osNameHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':osVersionSameResult', $row2['osVersionSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':osVersionHarmonizedSameResult', $row2['osVersionHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':deviceModelSameResult', $row2['deviceModelSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':deviceModelHarmonizedSameResult', $row2['deviceModelHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':deviceBrandSameResult', $row2['deviceBrandSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':deviceBrandHarmonizedSameResult', $row2['deviceBrandHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':deviceTypeSameResult', $row2['deviceTypeSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':deviceTypeHarmonizedSameResult', $row2['deviceTypeHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':asMobileDetectedByOthers', $row2['asMobileDetectedByOthers'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':asTouchDetectedByOthers', $row2['asTouchDetectedByOthers'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':asBotDetectedByOthers', $row2['asBotDetectedByOthers'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':botNameSameResult', $row2['botNameSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':botNameHarmonizedSameResult', $row2['botNameHarmonizedSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':botTypeSameResult', $row2['botTypeSameResult'], \PDO::PARAM_INT);
+            $statementUpdateResultEvaluation->bindValue(':botTypeHarmonizedSameResult', $row2['botTypeHarmonizedSameResult'], \PDO::PARAM_INT);
+
+            $statementUpdateResultEvaluation->execute();
+        }
+
+        echo '.';
+    }
+
+    $pdo->commit();
+
+    $statementCountAllResults = $pdo->prepare('SELECT COUNT(*) AS `count` FROM `temp_result`');
+    $statementCountAllResults->execute();
+
+    $colCount = $statementCountAllResults->fetch(\PDO::FETCH_COLUMN);
+
+    $pdo->prepare('DROP TEMPORARY TABLE IF EXISTS `temp_result`')->execute();
+
+    $start = $start + $count;
+} while ($colCount > 0);
+
+function hydrateResult(array $row2, array $row, array $resultGrouped): array
 {
     /*
      * Browser name

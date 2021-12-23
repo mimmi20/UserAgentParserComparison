@@ -3,7 +3,7 @@ use UserAgentParserComparison\Evaluation\ResultsPerUserAgent;
 use UserAgentParserComparison\Entity\UserAgentEvaluation;
 use Ramsey\Uuid\Uuid;
 
-include_once 'bootstrap.php';
+include 'bootstrap.php';
 
 /* @var $entityManager \Doctrine\ORM\EntityManager */
 $conn = $entityManager->getConnection();
@@ -12,57 +12,58 @@ $userAgentEvaluationRepo = $entityManager->getRepository('UserAgentParserCompari
 
 $sql = "
 SELECT 
-    userAgent_id,
-	COUNT(1) resultCount,
-    SUM(resResultFound) resultFound,
+    `userAgent_id`,
+    COUNT(1) AS `resultCount`,
+    SUM(`resResultFound`) AS `resultFound`,
     
-    GROUP_CONCAT(resBrowserName SEPARATOR '~~~') browserName,
-    GROUP_CONCAT(resBrowserVersion SEPARATOR '~~~') browserVersion,
+    GROUP_CONCAT(`resBrowserName` SEPARATOR '~~~') AS `browserName`,
+    GROUP_CONCAT(`resBrowserVersion` SEPARATOR '~~~') AS `browserVersion`,
     
-    GROUP_CONCAT(resEngineName SEPARATOR '~~~') engineName,
-    GROUP_CONCAT(resEngineVersion SEPARATOR '~~~') engineVersion,
+    GROUP_CONCAT(`resEngineName` SEPARATOR '~~~') AS `engineName`,
+    GROUP_CONCAT(`resEngineVersion` SEPARATOR '~~~') AS `engineVersion`,
     
-    GROUP_CONCAT(resOsName SEPARATOR '~~~') osName,
-    GROUP_CONCAT(resOsVersion SEPARATOR '~~~') osVersion,
+    GROUP_CONCAT(`resOsName` SEPARATOR '~~~') AS `osName`,
+    GROUP_CONCAT(`resOsVersion` SEPARATOR '~~~') AS `osVersion`,
     
-    GROUP_CONCAT(resDeviceModel SEPARATOR '~~~') deviceModel,
-    GROUP_CONCAT(resDeviceBrand SEPARATOR '~~~') deviceBrand,
-    GROUP_CONCAT(resDeviceType SEPARATOR '~~~') deviceType,
+    GROUP_CONCAT(`resDeviceModel` SEPARATOR '~~~') AS `deviceModel`,
+    GROUP_CONCAT(`resDeviceBrand` SEPARATOR '~~~') AS `deviceBrand`,
+    GROUP_CONCAT(`resDeviceType` SEPARATOR '~~~') AS `deviceType`,
     
-    IFNULL(SUM(resDeviceIsMobile), 0) as deviceIsMobileCount,
-	IFNULL(SUM(resDeviceIsTouch), 0) as deviceIsTouchCount,
+    IFNULL(SUM(`resDeviceIsMobile`), 0) AS `deviceIsMobileCount`,
+    IFNULL(SUM(`resDeviceIsTouch`), 0) AS `deviceIsTouchCount`,
     
-	IFNULL(SUM(resBotIsBot), 0) as isBotCount,
+    IFNULL(SUM(`resBotIsBot`), 0) AS `isBotCount`,
     
-    GROUP_CONCAT(resBotName SEPARATOR '~~~') botName,
-    GROUP_CONCAT(resBotType SEPARATOR '~~~') botType,
+    GROUP_CONCAT(`resBotName` SEPARATOR '~~~') AS `botName`,
+    GROUP_CONCAT(`resBotType` SEPARATOR '~~~') AS `botType`,
     
-	result.*
-FROM result
-GROUP BY userAgent_id
-ORDER BY userAgent_id
+    `result`.*
+FROM `result`
+GROUP BY `userAgent_id`
+ORDER BY `userAgent_id`
 ";
 $statement = $conn->prepare($sql);
-$statement->execute();
+$results   = $statement->executeQuery();
 
 echo 'done loading..' . PHP_EOL;
 
 $conn->beginTransaction();
 
 $i = 1;
-while ($row = $statement->fetch()) {
-    
+while ($row = $results->fetchAssociative()) {
     /*
      * Check if already inserted
      */
     $sql = "
         SELECT
             *
-        FROM userAgentEvaluation
+        FROM `userAgentEvaluation`
         WHERE
-            userAgent_id = '" . $row['userAgent_id'] . "'
+            `userAgent_id` = '" . $row['userAgent_id'] . "'
     ";
-    $result = $conn->fetchAll($sql);
+
+    $result = $conn->executeQuery($sql)->fetchAllAssociative();
+
     if (count($result) === 1) {
         $row2 = $result[0];
         
@@ -80,9 +81,8 @@ while ($row = $statement->fetch()) {
         ];
     }
     
-    $date = new \DateTime(null, new \DateTimeZone('UTC'));
+    $date = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
     $row2['lastChangeDate'] = $date->format('Y-m-d H:i:s');
-    ;
     $row2['resultCount'] = $row['resultCount'];
     $row2['resultFound'] =$row['resultFound'];
     
@@ -113,7 +113,7 @@ if ($conn->getTransactionNestingLevel() !== 0) {
     $conn->commit();
 }
 
-function hydrateResult(array $row2, array $row)
+function hydrateResult(array $row2, array $row): array
 {
     /*
      * Browser name

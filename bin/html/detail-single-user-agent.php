@@ -6,49 +6,30 @@ use UserAgentParserComparison\Html\UserAgentDetail;
  */
 include_once 'bootstrap.php';
 
-/* @var $entityManager \Doctrine\ORM\EntityManager */
-$conn = $entityManager->getConnection();
+/* @var $pdo \PDO */
 
-$userAgentRepo = $entityManager->getRepository('UserAgentParserComparison\Entity\UserAgent');
-$resultRepo = $entityManager->getRepository('UserAgentParserComparison\Entity\Result');
+$statementSelectUa = $pdo->prepare('SELECT * FROM `useragent`');
+$statementSelectUa->execute();
 
-echo 'load agents...' . PHP_EOL;
+$statementSelectResults = $pdo->prepare('SELECT `result`.*, `provider`.* FROM `result` INNER JOIN `provider` ON `result`.`provider_id` = `provider`.`proId` WHERE `result`.`userAgent_id` = :uaId ORDER BY `provider`.`proName`');
 
-/*
- * load userAgents...
- */
-echo 'done loading..' . PHP_EOL;
-
-$qb = $userAgentRepo->createQueryBuilder('userAgent');
-// $qb->where($qb->expr()->isNotNull('userAgent.additionalHeaders'));
-
-foreach ($qb->getQuery()->getResult() as $key => $userAgent) {
-    /* @var $userAgent \UserAgentParserComparison\Entity\UserAgent */
-    
-    $qb = $resultRepo->createQueryBuilder('result');
-    $qb->join('result.provider', 'provider');
-    $qb->join('result.userAgent', 'userAgent');
-    
-    $qb->where('result.userAgent = :userAgent');
-    $qb->setParameter(':userAgent', $userAgent->id);
-    
-    $qb->orderBy('provider.name');
-    
-    $results = $qb->getQuery()->getResult();
+while ($dbResultUa = $statementSelectUa->fetch(\PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT)) {
+    $statementSelectResults->bindValue(':uaId', $dbResultUa['uaId'], \PDO::PARAM_STR);
+    $statementSelectResults->execute();
+    $results = $statementSelectResults->fetchAll(\PDO::FETCH_ASSOC);
     
     if (count($results) === 0) {
-        throw new \Exception('no results found...' . $qb->getQuery()->getSQL());
+        throw new \Exception('no results found... SELECT `result`.*, `provider`.* FROM `result` INNER JOIN `provider` ON `result`.`provider_id` = `provider`.`proId` WHERE `result`.`userAgent_id` = ' . $dbResultUa['uaId']);
     }
     
-    $generate = new UserAgentDetail($entityManager);
-    $generate->setTitle('User agent detail - ' . $userAgent->string);
-    $generate->setUserAgent($userAgent);
+    $generate = new UserAgentDetail($pdo, 'User agent detail - ' . $dbResultUa['uaString']);
+    $generate->setUserAgent($dbResultUa);
     $generate->setResults($results);
     
     /*
      * create the folder
      */
-    $folder = $basePath . '/user-agent-detail/' . substr($userAgent->id, 0, 2) . '/' . substr($userAgent->id, 2, 2);
+    $folder = $basePath . '/user-agent-detail/' . substr($dbResultUa['uaId'], 0, 2) . '/' . substr($dbResultUa['uaId'], 2, 2);
     if (! file_exists($folder)) {
         mkdir($folder, 0777, true);
     }
@@ -56,11 +37,7 @@ foreach ($qb->getQuery()->getResult() as $key => $userAgent) {
     /*
      * persist!
      */
-    file_put_contents($folder . '/' . $userAgent->id . '.html', $generate->getHtml());
-    
-    if ($key % 100 === 0) {
-        $entityManager->clear();
-    }
+    file_put_contents($folder . '/' . $dbResultUa['uaId'] . '.html', $generate->getHtml());
     
     echo '.';
 }
