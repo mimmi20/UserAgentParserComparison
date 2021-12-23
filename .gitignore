@@ -47,6 +47,7 @@ Temporary Items
 .project
 vendor
 .tmp
+.idea
 
 data/results.sqlite3
 data/full_php_browscap.ini
