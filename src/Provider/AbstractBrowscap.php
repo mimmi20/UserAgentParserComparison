@@ -22,16 +22,18 @@ abstract class AbstractBrowscap extends AbstractParseProvider
      *
      * @var string
      */
-    protected $homepage = 'https://github.com/browscap/browscap-php';
+    protected string $homepage = 'https://github.com/browscap/browscap-php';
 
     /**
      * Composer package name
      *
      * @var string
      */
-    protected $packageName = 'browscap/browscap-php';
+    protected string $packageName = 'browscap/browscap-php';
 
-    protected $defaultValues = [
+    protected string $language = 'PHP';
+
+    protected array $defaultValues = [
 
         'general' => [
             '/^unknown$/i',
@@ -62,7 +64,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
      *
      * @var Browscap
      */
-    private $parser;
+    private Browscap $parser;
 
     public function __construct(Browscap $parser)
     {
