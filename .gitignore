@@ -50,5 +50,6 @@ vendor
 
 config.php
 bin/getChainProvider.php
+data/*.ini
 
 .idea/
