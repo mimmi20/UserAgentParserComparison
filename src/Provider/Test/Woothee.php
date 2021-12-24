@@ -76,7 +76,24 @@ class Woothee extends AbstractTestProvider
         $path = 'vendor/woothee/woothee-testset/testsets';
 
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
-        $files = new \RegexIterator($iterator, '/^.+\.yaml$/i', \RegexIterator::GET_MATCH);
+        $files = new class($iterator, 'yaml') extends \FilterIterator {
+            private string $extension;
+
+            public function __construct(\Iterator $iterator , string $extension)
+            {
+                parent::__construct($iterator);
+                $this->extension = $extension;
+            }
+
+            public function accept(): bool
+            {
+                $file = $this->getInnerIterator()->current();
+
+                assert($file instanceof \SplFileInfo);
+
+                return $file->isFile() && $file->getExtension() === $this->extension;
+            }
+        };
 
         foreach ($files as $file) {
 
