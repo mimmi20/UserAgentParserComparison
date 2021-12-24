@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+            
+    <title>No bot name found - PHP Native get_browser &lt;small&gt;&lt;/small&gt;</title>
+        
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="../circle.css" rel="stylesheet">
+</head>
+        
+<body>
+<div class="container">
+    
+<div class="section">
+    <h1 class="header center orange-text">No bot name found - PHP Native get_browser <small></small></h1>
+        
+    <div class="row center">
+        3 result(s) found
+    </div>
+</div>
+        
+<div class="section" id="simple-list">
+    <form>
+        <div class="input-field">
+          <input class="search" type="search" placeholder="Search for a user agent">
+          <i class="material-icons">close</i>
+        </div>
+            
+        <a class="sort btn" data-sort="name">Sort by name</a>
+        <a class="sort btn" data-sort="detectionCount">Sort by detection count</a>
+            
+    </form>
+            
+    <ul class="list collection"><li class="collection-item"><h4 class="searchable"><span class="name"></span> <small class="detectionCount">0x detected</small> <small class="detectionCountUnique">(0x unique)</small></h4><strong>Example user agent</strong><br /><span><a href="../../user-agent-detail/00/8a/008a1b4b-834f-411f-b23b-0557c9e14ebb.html" class="userAgent">Mozilla/5.0 (iPad; CPU OS 5_1_1 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9B206 Safari/7534.48.3,gzip(gfe) (via translate.google.com)</a></span></li><li class="collection-item"><h4 class="searchable"><span class="name"></span> <small class="detectionCount">2x detected</small> <small class="detectionCountUnique">(1x unique)</small><br /><small class="detectionValuesDistinct">vSentry</small></h4><strong>Example user agent</strong><br /><span><a href="../../user-agent-detail/00/68/00686171-b09a-4551-a11c-8b8d335bd6e6.html" class="userAgent">Mozilla/5.0 (Windows; chromeframe/2.4.8.5746) AppleWebKit/1.0 (KHTML, like Gecko) Bromium Safari/1.0</a></span></li><li class="collection-item"><h4 class="searchable"><span class="name"></span> <small class="detectionCount">3x detected</small> <small class="detectionCountUnique">(1x unique)</small><br /><small class="detectionValuesDistinct">Girafabot</small></h4><strong>Example user agent</strong><br /><span><a href="../../user-agent-detail/00/73/00739cfa-fb30-49f2-9f05-b2e21ab7aa84.html" class="userAgent">Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; SV1; .NET CLR 1.1.4322; Girafabot [girafa.com])</a></span></li></ul>
+</div>
+
+        
+    <div class="section">
+        <h1 class="header center orange-text">About this comparison</h1>
+    
+        <div class="row center">
+            <h5 class="header light">
+                The primary goal of this project is simple<br />
+        
+                I wanted to know which user agent parser is the most accurate in each part - device detection, bot detection and so on...<br />
+                <br />
+                The secondary goal is to provide a source for all user agent parsers to improve their detection based on this results.<br />
+                <br />
+                You can also improve this further, by suggesting ideas at <a href="https://github.com/ThaDafinser/UserAgentParserComparison">ThaDafinser/UserAgentParserComparison</a><br />
+                <br />
+                The comparison is based on the abstraction by <a href="https://github.com/ThaDafinser/UserAgentParserComparison">ThaDafinser/UserAgentParserComparison</a>
+            </h5>
+        </div>
+            
+    </div>
+        
+    <div class="card">
+        <div class="card-content">
+            Comparison created <i>2021-12-24 15:39:09</i> | by 
+            <a href="https://github.com/ThaDafinser">ThaDafinser</a>
+        </div>
+    </div>
+                
+</div>
+                
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/js/materialize.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/list.js/1.2.0/list.min.js"></script>
+        
+    <script>
+    
+var options = {
+    page: 50000,
+    valueNames: [
+        'name',
+        'detectionCount',
+        'userAgent'
+    ]
+};
+
+var hackerList = new List('simple-list', options);    
+
+    </script>
+        
+</body>
+</html>

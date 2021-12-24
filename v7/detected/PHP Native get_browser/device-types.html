@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+            
+    <title>Detected device types - PHP Native get_browser &lt;small&gt;&lt;/small&gt;</title>
+        
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="../circle.css" rel="stylesheet">
+</head>
+        
+<body>
+<div class="container">
+    
+<div class="section">
+    <h1 class="header center orange-text">Detected device types - PHP Native get_browser <small></small></h1>
+        
+    <div class="row center">
+        6 result(s) found
+    </div>
+</div>
+        
+<div class="section" id="simple-list">
+    <form>
+        <div class="input-field">
+          <input class="search" type="search" placeholder="Search for a user agent">
+          <i class="material-icons">close</i>
+        </div>
+            
+        <a class="sort btn" data-sort="name">Sort by name</a>
+        <a class="sort btn" data-sort="detectionCount">Sort by detection count</a>
+            
+    </form>
+            
+    <ul class="list collection"><li class="collection-item"><h4 class="searchable"><span class="name">Desktop</span> <small class="detectionCount">58x detected</small></h4><strong>Example user agent</strong><br /><span><a href="../../user-agent-detail/00/25/00253f3e-bd2f-4679-8e7c-3d82e40c4f83.html" class="userAgent">Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; InfoPath.2; .NET CLR 2.0.50727; .NET CLR 1.1.4322; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; Lunascape 6.3.4.23051)</a></span></li><li class="collection-item"><h4 class="searchable"><span class="name">Ebook Reader</span> <small class="detectionCount">1x detected</small></h4><strong>Example user agent</strong><br /><span><a href="../../user-agent-detail/00/85/008529ee-42f3-4d5d-aa48-b9e077e1413f.html" class="userAgent">Mozilla/5.0 (Linux; Android 9; KFTRWI) AppleWebKit/537.36 (KHTML, like Gecko) Silk/90.2.49 like Chrome/90.0.4430.91 Safari/537.36</a></span></li><li class="collection-item"><h4 class="searchable"><span class="name">Mobile Device</span> <small class="detectionCount">13x detected</small></h4><strong>Example user agent</strong><br /><span><a href="../../user-agent-detail/00/50/0050f127-a332-4875-ac29-672aac9078c8.html" class="userAgent">MobileSafari/604.1 CFNetwork/1106 Darwin/19.0.0</a></span></li><li class="collection-item"><h4 class="searchable"><span class="name">Mobile Phone</span> <small class="detectionCount">678x detected</small></h4><strong>Example user agent</strong><br /><span><a href="../../user-agent-detail/00/88/00887429-488a-4fd2-861f-2ae930f79441.html" class="userAgent">Mozilla/5.0 (Linux; Android 8.0.0; SM-G955F Build/R16NW; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.99 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/202.0.0.40.99;]</a></span></li><li class="collection-item"><h4 class="searchable"><span class="name">Tablet</span> <small class="detectionCount">181x detected</small></h4><strong>Example user agent</strong><br /><span><a href="../../user-agent-detail/00/ae/00ae9a2e-7e1d-4995-a902-0713f743b03c.html" class="userAgent">Mozilla/5.0 (Linux; Android 7.1.1; Lenovo TB-X304L) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36</a></span></li><li class="collection-item"><h4 class="searchable"><span class="name">TV Device</span> <small class="detectionCount">21x detected</small></h4><strong>Example user agent</strong><br /><span><a href="../../user-agent-detail/00/9a/009a2287-9cd7-48a4-b416-61c20a6ca31a.html" class="userAgent">Opera/9.80 (Linux armv7l; InettvBrowser/2.2 (00014A;SonyDTV140;0001;0001) KDL32W700C; CC/IND) Presto/2.12.407 Version/12.50</a></span></li></ul>
+</div>
+
+        
+    <div class="section">
+        <h1 class="header center orange-text">About this comparison</h1>
+    
+        <div class="row center">
+            <h5 class="header light">
+                The primary goal of this project is simple<br />
+        
+                I wanted to know which user agent parser is the most accurate in each part - device detection, bot detection and so on...<br />
+                <br />
+                The secondary goal is to provide a source for all user agent parsers to improve their detection based on this results.<br />
+                <br />
+                You can also improve this further, by suggesting ideas at <a href="https://github.com/ThaDafinser/UserAgentParserComparison">ThaDafinser/UserAgentParserComparison</a><br />
+                <br />
+                The comparison is based on the abstraction by <a href="https://github.com/ThaDafinser/UserAgentParserComparison">ThaDafinser/UserAgentParserComparison</a>
+            </h5>
+        </div>
+            
+    </div>
+        
+    <div class="card">
+        <div class="card-content">
+            Comparison created <i>2021-12-24 13:19:18</i> | by 
+            <a href="https://github.com/ThaDafinser">ThaDafinser</a>
+        </div>
+    </div>
+                
+</div>
+                
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/js/materialize.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/list.js/1.2.0/list.min.js"></script>
+        
+    <script>
+    
+var options = {
+    page: 50000,
+    valueNames: [
+        'name',
+        'detectionCount',
+        'userAgent'
+    ]
+};
+
+var hackerList = new List('simple-list', options);    
+
+    </script>
+        
+</body>
+</html>
