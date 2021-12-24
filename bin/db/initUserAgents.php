@@ -185,7 +185,7 @@ foreach ($chain->getProviders() as $provider) {
             $uaId = $dbResultUa['uaId'];
 
             if (isset($row['uaAdditionalHeaders'])) {
-                $statementUpdateUa->bindValue(':uaId', $dbResultUa['uaId'], \PDO::PARAM_STR);
+                $statementUpdateUa->bindValue(':uaId', $uaId, \PDO::PARAM_STR);
                 $statementUpdateUa->bindValue(':uaHash', $uaHash, \PDO::PARAM_STR);
                 $statementUpdateUa->bindValue(':uaString', $row['uaString'], \PDO::PARAM_STR);
                 $statementUpdateUa->bindValue(':uaAdditionalHeaders', json_encode($row['uaAdditionalHeaders']));
@@ -228,7 +228,7 @@ foreach ($chain->getProviders() as $provider) {
             $statementUpdateResult->bindValue(':resId', $dbResultResult['resId'], \PDO::PARAM_STR);
             $statementUpdateResult->bindValue(':proId', $proId, \PDO::PARAM_STR);
             $statementUpdateResult->bindValue(':uaId', $uaId, \PDO::PARAM_STR);
-            $statementUpdateResult->bindValue(':resProviderVersion', $provider->getVersion(), \PDO::PARAM_STR);
+            $statementUpdateResult->bindValue(':resProviderVersion', $proVersion, \PDO::PARAM_STR);
 
             if (array_key_exists('resFilename', $res)) {
                 $statementUpdateResult->bindValue(':resFilename', str_replace('\\', '/', $res['resFilename']));
@@ -323,7 +323,7 @@ foreach ($chain->getProviders() as $provider) {
             $statementInsertResult->bindValue(':resId', Uuid::uuid4()->toString(), \PDO::PARAM_STR);
             $statementInsertResult->bindValue(':proId', $proId, \PDO::PARAM_STR);
             $statementInsertResult->bindValue(':uaId', $uaId, \PDO::PARAM_STR);
-            $statementInsertResult->bindValue(':resProviderVersion', $provider->getVersion(), \PDO::PARAM_STR);
+            $statementInsertResult->bindValue(':resProviderVersion', $proVersion, \PDO::PARAM_STR);
 
             if (array_key_exists('resFilename', $res)) {
                 $statementInsertResult->bindValue(':resFilename', str_replace('\\', '/', $res['resFilename']));
