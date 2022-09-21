@@ -10,6 +10,7 @@ class Index extends AbstractHtml
         
         for ($i = COMPARISON_VERSION; $i > 0; $i --) {
             $txt = 'Version ' . $i;
+
             if ($i === COMPARISON_VERSION) {
                 $txt .= ' (latest)';
             }

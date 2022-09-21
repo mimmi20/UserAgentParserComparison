@@ -28,29 +28,20 @@ abstract class AbstractHtml
         return $this->userAgentCount;
     }
 
-    protected function getPercentCircle(int $resultFound, ?int $uniqueFound = null): string
+    protected function getPercentageMarkup(int $resultFound): string
     {
-        $onePercent = $this->getUserAgentCount() / 100;
+        $count      = $this->getUserAgentCount();
+        $onePercent = $count / 100;
         
-        $html = '
-            <div class="c100 p' . round($resultFound / $onePercent, 0) . ' small green-circle">
-                <span>' . round($resultFound / $onePercent, 2) . '%</span>
-                <div class="slice">
-                    <div class="bar"></div>
-                    <div class="fill"></div>
-                </div>
+        return '
+            <span>' . round($resultFound / $onePercent, 2) . '%</span>
+            <!--
+            <div class="progress">
+                <div class="determinate" style="width: ' . round($resultFound / $onePercent, 0) . '"></div>
             </div>
+            -->
+            <progress value="' . $resultFound . '" max="' . $count . '" title="' . $resultFound . '/' . $count . ' [' . round($resultFound / $onePercent, 2) . '%]"></progress>
         ';
-        
-        $html .= 'Tot.' . $resultFound . '<br />';
-        
-        if ($uniqueFound !== null) {
-            $html .= 'Unq.' . $uniqueFound . '<br />';
-        } else {
-            $html .= '&nbsp;<br />';
-        }
-        
-        return $html;
     }
 
     protected function getUserAgentUrl(string $uaId): string
@@ -71,9 +62,11 @@ abstract class AbstractHtml
             
     <title>' . htmlspecialchars($this->title) . '</title>
         
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/css/materialize.min.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="../circle.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        progress {width: 5em}
+    </style>
 </head>
         
 <body>
@@ -109,7 +102,7 @@ abstract class AbstractHtml
 </div>
                 
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/list.js/1.2.0/list.min.js"></script>
         
     <script>

@@ -32,7 +32,7 @@ $statementUpdateResult   = $pdo->prepare('UPDATE `result` SET `provider_id` = :p
 /*
  * Grab the userAgents!
  */
-echo '~~~ Load all UAs ~~~' . PHP_EOL;
+echo '~~~ Load all Useragents ~~~' . PHP_EOL;
 
 $chain = new Provider\Chain([
     new Provider\Test\Browscap(),

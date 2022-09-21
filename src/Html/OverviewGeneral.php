@@ -95,77 +95,66 @@ class OverviewGeneral extends AbstractHtml
             /*
              * Result found?
              */
-            $html .= '<td>' . $this->getPercentCircle($row['resultFound']) . '</td>';
+            $html .= '<td>' . $this->getPercentageMarkup($row['resultFound']) . '</td>';
             
             /*
-             * browserName
+             * Browser
              */
-            $html .= '<td>' . $this->getPercentCircle($row['browserFound'], $row['browserFoundUnique']) . '</td>';
-            
-            if ($row['proCanDetectEngineName'] == 1) {
-                $html .= '<td>' . $this->getPercentCircle($row['engineFound'], $row['engineFoundUnique']) . '</td>';
+            if ($row['proCanDetectBrowserName']) {
+                $html .= '<td>' . $this->getPercentageMarkup($row['browserFound']) . '</td>';
             } else {
-                $html .= '
-                    <td></td>
-                ';
+                $html .= '<td>&nbsp;</td>';
+            }
+
+            /*
+             * Engine
+             */
+            if ($row['proCanDetectEngineName']) {
+                $html .= '<td>' . $this->getPercentageMarkup($row['engineFound']) . '</td>';
+            } else {
+                $html .= '<td>&nbsp;</td>';
             }
             
             /*
              * OS
              */
-            if ($row['proCanDetectOsName'] == 1) {
-                $html .= '<td>' . $this->getPercentCircle($row['osFound'], $row['osFoundUnique']) . '</td>';
+            if ($row['proCanDetectOsName']) {
+                $html .= '<td>' . $this->getPercentageMarkup($row['osFound']) . '</td>';
             } else {
-                $html .= '
-                    <td></td>
-                ';
+                $html .= '<td>&nbsp;</td>';
             }
             
             /*
              * device
              */
-            if ($row['proCanDetectDeviceBrand'] == 1) {
-                $html .= '<td>' . $this->getPercentCircle($row['deviceBrandFound'], $row['deviceBrandFoundUnique']) . '</td>';
+            if ($row['proCanDetectDeviceBrand']) {
+                $html .= '<td>' . $this->getPercentageMarkup($row['deviceBrandFound']) . '</td>';
             } else {
-                $html .= '
-                    <td></td>
-                ';
+                $html .= '<td>&nbsp;</td>';
             }
             
-            if ($row['proCanDetectDeviceModel'] == 1) {
-                $html .= '<td>' . $this->getPercentCircle($row['deviceModelFound'], $row['deviceModelFoundUnique']) . '</td>';
+            if ($row['proCanDetectDeviceModel']) {
+                $html .= '<td>' . $this->getPercentageMarkup($row['deviceModelFound']) . '</td>';
             } else {
-                $html .= '
-                    <td></td>
-                ';
+                $html .= '<td>&nbsp;</td>';
             }
             
-            if ($row['proCanDetectDeviceType'] == 1) {
-                $html .= '<td>' . $this->getPercentCircle($row['deviceTypeFound'], $row['deviceTypeFoundUnique']) . '</td>';
+            if ($row['proCanDetectDeviceType']) {
+                $html .= '<td>' . $this->getPercentageMarkup($row['deviceTypeFound']) . '</td>';
             } else {
-                $html .= '
-                    <td></td>
-                ';
+                $html .= '<td>&nbsp;</td>';
             }
             
-            if ($row['proCanDetectDeviceIsMobile'] == 1) {
-                $html .= '<td>' . $this->getPercentCircle($row['asMobileDetected']) . '</td>';
+            if ($row['proCanDetectDeviceIsMobile']) {
+                $html .= '<td>' . $this->getPercentageMarkup($row['asMobileDetected']) . '</td>';
             } else {
-                $html .= '
-                    <td></td>
-                ';
+                $html .= '<td>&nbsp;</td>';
             }
             
-            if ($row['proCanDetectBotIsBot'] == 1) {
-                $html .= '
-                    <td>
-                        ' . $row['asBotDetected'] . '
-                    </td>
-                ';
+            if ($row['proCanDetectBotIsBot']) {
+                $html .= '<td>' . $this->getPercentageMarkup($row['asBotDetected']) . '</td>';
             } else {
-                $html .= '
-                    <td></td>
-                ';
+                $html .= '<td>&nbsp;</td>';
             }
 
             $info = 'PHP v' . phpversion() . ' | Zend v' . zend_version() . ' | On ' . PHP_OS;
@@ -203,6 +192,7 @@ class OverviewGeneral extends AbstractHtml
          * Header
          */
         $html .= '
+            <thead>
             <tr>
                 <th>
                     Provider
@@ -211,6 +201,7 @@ class OverviewGeneral extends AbstractHtml
                     Number of user agents
                 </th>
             </tr>
+            </thead>
         ';
         
         /*
@@ -226,7 +217,7 @@ class OverviewGeneral extends AbstractHtml
             
             $html .= '</tr>';
         }
-        $html .= '</tbdoy>';
+        $html .= '</tbody>';
         
         $html .= '</table>';
         
@@ -253,46 +244,6 @@ class OverviewGeneral extends AbstractHtml
     </h3>
                 
     ' . $this->getTableSummary() . '
-        
-</div>
-        
-<div class="section center">
-        
-    <h3 class="header center orange-text">
-        Detected by all providers
-    </h3>
-        
-    <a href="detected/general/browser-names.html" class="btn waves-effect waves-light">
-        Browser names    
-    </a><br /><br />
-        
-    <a href="detected/general/rendering-engines.html" class="btn waves-effect waves-light">
-        Rendering engines
-    </a><br /><br />
-        
-    <a href="detected/general/operating-systems.html" class="btn waves-effect waves-light">
-        Operating systems
-    </a><br /><br />
-        
-    <a href="detected/general/device-brands.html" class="btn waves-effect waves-light">
-        Device brands
-    </a><br /><br />
-        
-    <a href="detected/general/device-models.html" class="btn waves-effect waves-light">
-        Device models
-    </a><br /><br />
-        
-    <a href="detected/general/device-types.html" class="btn waves-effect waves-light">
-        Device types
-    </a><br /><br />
-        
-    <a href="detected/general/bot-names.html" class="btn waves-effect waves-light">
-        Bot names
-    </a><br /><br />
-        
-    <a href="detected/general/bot-types.html" class="btn waves-effect waves-light">
-        Bot types
-    </a><br /><br />
         
 </div>
         

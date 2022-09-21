@@ -122,5 +122,5 @@ return new Provider\Chain([
     //new Provider\Endorphin(),
     new Provider\MobileDetect(),
 
-//     $userAgentString,
+    //$userAgentString,
 ]);

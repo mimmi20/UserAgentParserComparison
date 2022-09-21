@@ -1,7 +1,5 @@
 <?php
 // bootstrap.php
-use Doctrine\ORM\Tools\Setup;
-use Doctrine\ORM\EntityManager;
 
 require_once 'vendor/autoload.php';
 
@@ -22,16 +20,3 @@ include 'config.php';
  * Doctrine
  */
 $isDevMode = true;
-
-$config = Setup::createAnnotationMetadataConfiguration(array(
-    __DIR__ . '/src/Entity'
-), $isDevMode);
-
-// obtaining the entity manager
-$entityManager = EntityManager::create($conn, $config);
-
-\Doctrine\DBAL\Types\Type::addType('uuid', 'Ramsey\Uuid\Doctrine\UuidType');
-$entityManager->getConnection()
-    ->getDatabasePlatform()
-    ->registerDoctrineTypeMapping('uuid', 'uuid');
-   

@@ -97,8 +97,9 @@ class Matomo extends AbstractTestProvider
         };
 
         foreach ($files as $file) {
+            assert($file instanceof \SplFileInfo);
 
-            $file = $file[0];
+            $file = $file->getPathname();
 
             $provider = \Spyc::YAMLLoad($file);
 

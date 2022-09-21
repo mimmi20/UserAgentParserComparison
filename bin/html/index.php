@@ -6,6 +6,10 @@ use UserAgentParserComparison\Html\Index;
  */
 include_once 'bootstrap.php';
 
+echo '~~~ create html index ~~~' . PHP_EOL;
+
+echo '.';
+
 /* @var $pdo \PDO */
 
 $generate = new Index($pdo, 'UserAgentParserComparison comparison');
@@ -18,3 +22,5 @@ if (! file_exists($folder)) {
     mkdir($folder, 0777, true);
 }
 file_put_contents($folder . '/../index.html', $generate->getHtml());
+
+echo PHP_EOL;

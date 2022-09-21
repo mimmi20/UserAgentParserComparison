@@ -6,6 +6,8 @@ use UserAgentParserComparison\Html\UserAgentDetail;
  */
 include_once 'bootstrap.php';
 
+echo '~~~ create html list for all useragents ~~~' . PHP_EOL;
+
 /* @var $pdo \PDO */
 
 $statementSelectUa = $pdo->prepare('SELECT * FROM `useragent`');

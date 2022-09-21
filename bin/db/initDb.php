@@ -6,6 +6,8 @@ include 'bootstrap.php';
 
 /* @var $pdo \PDO */
 
+echo '~~~ Prepare Database ~~~' . PHP_EOL;
+
 $pdo->prepare('DROP TABLE IF EXISTS `provider`')->execute();
 $pdo->prepare('CREATE TABLE IF NOT EXISTS `provider` (
   `proId` CHAR(36) COLLATE utf8_unicode_ci NOT NULL COMMENT \'(DC2Type:uuid)\',

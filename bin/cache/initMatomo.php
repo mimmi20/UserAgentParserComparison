@@ -6,6 +6,10 @@ chdir(dirname(dirname(__DIR__)));
  */
 require_once 'vendor/autoload.php';
 
+echo '~~~ Prepare Cache for Matomo ~~~' . PHP_EOL;
+
+echo '.';
+
 /*
  * File
  */
