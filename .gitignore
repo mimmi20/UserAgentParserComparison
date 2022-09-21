@@ -45,11 +45,15 @@ Temporary Items
 .settings
 .buildpath
 .project
+.php_cs.cache
 vendor
 .tmp
 
 config.php
 bin/getChainProvider.php
+data/*.xml
 data/*.ini
+data/*.txt
+data/cache
 
 .idea/
