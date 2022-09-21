@@ -55,6 +55,7 @@ echo 'start loading..' . PHP_EOL;
 $count    = 1000;
 $start    = 0;
 $colCount = $count;
+$currenUserAgent = 0;
 
 do {
     $pdo->prepare('DROP TEMPORARY TABLE IF EXISTS `temp_result`')->execute();
@@ -70,6 +71,7 @@ do {
     $pdo->beginTransaction();
 
     while ($row = $statementSelectAllResults->fetch(\PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT)) {
+        ++$currenUserAgent;
 
         $statementSelectResultsByAgent->bindValue(':uaId', $row['userAgent_id'], \PDO::PARAM_STR);
         $statementSelectResultsByAgent->bindValue(':proId', $row['provider_id'], \PDO::PARAM_STR);
@@ -79,7 +81,8 @@ do {
         $dbResultResult = $statementSelectResultsByAgent->fetch(\PDO::FETCH_ASSOC);
 
         if (false === $dbResultResult) {
-            echo 'E';
+            echo 'E - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT);
+
             continue;
         }
 
@@ -95,7 +98,8 @@ do {
         if (false !== $dbResultResultEvaluation) {
             // skip date is greater (generated after last result)
             if ($dbResultResultEvaluation['lastChangeDate'] >= $row['resLastChangeDate']) {
-                echo 'S';
+                echo 'S - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT);
+
                 continue;
             }
 
@@ -145,6 +149,8 @@ do {
             $statementInsertResultEvaluation->bindValue(':botTypeHarmonizedSameResult', $row2['botTypeHarmonizedSameResult'], \PDO::PARAM_INT);
 
             $statementInsertResultEvaluation->execute();
+
+            echo 'I - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT);
         } else {
             $statementUpdateResultEvaluation->bindValue(':resId', $row2['result_id'], \PDO::PARAM_STR);
             $statementUpdateResultEvaluation->bindValue(':revId', Uuid::uuid4()->toString(), \PDO::PARAM_STR);
@@ -176,9 +182,9 @@ do {
             $statementUpdateResultEvaluation->bindValue(':botTypeHarmonizedSameResult', $row2['botTypeHarmonizedSameResult'], \PDO::PARAM_INT);
 
             $statementUpdateResultEvaluation->execute();
-        }
 
-        echo '.';
+            echo 'U - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT);
+        }
     }
 
     $pdo->commit();

@@ -6,6 +6,8 @@ use UserAgentParserComparison\Html\SimpleList;
  */
 include_once 'bootstrap.php';
 
+echo '~~~ create html list for all founds ~~~' . PHP_EOL;
+
 /* @var $pdo \PDO */
 
 /*

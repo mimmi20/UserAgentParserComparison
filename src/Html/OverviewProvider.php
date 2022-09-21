@@ -46,8 +46,28 @@ class OverviewProvider extends AbstractHtml
         $statement->bindValue(':proId', $this->provider['proId'], \PDO::PARAM_STR);
 
         $statement->execute();
+
+        $result = $statement->fetch();
+
+        if (false === $result) {
+            var_dump($sql);
+
+            $result = [
+                'resultFound' => 0,
+                'browserFound' => 0,
+                'engineFound' => 0,
+                'osFound' => 0,
+                'deviceBrandFound' => 0,
+                'deviceModelFound' => 0,
+                'deviceTypeFound' => 0,
+                'asMobileDetected' => 0,
+                'asBotDetected' => 0,
+                'botNameFound' => 0,
+                'botTypeFound' => 0,
+            ];
+        }
         
-        return $statement->fetch();
+        return $result;
     }
 
     private function getTable(): string
@@ -60,6 +80,7 @@ class OverviewProvider extends AbstractHtml
          * Header
          */
         $html .= '
+            <thead>
             <tr>
                 <th>
                     Group
@@ -70,20 +91,19 @@ class OverviewProvider extends AbstractHtml
                 <th>
                     Total
                 </th>
-                <th>
-                    Actions
-                </th>
             </tr>
+            </thead>
         ';
         
         /*
          * body
          */
-        $totalUserAgentsOnePercent = $this->getUserAgentCount() / 100;
+        $count                     = $this->getUserAgentCount();
+        $totalUserAgentsOnePercent = $count / 100;
         
         $row = $this->getResult();
         
-        $html .= '<tbdoy>';
+        $html .= '<tbody>';
         
         /*
          * Results found
@@ -94,18 +114,10 @@ class OverviewProvider extends AbstractHtml
                 Results found
             </td>
             <td>
-                ' . round($row['resultFound'] / $totalUserAgentsOnePercent, 2) . '%
-                <div class="progress">
-                    <div class="determinate" style="width: ' . round($row['resultFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-                </div>
+                ' . $this->getPercentageMarkup($row['resultFound']) . '
             </td>
             <td>
                 ' . $row['resultFound'] . '
-            </td>
-            <td>
-                <a href="not-detected/' . $provider['proName'] . '/no-result-found.html" class="btn waves-effect waves-light">
-                    Not detected
-                </a>
             </td>
             </tr>
         ';
@@ -120,21 +132,10 @@ class OverviewProvider extends AbstractHtml
                     Browser names
                 </td>
                 <td>
-                    ' . round($row['browserFound'] / $totalUserAgentsOnePercent, 2) . '%
-                    <div class="progress">
-                        <div class="determinate" style="width: ' . round($row['browserFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-                    </div>
+                    ' . $this->getPercentageMarkup($row['browserFound']) . '
                 </td>
                 <td>
                     ' . $row['browserFound'] . '
-                </td>
-                <td>
-                    <a href="detected/' . $provider['proName'] . '/browser-names.html" class="btn waves-effect waves-light">
-                        Detected
-                    </a>
-                    <a href="not-detected/' . $provider['proName'] . '/browser-names.html" class="btn waves-effect waves-light">
-                        Not detected
-                    </a>
                 </td>
                 </tr>
             ';
@@ -144,7 +145,7 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     Engine names
                 </td>
-                <td colspan="3" class="center-align red lighten-1">
+                <td colspan="2" class="center-align red lighten-1">
                     <strong>Not available with this provider</strong>
                 </td>
                 </tr>
@@ -161,21 +162,10 @@ class OverviewProvider extends AbstractHtml
                     Rendering engines
                 </td>
                 <td>
-                    ' . round($row['engineFound'] / $totalUserAgentsOnePercent, 2) . '%
-                    <div class="progress">
-                        <div class="determinate" style="width: ' . round($row['engineFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-                    </div>
+                    ' . $this->getPercentageMarkup($row['engineFound']) . '
                 </td>
                 <td>
                     ' . $row['engineFound'] . '
-                </td>
-                <td>
-                    <a href="detected/' . $provider['proName'] . '/rendering-engines.html" class="btn waves-effect waves-light">
-                        Detected
-                    </a>
-                    <a href="not-detected/' . $provider['proName'] . '/rendering-engines.html" class="btn waves-effect waves-light">
-                        Not detected
-                    </a>
                 </td>
                 </tr>
             ';
@@ -185,7 +175,7 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     Engine name
                 </td>
-                <td colspan="3" class="center-align red lighten-1">
+                <td colspan="2" class="center-align red lighten-1">
                     <strong>Not available with this provider</strong>
                 </td>
                 </tr>
@@ -202,21 +192,10 @@ class OverviewProvider extends AbstractHtml
                     Operating systems
                 </td>
                 <td>
-                    ' . round($row['osFound'] / $totalUserAgentsOnePercent, 2) . '%
-                    <div class="progress">
-                        <div class="determinate" style="width: ' . round($row['osFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-                    </div>
+                    ' . $this->getPercentageMarkup($row['osFound']) . '
                 </td>
                 <td>
                     ' . $row['osFound'] . '
-                </td>
-                <td>
-                    <a href="detected/' . $provider['proName'] . '/operating-systems.html" class="btn waves-effect waves-light">
-                        Detected
-                    </a>
-                    <a href="not-detected/' . $provider['proName'] . '/operating-systems.html" class="btn waves-effect waves-light">
-                        Not detected
-                    </a>
                 </td>
                 </tr>
             ';
@@ -226,7 +205,7 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     Operating systems
                 </td>
-                <td colspan="3" class="center-align red lighten-1">
+                <td colspan="2" class="center-align red lighten-1">
                     <strong>Not available with this provider</strong>
                 </td>
                 </tr>
@@ -243,21 +222,10 @@ class OverviewProvider extends AbstractHtml
                     Device brands
                 </td>
                 <td>
-                    ' . round($row['deviceBrandFound'] / $totalUserAgentsOnePercent, 2) . '%
-                    <div class="progress">
-                        <div class="determinate" style="width: ' . round($row['deviceBrandFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-                    </div>
+                    ' . $this->getPercentageMarkup($row['deviceBrandFound']) . '
                 </td>
                 <td>
                     ' . $row['deviceBrandFound'] . '
-                </td>
-                <td>
-                    <a href="detected/' . $provider['proName'] . '/device-brands.html" class="btn waves-effect waves-light">
-                        Detected
-                    </a>
-                    <a href="not-detected/' . $provider['proName'] . '/device-brands.html" class="btn waves-effect waves-light">
-                        Not detected
-                    </a>
                 </td>
                 </tr>
             ';
@@ -267,7 +235,7 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     Device brands
                 </td>
-                <td colspan="3" class="center-align red lighten-1">
+                <td colspan="2" class="center-align red lighten-1">
                     <strong>Not available with this provider</strong>
                 </td>
                 </tr>
@@ -284,21 +252,10 @@ class OverviewProvider extends AbstractHtml
                     Device models
                 </td>
                 <td>
-                    ' . round($row['deviceModelFound'] / $totalUserAgentsOnePercent, 2) . '%
-                    <div class="progress">
-                        <div class="determinate" style="width: ' . round($row['deviceModelFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-                    </div>
+                    ' . $this->getPercentageMarkup($row['deviceModelFound']) . '
                 </td>
                 <td>
                     ' . $row['deviceModelFound'] . '
-                </td>
-                <td>
-                    <a href="detected/' . $provider['proName'] . '/device-models.html" class="btn waves-effect waves-light">
-                        Detected
-                    </a>
-                    <a href="not-detected/' . $provider['proName'] . '/device-models.html" class="btn waves-effect waves-light">
-                        Not detected
-                    </a>
                 </td>
                 </tr>
             ';
@@ -308,7 +265,7 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     Device models
                 </td>
-                <td colspan="3" class="center-align red lighten-1">
+                <td colspan="2" class="center-align red lighten-1">
                     <strong>Not available with this provider</strong>
                 </td>
                 </tr>
@@ -325,21 +282,10 @@ class OverviewProvider extends AbstractHtml
                     Device types
                 </td>
                 <td>
-                    ' . round($row['deviceTypeFound'] / $totalUserAgentsOnePercent, 2) . '%
-                    <div class="progress">
-                        <div class="determinate" style="width: ' . round($row['deviceTypeFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-                    </div>
+                    ' . $this->getPercentageMarkup($row['deviceTypeFound']) . '
                 </td>
                 <td>
                     ' . $row['deviceTypeFound'] . '
-                </td>
-                <td>
-                    <a href="detected/' . $provider['proName'] . '/device-types.html" class="btn waves-effect waves-light">
-                        Detected
-                    </a>
-                    <a href="not-detected/' . $provider['proName'] . '/device-types.html" class="btn waves-effect waves-light">
-                        Not detected
-                    </a>
                 </td>
                 </tr>
             ';
@@ -349,7 +295,7 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     Device types
                 </td>
-                <td colspan="3" class="center-align red lighten-1">
+                <td colspan="2" class="center-align red lighten-1">
                     <strong>Not available with this provider</strong>
                 </td>
                 </tr>
@@ -366,18 +312,10 @@ class OverviewProvider extends AbstractHtml
                     Is mobile
                 </td>
                 <td>
-                    ' . round($row['asMobileDetected'] / $totalUserAgentsOnePercent, 2) . '%
-                    <div class="progress">
-                        <div class="determinate" style="width: ' . round($row['asMobileDetected'] / $totalUserAgentsOnePercent, 0) . '"></div>
-                    </div>
+                    ' . $this->getPercentageMarkup($row['asMobileDetected']) . '
                 </td>
                 <td>
                     ' . $row['asMobileDetected'] . '
-                </td>
-                <td>
-                    <a href="not-detected/' . $provider['proName'] . '/device-is-mobile.html" class="btn waves-effect waves-light">
-                        Not detected
-                    </a>
                 </td>
                 </tr>
             ';
@@ -387,7 +325,7 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     Is mobile
                 </td>
-                <td colspan="3" class="center-align red lighten-1">
+                <td colspan="2" class="center-align red lighten-1">
                     <strong>Not available with this provider</strong>
                 </td>
                 </tr>
@@ -404,21 +342,10 @@ class OverviewProvider extends AbstractHtml
                     Is bot
                 </td>
                 <td>
-                    
+                    ' . $this->getPercentageMarkup($row['asBotDetected']) . '
                 </td>
                 <td>
-                    ' . round($row['asBotDetected'] / $totalUserAgentsOnePercent, 2) . '%
-                    <div class="progress">
-                        <div class="determinate" style="width: ' . round($row['asBotDetected'] / $totalUserAgentsOnePercent, 0) . '"></div>
-                    </div>
-                </td>
-                <td>
-                    <a href="detected/' . $provider['proName'] . '/bot-is-bot.html" class="btn waves-effect waves-light">
-                        Detected
-                    </a>
-                    <a href="not-detected/' . $provider['proName'] . '/bot-is-bot.html" class="btn waves-effect waves-light">
-                        Not detected
-                    </a>
+                    ' . $row['asBotDetected'] . '
                 </td>
                 </tr>
             ';
@@ -428,7 +355,7 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     Is bot
                 </td>
-                <td colspan="3" class="center-align red lighten-1">
+                <td colspan="2" class="center-align red lighten-1">
                     <strong>Not available with this provider</strong>
                 </td>
                 </tr>
@@ -445,20 +372,10 @@ class OverviewProvider extends AbstractHtml
                     Bot names
                 </td>
                 <td>
+                    ' . $this->getPercentageMarkup($row['botNameFound']) . '
                 </td>
                 <td>
-                    ' . round($row['botNameFound'] / $totalUserAgentsOnePercent, 2) . '%
-                    <div class="progress">
-                        <div class="determinate" style="width: ' . round($row['botNameFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-                    </div>
-                </td>
-                <td>
-                    <a href="detected/' . $provider['proName'] . '/bot-names.html" class="btn waves-effect waves-light">
-                        Detected
-                    </a>
-                    <a href="not-detected/' . $provider['proName'] . '/bot-names.html" class="btn waves-effect waves-light">
-                        Not detected
-                    </a>
+                    ' . $row['botNameFound'] . '
                 </td>
                 </tr>
             ';
@@ -468,7 +385,7 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     Bot names
                 </td>
-                <td colspan="3" class="center-align red lighten-1">
+                <td colspan="2" class="center-align red lighten-1">
                     <strong>Not available with this provider</strong>
                 </td>
                 </tr>
@@ -485,20 +402,10 @@ class OverviewProvider extends AbstractHtml
                     Bot types
                 </td>
                 <td>
+                    ' . $this->getPercentageMarkup($row['botTypeFound']) . '
                 </td>
                 <td>
-                    ' . round($row['botTypeFound'] / $totalUserAgentsOnePercent, 2) . '%
-                    <div class="progress">
-                        <div class="determinate" style="width: ' . round($row['botTypeFound'] / $totalUserAgentsOnePercent, 0) . '"></div>
-                    </div>
-                </td>
-                <td>
-                    <a href="detected/' . $provider['proName'] . '/bot-types.html" class="btn waves-effect waves-light">
-                        Detected
-                    </a>
-                    <a href="not-detected/' . $provider['proName'] . '/bot-types.html" class="btn waves-effect waves-light">
-                        Not detected
-                    </a>
+                    ' . $row['botTypeFound'] . '
                 </td>
                 </tr>
             ';
@@ -508,15 +415,14 @@ class OverviewProvider extends AbstractHtml
                 <td>
                     Bot types
                 </td>
-                <td colspan="3" class="center-align red lighten-1">
+                <td colspan="2" class="center-align red lighten-1">
                     <strong>Not available with this provider</strong>
                 </td>
                 </tr>
             ';
         }
         
-        $html .= '</tbdoy>';
-        
+        $html .= '</tbody>';
         $html .= '</table>';
         
         return $html;

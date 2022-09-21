@@ -6,6 +6,10 @@ chdir(dirname(dirname(__DIR__)));
  */
 require_once 'vendor/autoload.php';
 
+echo '~~~ Prepare Cache for WhichBrowser ~~~' . PHP_EOL;
+
+echo '.';
+
 /*
  * File
  */

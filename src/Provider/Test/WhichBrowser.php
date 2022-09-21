@@ -100,8 +100,9 @@ class WhichBrowser extends AbstractTestProvider
         };
 
         foreach ($files as $file) {
+            assert($file instanceof \SplFileInfo);
 
-            $file = $file[0];
+            $file = $file->getPathname();
 
             $fixtureData = Yaml::parse(file_get_contents($file));
 

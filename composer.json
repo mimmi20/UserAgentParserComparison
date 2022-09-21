@@ -20,47 +20,41 @@
     },
     
     "require": {
-        "php": "^7.4.3",
+        "php": "^8.1.0",
         "ext-curl": "*",
         "ext-json": "*",
         "ext-pdo": "*",
         "ext-simplexml": "*",
         "composer-runtime-api": "^2.0",
-        "browscap/browscap": "dev-updates",
-        "browscap/browscap-php": "^6.0.0",
+        "browscap/browscap": "^6.1.1",
+        "browscap/browscap-php": "^7.1.0",
         "cbschuld/browser.php": "^v1.9.6",
-        "doctrine/cache": "^1.12.1",
-        "doctrine/orm": "^2.10.2",
-        "donatj/phpuseragentparser": "^v1.5.0",
+        "donatj/phpuseragentparser": "^v1.7.0",
         "endorphin-studio/browser-detector": "^6.0.1",
         "jenssegers/agent": "^v2.6.4",
-        "league/flysystem": "^2.3.2",
-        "matomo/device-detector": "^5.0.1",
+        "league/flysystem": "^3.5.1",
+        "matomo/device-detector": "^6.0.3",
         "matthiasmullie/scrapbook": "^1.4.8",
-        "mimmi20/browser-detector": "^7.0.0",
-        "mobiledetect/mobiledetectlib": "^2.8.37",
-        "ramsey/uuid-doctrine": "^1.8.0",
+        "mimmi20/browser-detector": "^7.0.2",
+        "mobiledetect/mobiledetectlib": "^2.8.39",
+        "ramsey/uuid-doctrine": "^1.8.1",
         "sinergi/browser-detector": "^6.1.4",
-        "symfony/yaml": "^v5.4.0",
+        "symfony/yaml": "^v6.1.4",
         "thadafinser/uap-core": "^v0.5.0.4",
         "ua-parser/uap-php": "^v3.9.14",
-        "whichbrowser/parser": "^v2.1.2",
-        "wolfcast/browser-detection": "^2.9.5",
+        "whichbrowser/parser": "^v2.1.7",
+        "wolfcast/browser-detection": "^2.9.6",
         "woothee/woothee": "^v1.10.0",
         "woothee/woothee-testset": "^v1.13.0",
         "zsxsoft/php-useragent": "^1.5.0"
     },
     
     "require-dev": {
-        "phpunit/phpunit": "^9.5.10",
-
-        "friendsofphp/php-cs-fixer": "^v3.4.0"
+        "friendsofphp/php-cs-fixer": "^v3.11.0",
+        "phpunit/phpunit": "^9.5.24"
     },
 
     "config": {
-        "platform": {
-            "php": "7.4.3"
-        },
         "preferred-install": {
             "browscap/browscap": "source",
             "mimmi20/browser-detector": "source",
@@ -70,6 +64,7 @@
             "woothee/woothee-testset": "source",
             "*": "dist"
         },
+        "lock": false,
         "sort-packages": true
     }
 }

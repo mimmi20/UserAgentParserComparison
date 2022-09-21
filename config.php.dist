@@ -6,6 +6,8 @@ define('COMPARISON_VERSION', 7);
 
 $basePath = '../gh-pages/v' . COMPARISON_VERSION;
 
+// database configuration parameters
+
 $dbname   = '<db>';
 $host     = '<host>';
 $port     = 3306;
@@ -19,20 +21,6 @@ $driverOptions = [
     \PDO::MYSQL_ATTR_DIRECT_QUERY => false,
     \PDO::ATTR_EMULATE_PREPARES => false,
     \PDO::ATTR_PERSISTENT => true,
-];
-
-// database configuration parameters
-$conn = [
-    'dbname' => $dbname,
-    'host' => $host,
-    'port' => $port,
-    'charset' => $charset,
-
-    'user' => $user,
-    'password' => $password,
-
-    'driver' => 'pdo_mysql',
-    'driverOptions' => $driverOptions,
 ];
 
 $pdo = new \PDO(

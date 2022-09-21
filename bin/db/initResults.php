@@ -19,7 +19,7 @@ $statementSelectResult   = $pdo->prepare('SELECT * FROM `result` WHERE `provider
 $statementInsertResult   = $pdo->prepare('INSERT INTO `result` (`provider_id`, `userAgent_id`, `resId`, `resProviderVersion`, `resFilename`, `resParseTime`, `resLastChangeDate`, `resResultFound`, `resBrowserName`, `resBrowserVersion`, `resEngineName`, `resEngineVersion`, `resOsName`, `resOsVersion`, `resDeviceModel`, `resDeviceBrand`, `resDeviceType`, `resDeviceIsMobile`, `resDeviceIsTouch`, `resBotIsBot`, `resBotName`, `resBotType`, `resRawResult`) VALUES (:proId, :uaId, :resId, :resProviderVersion, :resFilename, :resParseTime, :resLastChangeDate, :resResultFound, :resBrowserName, :resBrowserVersion, :resEngineName, :resEngineVersion, :resOsName, :resOsVersion, :resDeviceModel, :resDeviceBrand, :resDeviceType, :resDeviceIsMobile, :resDeviceIsTouch, :resBotIsBot, :resBotName, :resBotType, :resRawResult)');
 $statementUpdateResult   = $pdo->prepare('UPDATE `result` SET `provider_id` = :proId, `userAgent_id` = :uaId, `resProviderVersion` = :resProviderVersion, `resFilename` = :resFilename, `resParseTime` = :resParseTime, `resLastChangeDate` = :resLastChangeDate, `resResultFound` = :resResultFound, `resBrowserName` = :resBrowserName, `resBrowserVersion` = :resBrowserVersion, `resEngineName` = :resEngineName, `resEngineVersion` = :resEngineVersion, `resOsName` = :resOsName, `resOsVersion` = :resOsVersion, `resDeviceModel` = :resDeviceModel, `resDeviceBrand` = :resDeviceBrand, `resDeviceType` = :resDeviceType, `resDeviceIsMobile` = :resDeviceIsMobile, `resDeviceIsTouch` = :resDeviceIsTouch, `resBotIsBot` = :resBotIsBot, `resBotName` = :resBotName, `resBotType` = :resBotType, `resRawResult` = :resRawResult WHERE `resId` = :resId');
 
-
+echo '~~~ Load all Results ~~~' . PHP_EOL;
 
 /*
  * Load providers
@@ -49,9 +49,6 @@ foreach ($chain->getProviders() as $provider) {
     $providers[$provider->getName()] = $dbResultProvider;
 }
 
-echo 'load agents...' . PHP_EOL;
-
-echo 'done loading..' . PHP_EOL;
 echo 'detecting agents...' . PHP_EOL;
 
 $currenUserAgent = 1;
@@ -128,6 +125,12 @@ do {
                 $parseResult = null;
             } catch (\UserAgentParserComparison\Exception\RequestException $ex) {
                 $message .= 'E';
+
+                echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
+
+                continue;
+            } catch (\Throwable $ex) {
+                $message .= 'X';
 
                 echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
 
@@ -250,6 +253,8 @@ do {
                 }
 
                 $statementInsertResult->execute();
+
+                $message .= 'I';
             } else {
                 $statementUpdateResult->bindValue(':resId', $dbResultResult['resId'], \PDO::PARAM_STR);
                 $statementUpdateResult->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
@@ -343,9 +348,9 @@ do {
                 }
 
                 $statementUpdateResult->execute();
-            }
 
-            $message .= '.';
+                $message .= 'U';
+            }
 
             echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
         }

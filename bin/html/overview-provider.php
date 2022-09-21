@@ -8,12 +8,14 @@ include_once 'bootstrap.php';
 
 /* @var $pdo \PDO */
 
+echo '~~~ create html overview for all providers ~~~' . PHP_EOL;
+
 $statementSelectProvider = $pdo->prepare('SELECT * FROM `real-provider`');
 $statementSelectProvider->execute();
 
 while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT)) {
 
-    echo $dbResultProvider['proName'] . PHP_EOL;
+    echo '.';
     
     $generate = new OverviewProvider($pdo, $dbResultProvider, 'Overview - ' . $dbResultProvider['proName']);
     
@@ -27,3 +29,5 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
 
     file_put_contents($folder . '/' . $dbResultProvider['proName'] . '.html', $generate->getHtml());
 }
+
+echo PHP_EOL;
