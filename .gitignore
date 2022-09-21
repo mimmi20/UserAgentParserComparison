@@ -50,5 +50,7 @@ vendor
 .idea
 
 data/results.sqlite3
-data/full_php_browscap.ini
+data/*.ini
 data/wurfl.xml
+config.php
+bin
