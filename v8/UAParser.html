@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+            
+    <title>Overview - UAParser</title>
+        
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        progress {width: 5em}
+    </style>
+</head>
+        
+<body>
+<div class="container">
+    
+<div class="section">
+    <h1 class="header center orange-text">UAParser overview - <small>v3.9.14</small></h1>
+
+    <div class="row center">
+        <h5 class="header light">
+            We took <strong>305058</strong> different user agents and analyzed them with this provider<br />
+        </h5>
+    </div>
+</div>
+
+<div class="section">
+    <table class="striped">
+            <thead>
+            <tr>
+                <th>
+                    Group
+                </th>
+                <th>
+                    Percent
+                </th>
+                <th>
+                    Total
+                </th>
+            </tr>
+            </thead>
+        <tbody>
+            <tr>
+            <td>
+                Results found
+            </td>
+            <td>
+                
+            <span>99.18%</span>
+            <!--
+            <div class="progress">
+                <div class="determinate" style="width: 99"></div>
+            </div>
+            -->
+            <progress value="302549" max="305058" title="302549/305058 [99.18%]"></progress>
+        
+            </td>
+            <td>
+                302549
+            </td>
+            </tr>
+        
+                <tr>
+                <td>
+                    Browser names
+                </td>
+                <td>
+                    
+            <span>96.14%</span>
+            <!--
+            <div class="progress">
+                <div class="determinate" style="width: 96"></div>
+            </div>
+            -->
+            <progress value="293286" max="305058" title="293286/305058 [96.14%]"></progress>
+        
+                </td>
+                <td>
+                    293286
+                </td>
+                </tr>
+            
+                <tr>
+                <td>
+                    Engine name
+                </td>
+                <td colspan="2" class="center-align red lighten-1">
+                    <strong>Not available with this provider</strong>
+                </td>
+                </tr>
+            
+                <tr>
+                <td>
+                    Operating systems
+                </td>
+                <td>
+                    
+            <span>93.44%</span>
+            <!--
+            <div class="progress">
+                <div class="determinate" style="width: 93"></div>
+            </div>
+            -->
+            <progress value="285044" max="305058" title="285044/305058 [93.44%]"></progress>
+        
+                </td>
+                <td>
+                    285044
+                </td>
+                </tr>
+            
+                <tr>
+                <td>
+                    Device brands
+                </td>
+                <td>
+                    
+            <span>62.36%</span>
+            <!--
+            <div class="progress">
+                <div class="determinate" style="width: 62"></div>
+            </div>
+            -->
+            <progress value="190220" max="305058" title="190220/305058 [62.36%]"></progress>
+        
+                </td>
+                <td>
+                    190220
+                </td>
+                </tr>
+            
+                <tr>
+                <td>
+                    Device models
+                </td>
+                <td>
+                    
+            <span>82.03%</span>
+            <!--
+            <div class="progress">
+                <div class="determinate" style="width: 82"></div>
+            </div>
+            -->
+            <progress value="250247" max="305058" title="250247/305058 [82.03%]"></progress>
+        
+                </td>
+                <td>
+                    250247
+                </td>
+                </tr>
+            
+                <tr>
+                <td>
+                    Device types
+                </td>
+                <td colspan="2" class="center-align red lighten-1">
+                    <strong>Not available with this provider</strong>
+                </td>
+                </tr>
+            
+                <tr>
+                <td>
+                    Is mobile
+                </td>
+                <td colspan="2" class="center-align red lighten-1">
+                    <strong>Not available with this provider</strong>
+                </td>
+                </tr>
+            
+                <tr>
+                <td>
+                    Is bot
+                </td>
+                <td>
+                    
+            <span>99.18%</span>
+            <!--
+            <div class="progress">
+                <div class="determinate" style="width: 99"></div>
+            </div>
+            -->
+            <progress value="302549" max="305058" title="302549/305058 [99.18%]"></progress>
+        
+                </td>
+                <td>
+                    302549
+                </td>
+                </tr>
+            
+                <tr>
+                <td>
+                    Bot names
+                </td>
+                <td>
+                    
+            <span>0.91%</span>
+            <!--
+            <div class="progress">
+                <div class="determinate" style="width: 1"></div>
+            </div>
+            -->
+            <progress value="2775" max="305058" title="2775/305058 [0.91%]"></progress>
+        
+                </td>
+                <td>
+                    2775
+                </td>
+                </tr>
+            
+                <tr>
+                <td>
+                    Bot types
+                </td>
+                <td colspan="2" class="center-align red lighten-1">
+                    <strong>Not available with this provider</strong>
+                </td>
+                </tr>
+            </tbody></table>
+</div>
+
+        
+    <div class="section">
+        <h1 class="header center orange-text">About this comparison</h1>
+    
+        <div class="row center">
+            <h5 class="header light">
+                The primary goal of this project is simple<br />
+        
+                I wanted to know which user agent parser is the most accurate in each part - device detection, bot detection and so on...<br />
+                <br />
+                The secondary goal is to provide a source for all user agent parsers to improve their detection based on this results.<br />
+                <br />
+                You can also improve this further, by suggesting ideas at <a href="https://github.com/ThaDafinser/UserAgentParserComparison">ThaDafinser/UserAgentParserComparison</a><br />
+                <br />
+                The comparison is based on the abstraction by <a href="https://github.com/ThaDafinser/UserAgentParserComparison">ThaDafinser/UserAgentParserComparison</a>
+            </h5>
+        </div>
+            
+    </div>
+        
+    <div class="card">
+        <div class="card-content">
+            Comparison created <i>2022-09-21 18:47:11</i> | by 
+            <a href="https://github.com/ThaDafinser">ThaDafinser</a>
+        </div>
+    </div>
+                
+</div>
+                
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/list.js/1.2.0/list.min.js"></script>
+        
+    <script>
+    
+    </script>
+        
+</body>
+</html>
