@@ -18,7 +18,6 @@
     </rule>
 
     <!-- Paths to check -->
-    <file>bin</file>
     <file>src</file>
     <file>.php-cs-fixer.php</file>
 </ruleset>
