@@ -1,12 +1,14 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Exception;
+
+use Exception;
 
 /**
  * Limitation reached
- *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  */
-class LimitationExceededException extends \Exception implements ExceptionInterface
+final class LimitationExceededException extends Exception implements ExceptionInterface
 {
 }

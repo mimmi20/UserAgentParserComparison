@@ -1,69 +1,66 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider;
 
-use BrowscapPHP\Browscap;
+use stdClass;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Model;
+
+use function assert;
+use function get_browser;
 
 /**
  * Abstraction for Browscap full type
  *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  * @see https://github.com/browscap/browscap-php
  */
-class GetBrowser extends AbstractBrowscap
+final class GetBrowser extends AbstractBrowscap
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'PHP Native get_browser';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = '';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = '';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'operatingSystem' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'device' => [
-            'model'    => true,
-            'brand'    => true,
-            'type'     => true,
+            'model' => true,
+            'brand' => true,
+            'type' => true,
             'isMobile' => true,
-            'isTouch'  => true,
+            'isTouch' => true,
         ],
 
         'bot' => [
             'isBot' => true,
-            'name'  => true,
-            'type'  => true,
+            'name' => true,
+            'type' => true,
         ],
     ];
 
@@ -72,15 +69,22 @@ class GetBrowser extends AbstractBrowscap
         // nothing to do here
     }
 
+    /**
+     * @param array $headers
+     *
+     * @throws NoResultFoundException
+     *
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
+     */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        /* @var $resultRaw \stdClass */
-        $resultRaw = \get_browser($userAgent, false);
+        $resultRaw = get_browser($userAgent, false);
+        assert($resultRaw instanceof stdClass);
 
         /*
          * No result found?
          */
-        if ($this->hasResult($resultRaw) !== true) {
+        if (true !== $this->hasResult($resultRaw)) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -93,7 +97,7 @@ class GetBrowser extends AbstractBrowscap
         /*
          * Bot detection (does only work with full_php_browscap.ini)
          */
-        if ($this->isBot($resultRaw) === true) {
+        if (true === $this->isBot($resultRaw)) {
             $this->hydrateBot($result->getBot(), $resultRaw);
 
             return $result;

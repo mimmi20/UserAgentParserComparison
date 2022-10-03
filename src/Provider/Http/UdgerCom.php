@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider\Http;
 
 use GuzzleHttp\Client;
@@ -7,26 +10,23 @@ use stdClass;
 use UserAgentParserComparison\Exception;
 use UserAgentParserComparison\Model;
 
+use function http_build_query;
+use function json_decode;
+
 /**
  * Abstraction of udger.com
  *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  * @see https://udger.com/support/documentation/?doc=38
  */
-class UdgerCom extends AbstractHttpParseProvider
+final class UdgerCom extends AbstractHttpParseProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'UdgerCom';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://udger.com/';
 
@@ -35,210 +35,57 @@ class UdgerCom extends AbstractHttpParseProvider
     protected bool $api = true;
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => true,
+            'name' => true,
             'version' => false,
         ],
 
         'operatingSystem' => [
-            'name'    => true,
+            'name' => true,
             'version' => false,
         ],
 
         'device' => [
-            'model'    => false,
-            'brand'    => false,
-            'type'     => true,
+            'model' => false,
+            'brand' => false,
+            'type' => true,
             'isMobile' => false,
-            'isTouch'  => false,
+            'isTouch' => false,
         ],
 
         'bot' => [
             'isBot' => true,
-            'name'  => false,
-            'type'  => false,
+            'name' => false,
+            'type' => false,
         ],
     ];
 
     protected array $defaultValues = [
-        'general' => [
-            '/^unknown$/i',
-        ],
+        'general' => ['/^unknown$/i'],
     ];
 
     private static string $uri = 'http://api.udger.com/parse';
 
-    private string $apiKey;
-
-    public function __construct(Client $client, string $apiKey)
+    public function __construct(Client $client, private string $apiKey)
     {
         parent::__construct($client);
-
-        $this->apiKey = $apiKey;
     }
 
-    public function getVersion(): ?string
+    public function getVersion(): string | null
     {
         return null;
     }
 
     /**
+     * @param array $headers
      *
-     * @param  string                     $userAgent
-     * @param  array                      $headers
-     * @return stdClass
      * @throws Exception\RequestException
      */
-    protected function getResult($userAgent, array $headers)
-    {
-        /*
-         * an empty UserAgent makes no sense
-         */
-        if ($userAgent == '') {
-            throw new Exception\NoResultFoundException('No result found for user agent: ' . $userAgent);
-        }
-
-        $params = [
-            'accesskey' => $this->apiKey,
-            'uastrig'   => $userAgent,
-        ];
-
-        $body = http_build_query($params, null, '&');
-
-        $request = new Request('POST', self::$uri, [
-            'Content-Type' => 'application/x-www-form-urlencoded',
-        ], $body);
-
-        $response = $this->getResponse($request);
-
-        /*
-         * no json returned?
-         */
-        $contentType = $response->getHeader('Content-Type');
-        if (! isset($contentType[0]) || $contentType[0] != 'application/json') {
-            throw new Exception\RequestException('Could not get valid "application/json" response from "' . $request->getUri() . '". Response is "' . $response->getBody()->getContents() . '"');
-        }
-
-        $content = json_decode($response->getBody()->getContents());
-
-        /*
-         * No result found?
-         */
-        if (isset($content->flag) && $content->flag == 3) {
-            throw new Exception\NoResultFoundException('No result found for user agent: ' . $userAgent);
-        }
-
-        /*
-         * Errors
-         */
-        if (isset($content->flag) && $content->flag == 4) {
-            throw new Exception\InvalidCredentialsException('Your API key "' . $this->apiKey . '" is not valid for ' . $this->getName());
-        }
-
-        if (isset($content->flag) && $content->flag == 6) {
-            throw new Exception\LimitationExceededException('Exceeded the maximum number of request with API key "' . $this->apiKey . '" for ' . $this->getName());
-        }
-
-        if (isset($content->flag) && $content->flag > 3) {
-            throw new Exception\RequestException('Could not get valid response from "' . $request->getUri() . '". Response is "' . $response->getBody()->getContents() . '"');
-        }
-
-        /*
-         * Missing data?
-         */
-        if (! $content instanceof stdClass || ! isset($content->info)) {
-            throw new Exception\RequestException('Could not get valid response from "' . $request->getUri() . '". Response is "' . $response->getBody()->getContents() . '"');
-        }
-
-        return $content;
-    }
-
-    /**
-     *
-     * @param  stdClass $resultRaw
-     * @return boolean
-     */
-    private function isBot(stdClass $resultRaw): bool
-    {
-        if (isset($resultRaw->type) && $resultRaw->type === 'Robot') {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     *
-     * @param Model\Bot $bot
-     * @param stdClass  $resultRaw
-     */
-    private function hydrateBot(Model\Bot $bot, stdClass $resultRaw): void
-    {
-        $bot->setIsBot(true);
-
-        if (isset($resultRaw->ua_family)) {
-            $bot->setName($this->getRealResult($resultRaw->ua_family));
-        }
-    }
-
-    /**
-     *
-     * @param Model\Browser $browser
-     * @param stdClass      $resultRaw
-     */
-    private function hydrateBrowser(Model\Browser $browser, stdClass $resultRaw): void
-    {
-        if (isset($resultRaw->ua_family)) {
-            $browser->setName($this->getRealResult($resultRaw->ua_family, 'browser', 'name'));
-        }
-
-        if (isset($resultRaw->ua_ver)) {
-            $browser->getVersion()->setComplete($this->getRealResult($resultRaw->ua_ver));
-        }
-    }
-
-    /**
-     *
-     * @param Model\RenderingEngine $engine
-     * @param stdClass              $resultRaw
-     */
-    private function hydrateRenderingEngine(Model\RenderingEngine $engine, stdClass $resultRaw): void
-    {
-        if (isset($resultRaw->ua_engine)) {
-            $engine->setName($this->getRealResult($resultRaw->ua_engine));
-        }
-    }
-
-    /**
-     *
-     * @param Model\OperatingSystem $os
-     * @param stdClass              $resultRaw
-     */
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, stdClass $resultRaw): void
-    {
-        if (isset($resultRaw->os_family)) {
-            $os->setName($this->getRealResult($resultRaw->os_family));
-        }
-    }
-
-    /**
-     *
-     * @param Model\Device $device
-     * @param stdClass     $resultRaw
-     */
-    private function hydrateDevice(Model\Device $device, stdClass $resultRaw): void
-    {
-        if (isset($resultRaw->device_name)) {
-            $device->setType($this->getRealResult($resultRaw->device_name));
-        }
-    }
-
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
         $resultRaw = $this->getResult($userAgent, $headers);
@@ -252,7 +99,7 @@ class UdgerCom extends AbstractHttpParseProvider
         /*
          * Bot detection
          */
-        if ($this->isBot($resultRaw->info) === true) {
+        if (true === $this->isBot($resultRaw->info)) {
             $this->hydrateBot($result->getBot(), $resultRaw->info);
 
             return $result;
@@ -267,5 +114,128 @@ class UdgerCom extends AbstractHttpParseProvider
         $this->hydrateDevice($result->getDevice(), $resultRaw->info);
 
         return $result;
+    }
+
+    /**
+     * @throws Exception\RequestException
+     *
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
+     */
+    protected function getResult(string $userAgent, array $headers): stdClass
+    {
+        /*
+         * an empty UserAgent makes no sense
+         */
+        if ('' === $userAgent) {
+            throw new Exception\NoResultFoundException('No result found for user agent: ' . $userAgent);
+        }
+
+        $params = [
+            'accesskey' => $this->apiKey,
+            'uastrig' => $userAgent,
+        ];
+
+        $body = http_build_query($params, null, '&');
+
+        $request = new Request('POST', self::$uri, ['Content-Type' => 'application/x-www-form-urlencoded'], $body);
+
+        $response = $this->getResponse($request);
+
+        /*
+         * no json returned?
+         */
+        $contentType = $response->getHeader('Content-Type');
+        if (!isset($contentType[0]) || 'application/json' !== $contentType[0]) {
+            throw new Exception\RequestException('Could not get valid "application/json" response from "' . $request->getUri() . '". Response is "' . $response->getBody()->getContents() . '"');
+        }
+
+        $content = json_decode($response->getBody()->getContents());
+
+        /*
+         * No result found?
+         */
+        if (isset($content->flag) && 3 === $content->flag) {
+            throw new Exception\NoResultFoundException('No result found for user agent: ' . $userAgent);
+        }
+
+        /*
+         * Errors
+         */
+        if (isset($content->flag) && 4 === $content->flag) {
+            throw new Exception\InvalidCredentialsException('Your API key "' . $this->apiKey . '" is not valid for ' . $this->getName());
+        }
+
+        if (isset($content->flag) && 6 === $content->flag) {
+            throw new Exception\LimitationExceededException('Exceeded the maximum number of request with API key "' . $this->apiKey . '" for ' . $this->getName());
+        }
+
+        if (isset($content->flag) && 3 < $content->flag) {
+            throw new Exception\RequestException('Could not get valid response from "' . $request->getUri() . '". Response is "' . $response->getBody()->getContents() . '"');
+        }
+
+        /*
+         * Missing data?
+         */
+        if (!$content instanceof stdClass || !isset($content->info)) {
+            throw new Exception\RequestException('Could not get valid response from "' . $request->getUri() . '". Response is "' . $response->getBody()->getContents() . '"');
+        }
+
+        return $content;
+    }
+
+    private function isBot(stdClass $resultRaw): bool
+    {
+        return isset($resultRaw->type) && 'Robot' === $resultRaw->type;
+    }
+
+    private function hydrateBot(Model\Bot $bot, stdClass $resultRaw): void
+    {
+        $bot->setIsBot(true);
+
+        if (!isset($resultRaw->ua_family)) {
+            return;
+        }
+
+        $bot->setName($this->getRealResult($resultRaw->ua_family));
+    }
+
+    private function hydrateBrowser(Model\Browser $browser, stdClass $resultRaw): void
+    {
+        if (isset($resultRaw->ua_family)) {
+            $browser->setName($this->getRealResult($resultRaw->ua_family, 'browser', 'name'));
+        }
+
+        if (!isset($resultRaw->ua_ver)) {
+            return;
+        }
+
+        $browser->getVersion()->setComplete($this->getRealResult($resultRaw->ua_ver));
+    }
+
+    private function hydrateRenderingEngine(Model\RenderingEngine $engine, stdClass $resultRaw): void
+    {
+        if (!isset($resultRaw->ua_engine)) {
+            return;
+        }
+
+        $engine->setName($this->getRealResult($resultRaw->ua_engine));
+    }
+
+    private function hydrateOperatingSystem(Model\OperatingSystem $os, stdClass $resultRaw): void
+    {
+        if (!isset($resultRaw->os_family)) {
+            return;
+        }
+
+        $os->setName($this->getRealResult($resultRaw->os_family));
+    }
+
+    private function hydrateDevice(Model\Device $device, stdClass $resultRaw): void
+    {
+        if (!isset($resultRaw->device_name)) {
+            return;
+        }
+
+        $device->setType($this->getRealResult($resultRaw->device_name));
     }
 }

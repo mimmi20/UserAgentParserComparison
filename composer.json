@@ -51,7 +51,7 @@
     "ext-tokenizer": "*",
     "ext-xml": "*",
     "ext-xmlwriter": "*",
-    "friendsofphp/php-cs-fixer": "^v3.11.0"
+    "mimmi20/coding-standard": "^3.0.11"
   },
   "config": {
     "preferred-install": {
@@ -64,6 +64,9 @@
       "*": "dist"
     },
     "lock": false,
-    "sort-packages": true
+    "sort-packages": true,
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
   }
 }

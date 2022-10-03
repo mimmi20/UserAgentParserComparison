@@ -1,107 +1,104 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider\Test;
 
-use UserAgentParserComparison\Exception\NoResultFoundException;
 use DeviceDetector\Parser\Client\Browser;
 use DeviceDetector\Parser\Device\AbstractDeviceParser;
+use FilterIterator;
+use Iterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
+use Spyc;
+use UserAgentParserComparison\Exception\NoResultFoundException;
 
-/**
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
- * @see https://github.com/browscap/browscap-php
- */
-class Matomo extends AbstractTestProvider
+use function array_key_exists;
+use function assert;
+use function bin2hex;
+use function in_array;
+use function sha1;
+
+/** @see https://github.com/browscap/browscap-php */
+final class Matomo extends AbstractTestProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'MatomoDeviceDetector';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://github.com/matomo/device-detector';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = 'matomo/device-detector';
 
     protected string $language = 'PHP';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => true,
+            'name' => true,
             'version' => false,
         ],
 
         'operatingSystem' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'device' => [
-            'model'    => true,
-            'brand'    => true,
-            'type'     => true,
+            'model' => true,
+            'brand' => true,
+            'type' => true,
             'isMobile' => true,
-            'isTouch'  => true,
+            'isTouch' => true,
         ],
 
         'bot' => [
             'isBot' => true,
-            'name'  => true,
-            'type'  => true,
+            'name' => true,
+            'type' => true,
         ],
     ];
 
-    /**
-     * @throws NoResultFoundException
-     *
-     * @return iterable
-     */
+    /** @throws NoResultFoundException */
     public function getTests(): iterable
     {
         $path = 'vendor/matomo/device-detector/Tests/fixtures';
 
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
-        $files = new class($iterator, 'yml') extends \FilterIterator {
-            private string $extension;
-
-            public function __construct(\Iterator $iterator , string $extension)
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
+        $files    = new class ($iterator, 'yml') extends FilterIterator {
+            public function __construct(Iterator $iterator, private string $extension)
             {
                 parent::__construct($iterator);
-                $this->extension = $extension;
             }
 
             public function accept(): bool
             {
                 $file = $this->getInnerIterator()->current();
 
-                assert($file instanceof \SplFileInfo);
+                assert($file instanceof SplFileInfo);
 
                 return $file->isFile() && $file->getExtension() === $this->extension;
             }
         };
 
         foreach ($files as $file) {
-            assert($file instanceof \SplFileInfo);
+            assert($file instanceof SplFileInfo);
 
             $file = $file->getPathname();
 
-            $provider = \Spyc::YAMLLoad($file);
+            $provider = Spyc::YAMLLoad($file);
 
             foreach ($provider as $data) {
                 // If no client property, may be in bot file, which we're not parsing just yet
@@ -136,10 +133,10 @@ class Matomo extends AbstractTestProvider
 
                     'resBotIsBot' => null,
                     'resBotName' => null,
-                    'resBotType' => null
+                    'resBotType' => null,
                 ];
 
-                $key = bin2hex(sha1($ua, true));
+                $key      = bin2hex(sha1($ua, true));
                 $toInsert = [
                     'uaString' => $ua,
                     'result' => $data,
@@ -150,16 +147,19 @@ class Matomo extends AbstractTestProvider
         }
     }
 
-    // These functions are adapted from DeviceDetector's source
-    // Didn't want to use the actual classes here due to performance and consideration of what we're actually testing
-    // (i.e. how can the parser ever fail on this field if the parser is generating it)
+    /**
+     * These functions are adapted from DeviceDetector's source
+     * Didn't want to use the actual classes here due to performance and consideration of what we're actually testing
+     * (i.e. how can the parser ever fail on this field if the parser is generating it)
+     */
     private function isMobile(array $data): bool
     {
         $device     = $data['device']['type'];
         $deviceType = AbstractDeviceParser::getAvailableDeviceTypes()[$device] ?? null;
 
         // Mobile device types
-        if (!empty($deviceType) && in_array($deviceType, [
+        if (
+            !empty($deviceType) && in_array($deviceType, [
                 AbstractDeviceParser::DEVICE_TYPE_FEATURE_PHONE,
                 AbstractDeviceParser::DEVICE_TYPE_SMARTPHONE,
                 AbstractDeviceParser::DEVICE_TYPE_TABLET,
@@ -172,7 +172,8 @@ class Matomo extends AbstractTestProvider
         }
 
         // non mobile device types
-        if (!empty($deviceType) && in_array($deviceType, [
+        if (
+            !empty($deviceType) && in_array($deviceType, [
                 AbstractDeviceParser::DEVICE_TYPE_TV,
                 AbstractDeviceParser::DEVICE_TYPE_SMART_DISPLAY,
                 AbstractDeviceParser::DEVICE_TYPE_CONSOLE,
@@ -182,8 +183,9 @@ class Matomo extends AbstractTestProvider
         }
 
         // Check for browsers available for mobile devices only
-        if (isset($data['client']['type'])
-            && $data['client']['type'] === 'browser'
+        if (
+            isset($data['client']['type'])
+            && 'browser' === $data['client']['type']
             && Browser::isMobileOnlyBrowser($data['client']['short_name'] ?? 'UNK')
         ) {
             return true;
@@ -195,8 +197,9 @@ class Matomo extends AbstractTestProvider
     private function isDesktop(array $data): bool
     {
         // Check for browsers available for mobile devices only
-        if (isset($data['client']['type'])
-            && $data['client']['type'] === 'browser'
+        if (
+            isset($data['client']['type'])
+            && 'browser' === $data['client']['type']
             && Browser::isMobileOnlyBrowser($data['client']['short_name'] ?? 'UNK')
         ) {
             return false;

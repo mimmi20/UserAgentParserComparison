@@ -1,113 +1,120 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider\Test;
 
-use UserAgentParserComparison\Exception\NoResultFoundException;
-use WhichBrowser\Model\Version;
-use WhichBrowser\Model\Main;
-use WhichBrowser\Model\Family;
-use WhichBrowser\Model\Using;
+use Exception;
+use FilterIterator;
+use Iterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 use Symfony\Component\Yaml\Yaml;
+use Throwable;
+use UserAgentParserComparison\Exception\NoResultFoundException;
+use WhichBrowser\Model\Family;
+use WhichBrowser\Model\Main;
+use WhichBrowser\Model\Using;
+use WhichBrowser\Model\Version;
 
-/**
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
- * @see https://github.com/browscap/browscap-php
- */
-class WhichBrowser extends AbstractTestProvider
+use function array_key_exists;
+use function assert;
+use function bin2hex;
+use function count;
+use function file_get_contents;
+use function in_array;
+use function is_array;
+use function is_string;
+use function json_encode;
+use function mb_strpos;
+use function print_r;
+use function serialize;
+use function sha1;
+use function str_replace;
+
+/** @see https://github.com/browscap/browscap-php */
+final class WhichBrowser extends AbstractTestProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'WhichBrowser';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://github.com/WhichBrowser/Parser';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = 'whichbrowser/parser';
 
     protected string $language = 'PHP';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'operatingSystem' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'device' => [
-            'model'    => true,
-            'brand'    => true,
-            'type'     => true,
+            'model' => true,
+            'brand' => true,
+            'type' => true,
             'isMobile' => true,
-            'isTouch'  => false,
+            'isTouch' => false,
         ],
 
         'bot' => [
             'isBot' => true,
-            'name'  => true,
-            'type'  => false,
+            'name' => true,
+            'type' => false,
         ],
     ];
 
-    /**
-     * @throws NoResultFoundException
-     *
-     * @return iterable
-     */
+    /** @throws NoResultFoundException */
     public function getTests(): iterable
     {
         $path = 'vendor/whichbrowser/parser/tests/data';
 
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
-        $files = new class($iterator, 'yaml') extends \FilterIterator {
-            private string $extension;
-
-            public function __construct(\Iterator $iterator , string $extension)
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
+        $files    = new class ($iterator, 'yaml') extends FilterIterator {
+            public function __construct(Iterator $iterator, private string $extension)
             {
                 parent::__construct($iterator);
-                $this->extension = $extension;
             }
 
             public function accept(): bool
             {
                 $file = $this->getInnerIterator()->current();
 
-                assert($file instanceof \SplFileInfo);
+                assert($file instanceof SplFileInfo);
 
                 return $file->isFile() && $file->getExtension() === $this->extension;
             }
         };
 
         foreach ($files as $file) {
-            assert($file instanceof \SplFileInfo);
+            assert($file instanceof SplFileInfo);
 
             $file = $file->getPathname();
 
             $fixtureData = Yaml::parse(file_get_contents($file));
 
-            if (! is_array($fixtureData)) {
-                throw new \Exception('wrong result!');
+            if (!is_array($fixtureData)) {
+                throw new Exception('wrong result!');
             }
 
             foreach ($fixtureData as $row) {
@@ -143,12 +150,12 @@ class WhichBrowser extends AbstractTestProvider
 
                     'resBotIsBot' => null,
                     'resBotName' => null,
-                    'resBotType' => null
+                    'resBotType' => null,
                 ];
 
                 try {
-                    $result = $this->hydrateWhichbrowser($data, $row, $headers);
-                } catch (\Exception $ex) {
+                    $result = $this->hydrateWhichbrowser($data, $row);
+                } catch (Throwable) {
                     continue;
                 }
 
@@ -156,10 +163,10 @@ class WhichBrowser extends AbstractTestProvider
 
                 $toInsert = [
                     'uaString' => $uaString,
-                    'result' => $result
+                    'result' => $result,
                 ];
 
-                if (count($headers) > 1) {
+                if (1 < count($headers)) {
                     unset($headers['User-Agent']);
 
                     $toInsert['uaAdditionalHeaders'] = $headers;
@@ -175,38 +182,38 @@ class WhichBrowser extends AbstractTestProvider
     }
 
     /**
-     * @param string|array $version
-     * @return Version
-     * @throws \Exception
+     * @param array|string $version
+     *
+     * @throws Exception
      */
     private function getWhichbrowserVersion($version): Version
     {
-        if (! is_array($version)) {
-            $version = [
-                'value' => $version
-            ];
+        if (!is_array($version)) {
+            $version = ['value' => $version];
         }
 
         foreach ($version as $key => $value) {
-            if (! in_array($key, [
-                'value',
-                'hidden',
-                'nickname',
-                'alias',
-                'details',
-                'builds'
-            ])) {
-                throw new \Exception('Unknown version key: ' . $key);
+            if (
+                !in_array($key, [
+                    'value',
+                    'hidden',
+                    'nickname',
+                    'alias',
+                    'details',
+                    'builds',
+                ], true)
+            ) {
+                throw new Exception('Unknown version key: ' . $key);
             }
         }
 
         return new Version($version);
     }
 
-    private function hydrateWhichbrowser(array $data, array $row, array $headers): array
+    private function hydrateWhichbrowser(array $data, array $row): array
     {
         if (isset($row['engine']) || isset($row['features']) || isset($row['useragent'])) {
-            throw new \Exception('client detection...');
+            throw new Exception('client detection...');
         }
 
         $data['resRawResult'] = serialize($row);
@@ -219,49 +226,51 @@ class WhichBrowser extends AbstractTestProvider
         $main = new Main();
 
         if (isset($result['browser'])) {
-
             $toUse = [];
 
             foreach ($result['browser'] as $key => $value) {
-
-                if ($key == 'name') {
+                if ('name' === $key) {
                     $toUse['name'] = $value;
-                } elseif ($key == 'type') {
+                } elseif ('type' === $key) {
                     $toUse['type'] = $value;
-                } elseif ($key == 'alias') {
+                } elseif ('alias' === $key) {
                     $toUse['alias'] = $value;
-                } elseif ($key == 'version') {
+                } elseif ('version' === $key) {
                     $toUse['version'] = $this->getWhichbrowserVersion($value);
-                } elseif ($key == 'using') {
+                } elseif ('using' === $key) {
                     $usingToUse = [];
 
-                    if (! is_array($value)) {
+                    if (!is_array($value)) {
                         $usingToUse['name'] = $value;
                     }
+
                     if (isset($value['name'])) {
                         $usingToUse['name'] = $value['name'];
                     }
+
                     if (isset($value['version'])) {
                         $usingToUse['version'] = $this->getWhichbrowserVersion($value['version']);
                     }
 
                     $toUse['using'] = new Using($usingToUse);
-                } elseif ($key == 'family') {
+                } elseif ('family' === $key) {
                     $familyToUse = [];
 
-                    if (! is_array($value)) {
+                    if (!is_array($value)) {
                         $familyToUse['name'] = $value;
                     }
+
                     if (isset($value['name'])) {
                         $familyToUse['name'] = $value['name'];
                     }
+
                     if (isset($value['version'])) {
                         $familyToUse['version'] = $this->getWhichbrowserVersion($value['version']);
                     }
 
                     $toUse['family'] = new Family($familyToUse);
                 } else {
-                    throw new \Exception('unknown key: ' . $key . ' / ' . print_r($value, true));
+                    throw new Exception('unknown key: ' . $key . ' / ' . print_r($value, true));
                 }
             }
 
@@ -269,17 +278,15 @@ class WhichBrowser extends AbstractTestProvider
         }
 
         if (isset($result['engine'])) {
-
             $toUse = [];
 
             foreach ($result['engine'] as $key => $value) {
-
-                if ($key == 'name') {
+                if ('name' === $key) {
                     $toUse['name'] = $value;
-                } elseif ($key == 'version') {
+                } elseif ('version' === $key) {
                     $toUse['version'] = $this->getWhichbrowserVersion($value);
                 } else {
-                    throw new \Exception('unknown key: ' . $key . ' / ' . print_r($value, true));
+                    throw new Exception('unknown key: ' . $key . ' / ' . print_r($value, true));
                 }
             }
 
@@ -287,33 +294,33 @@ class WhichBrowser extends AbstractTestProvider
         }
 
         if (isset($result['os'])) {
-
             $toUse = [];
 
             foreach ($result['os'] as $key => $value) {
-
-                if ($key == 'name') {
+                if ('name' === $key) {
                     $toUse['name'] = $value;
-                } elseif ($key == 'alias') {
+                } elseif ('alias' === $key) {
                     $toUse['alias'] = $value;
-                } elseif ($key == 'family') {
+                } elseif ('family' === $key) {
                     $familyToUse = [];
 
-                    if (! is_array($value)) {
+                    if (!is_array($value)) {
                         $familyToUse['name'] = $value;
                     }
+
                     if (isset($value['name'])) {
                         $familyToUse['name'] = $value['name'];
                     }
+
                     if (isset($value['version'])) {
                         $familyToUse['version'] = $this->getWhichbrowserVersion($value['version']);
                     }
 
                     $toUse['family'] = new Family($familyToUse);
-                } elseif ($key == 'version') {
+                } elseif ('version' === $key) {
                     $toUse['version'] = $this->getWhichbrowserVersion($value);
                 } else {
-                    throw new \Exception('unknown key: ' . $key . ' / ' . print_r($value, true));
+                    throw new Exception('unknown key: ' . $key . ' / ' . print_r($value, true));
                 }
             }
 
@@ -321,25 +328,23 @@ class WhichBrowser extends AbstractTestProvider
         }
 
         if (isset($result['device'])) {
-
             $toUse = [];
 
             foreach ($result['device'] as $key => $value) {
-
-                if ($key == 'type') {
+                if ('type' === $key) {
                     $toUse['type'] = $value;
-                } elseif ($key == 'subtype') {
+                } elseif ('subtype' === $key) {
                     $toUse['subtype'] = $value;
-                } elseif ($key == 'manufacturer') {
+                } elseif ('manufacturer' === $key) {
                     $toUse['manufacturer'] = $value;
-                } elseif ($key == 'model') {
+                } elseif ('model' === $key) {
                     $toUse['model'] = $value;
-                } elseif ($key == 'series') {
+                } elseif ('series' === $key) {
                     $toUse['series'] = $value;
-                } elseif ($key == 'carrier') {
+                } elseif ('carrier' === $key) {
                     $toUse['carrier'] = $value;
                 } else {
-                    throw new \Exception('unknown key: ' . $key . ' / ' . $value);
+                    throw new Exception('unknown key: ' . $key . ' / ' . $value);
                 }
             }
 
@@ -353,54 +358,59 @@ class WhichBrowser extends AbstractTestProvider
         /*
          * convert to our result
          */
-        if ($main->getType() === 'bot') {
+        if ('bot' === $main->getType()) {
             $data['resBotIsBot'] = 1;
 
-            if ($main->browser->getName() != '') {
+            if ('' !== $main->browser->getName()) {
                 $data['resBotName'] = $main->browser->getName();
             }
 
             return $data;
         }
 
-        if ($main->browser->getName() != '') {
+        if ('' !== $main->browser->getName()) {
             $data['resBrowserName'] = $main->browser->getName();
 
-            if ($main->browser->getVersion() != '') {
+            if ('' !== $main->browser->getVersion()) {
                 $data['resBrowserVersion'] = $main->browser->getVersion();
             }
-        } elseif (isset($main->browser->using) && $main->browser->using instanceof \WhichBrowser\Model\Using && $main->browser->using->getName() != '') {
+        } elseif (isset($main->browser->using) && $main->browser->using instanceof Using && '' !== $main->browser->using->getName()) {
             $data['resBrowserName'] = $main->browser->using->getName();
 
-            if ($main->browser->using->getVersion() != '') {
+            if ('' !== $main->browser->using->getVersion()) {
                 $data['resBrowserVersion'] = $main->browser->using->getVersion();
             }
         }
 
-        if ($main->engine->getName() != '') {
+        if ('' !== $main->engine->getName()) {
             $data['resEngineName'] = $main->engine->getName();
         }
-        if ($main->engine->getVersion() != '') {
+
+        if ('' !== $main->engine->getVersion()) {
             $data['resEngineVersion'] = $main->engine->getVersion();
         }
 
-        if ($main->os->getName() != '') {
+        if ('' !== $main->os->getName()) {
             $data['resOsName'] = $main->os->getName();
         }
-        if ($main->os->getVersion() != '') {
+
+        if ('' !== $main->os->getVersion()) {
             $data['resOsVersion'] = $main->os->getVersion();
         }
 
-        if ($main->device->getModel() != '') {
+        if ('' !== $main->device->getModel()) {
             $data['resDeviceModel'] = $main->device->getModel();
         }
-        if ($main->device->getManufacturer() != '') {
+
+        if ('' !== $main->device->getManufacturer()) {
             $data['resDeviceBrand'] = $main->device->getManufacturer();
         }
-        if ($main->getType() != '') {
+
+        if ('' !== $main->getType()) {
             $data['resDeviceType'] = $main->getType();
         }
-        if ($main->isMobile() != '') {
+
+        if ('' !== $main->isMobile()) {
             $data['resDeviceIsMobile'] = $main->isMobile();
         }
 

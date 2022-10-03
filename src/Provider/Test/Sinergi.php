@@ -1,75 +1,71 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider\Test;
 
 use UserAgentParserComparison\Exception\NoResultFoundException;
 
-/**
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
- * @see https://github.com/browscap/browscap-php
- */
-class Sinergi extends AbstractTestProvider
+use function array_map;
+use function bin2hex;
+use function explode;
+use function implode;
+use function sha1;
+use function simplexml_load_file;
+use function trim;
+
+/** @see https://github.com/browscap/browscap-php */
+final class Sinergi extends AbstractTestProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'SinergiBrowserDetector';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://github.com/sinergi/php-browser-detector';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = 'sinergi/browser-detector';
 
     protected string $language = 'PHP';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'operatingSystem' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'device' => [
-            'model'    => true,
-            'brand'    => false,
-            'type'     => false,
+            'model' => true,
+            'brand' => false,
+            'type' => false,
             'isMobile' => true,
-            'isTouch'  => false,
+            'isTouch' => false,
         ],
 
         'bot' => [
             'isBot' => true,
-            'name'  => false,
-            'type'  => false,
+            'name' => false,
+            'type' => false,
         ],
     ];
 
-    /**
-     * @throws NoResultFoundException
-     *
-     * @return iterable
-     */
+    /** @throws NoResultFoundException */
     public function getTests(): iterable
     {
         $file = 'vendor/sinergi/browser-detector/tests/BrowserDetector/Tests/_files/UserAgentStrings.xml';
@@ -102,10 +98,10 @@ class Sinergi extends AbstractTestProvider
 
                     'resBotIsBot' => null,
                     'resBotName' => null,
-                    'resBotType' => null
+                    'resBotType' => null,
                 ];
 
-                $key = bin2hex(sha1($ua, true));
+                $key      = bin2hex(sha1($ua, true));
                 $toInsert = [
                     'uaString' => $ua,
                     'result' => $data,

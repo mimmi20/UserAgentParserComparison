@@ -1,79 +1,75 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider\Test;
 
 use UserAgentParserComparison\Exception\NoResultFoundException;
 
-/**
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
- * @see https://github.com/browscap/browscap-php
- */
-class Donatj extends AbstractTestProvider
+use function bin2hex;
+use function file_exists;
+use function file_get_contents;
+use function filesize;
+use function json_decode;
+use function sha1;
+
+/** @see https://github.com/browscap/browscap-php */
+final class Donatj extends AbstractTestProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'DonatjUAParser';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://github.com/donatj/PhpUserAgent';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = 'donatj/phpuseragentparser';
 
     protected string $language = 'PHP';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'operatingSystem' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'device' => [
-            'model'    => false,
-            'brand'    => false,
-            'type'     => false,
+            'model' => false,
+            'brand' => false,
+            'type' => false,
             'isMobile' => false,
-            'isTouch'  => false,
+            'isTouch' => false,
         ],
 
         'bot' => [
             'isBot' => false,
-            'name'  => false,
-            'type'  => false,
+            'name' => false,
+            'type' => false,
         ],
     ];
 
-    /**
-     * @throws NoResultFoundException
-     *
-     * @return iterable
-     */
+    /** @throws NoResultFoundException */
     public function getTests(): iterable
     {
-        if( file_exists('vendor/donatj/phpuseragentparser/tests/user_agents.json')
-            && filesize('vendor/donatj/phpuseragentparser/tests/user_agents.json') > 0
+        if (
+            file_exists('vendor/donatj/phpuseragentparser/tests/user_agents.json')
+            && 0 < filesize('vendor/donatj/phpuseragentparser/tests/user_agents.json')
         ) {
             $file = 'vendor/donatj/phpuseragentparser/tests/user_agents.json';
         } else {
@@ -85,7 +81,6 @@ class Donatj extends AbstractTestProvider
         $json = json_decode($content, true);
 
         foreach ($json as $ua => $row) {
-
             $data = [
                 'resFilename' => $file,
 
@@ -106,10 +101,10 @@ class Donatj extends AbstractTestProvider
 
                 'resBotIsBot' => null,
                 'resBotName' => null,
-                'resBotType' => null
+                'resBotType' => null,
             ];
 
-            $key = bin2hex(sha1($ua, true));
+            $key      = bin2hex(sha1($ua, true));
             $toInsert = [
                 'uaString' => $ua,
                 'result' => $data,

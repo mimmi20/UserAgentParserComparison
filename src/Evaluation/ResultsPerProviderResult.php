@@ -1,103 +1,107 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Evaluation;
 
-class ResultsPerProviderResult
+use function explode;
+use function ucfirst;
+
+final class ResultsPerProviderResult
 {
+    private array $currentValue;
+    private array $values;
+    private array $harmonizedValues;
+    private string $type;
+    private int $sameResultCount           = 0;
+    private int $harmonizedSameResultCount = 0;
 
-    private $currentValue;
-
-    private $values;
-
-    private $harmonizedValues;
-
-    private $type;
-
-    private $sameResultCount = 0;
-
-    private $harmonizedSameResultCount = 0;
-
-    public function setCurrentValue($currentValue)
+    public function setCurrentValue(array $currentValue): void
     {
         $this->currentValue = $currentValue;
     }
 
-    public function getCurrentValue()
+    public function getCurrentValue(): array
     {
         return $this->currentValue;
     }
 
-    public function setValue($value)
+    public function setValue(string | null $value): void
     {
-        if ($value === null) {
+        if (null === $value) {
             $values = [];
         } else {
             $values = explode('~~~', $value);
         }
-        
+
         $this->values = $values;
     }
 
-    public function getValues()
+    public function getValues(): array
     {
         return $this->values;
     }
 
-    public function setType($type)
+    public function setType(string $type): void
     {
         $this->type = $type;
     }
 
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
 
-    public function evaluate()
+    public function evaluate(): void
     {
-        $this->sameResultCount = 0;
+        $this->sameResultCount           = 0;
         $this->harmonizedSameResultCount = 0;
-        
+
         foreach ($this->getValues() as $value) {
-            if ($this->getCurrentValue() == $value) {
-                $this->sameResultCount ++;
+            if ($this->getCurrentValue() !== $value) {
+                continue;
             }
+
+            ++$this->sameResultCount;
         }
-        
-        $class = $this->getHarmonizerClass();
+
+        $class                  = $this->getHarmonizerClass();
         $harmonizedCurrentValue = $class::getHarmonizedValue($this->getCurrentValue());
-        
+
         foreach ($this->getHarmonizedValues() as $value) {
-            if ($harmonizedCurrentValue == $value) {
-                $this->harmonizedSameResultCount ++;
+            if ($harmonizedCurrentValue !== $value) {
+                continue;
             }
+
+            ++$this->harmonizedSameResultCount;
         }
     }
 
-    protected function getHarmonizerClass()
-    {
-        return '\UserAgentParserComparison\Harmonize\\' . ucfirst($this->getType());
-    }
-
-    protected function getHarmonizedValues()
-    {
-        if ($this->harmonizedValues !== null) {
-            return $this->harmonizedValues;
-        }
-        
-        $class = $this->getHarmonizerClass();
-        
-        $this->harmonizedValues = $class::getHarmonizedValues($this->getValues());
-        
-        return $this->harmonizedValues;
-    }
-
-    public function getSameResultCount()
+    public function getSameResultCount(): int
     {
         return $this->sameResultCount;
     }
 
-    public function getHarmonizedSameResultCount()
+    public function getHarmonizedSameResultCount(): int
     {
         return $this->harmonizedSameResultCount;
+    }
+
+    private function getHarmonizerClass(): string
+    {
+        return '\UserAgentParserComparison\Harmonize\\' . ucfirst($this->getType());
+    }
+
+    private function getHarmonizedValues(): array
+    {
+        if (null !== $this->harmonizedValues) {
+            return $this->harmonizedValues;
+        }
+
+        $class = $this->getHarmonizerClass();
+
+        $this->harmonizedValues = $class::getHarmonizedValues($this->getValues());
+
+        return $this->harmonizedValues;
     }
 }

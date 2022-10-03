@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 use UserAgentParserComparison\Html\Index;
 
 /*
@@ -10,17 +13,17 @@ echo '~~~ create html index ~~~' . PHP_EOL;
 
 echo '.';
 
-/* @var $pdo \PDO */
-
+/** @var PDO $pdo */
 $generate = new Index($pdo, 'UserAgentParserComparison comparison');
 
 /*
-     * persist!
-     */
+ * persist!
+ */
 $folder = $basePath;
-if (! file_exists($folder)) {
+if (!file_exists($folder)) {
     mkdir($folder, 0777, true);
 }
+
 file_put_contents($folder . '/../index.html', $generate->getHtml());
 
 echo PHP_EOL;

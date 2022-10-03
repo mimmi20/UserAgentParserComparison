@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider;
 
 use UserAgentParserComparison\Exception\NoResultFoundException;
@@ -8,111 +11,80 @@ use UserAgentParserComparison\Model;
 /**
  * Abstraction for donatj/PhpUserAgent
  *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  * @see https://github.com/donatj/PhpUserAgent
  */
-class DonatjUAParser extends AbstractParseProvider
+final class DonatjUAParser extends AbstractParseProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'DonatjUAParser';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://github.com/donatj/PhpUserAgent';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = 'donatj/phpuseragentparser';
 
     protected string $language = 'PHP';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'operatingSystem' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'device' => [
-            'model'    => false,
-            'brand'    => false,
-            'type'     => false,
+            'model' => false,
+            'brand' => false,
+            'type' => false,
             'isMobile' => false,
-            'isTouch'  => false,
+            'isTouch' => false,
         ],
 
         'bot' => [
             'isBot' => false,
-            'name'  => false,
-            'type'  => false,
+            'name' => false,
+            'type' => false,
         ],
     ];
 
     private string $functionName = '\parse_user_agent';
 
-    /**
-     *
-     * @throws PackageNotLoadedException
-     */
+    /** @throws PackageNotLoadedException */
     public function __construct()
     {
         $this->checkIfInstalled();
     }
 
     /**
+     * @param array $headers
      *
-     * @param array $resultRaw
+     * @throws NoResultFoundException
      *
-     * @return bool
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    private function hasResult(array $resultRaw): bool
-    {
-        if ($this->isRealResult($resultRaw['browser'])) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     *
-     * @param Model\Browser $browser
-     * @param array         $resultRaw
-     */
-    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
-    {
-        $browser->setName($this->getRealResult($resultRaw['browser']));
-        $browser->getVersion()->setComplete($this->getRealResult($resultRaw['version']));
-    }
-
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
         $functionName = $this->functionName;
 
         $resultRaw = $functionName($userAgent);
 
-        if ($this->hasResult($resultRaw) !== true) {
+        if (true !== $this->hasResult($resultRaw)) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -135,5 +107,18 @@ class DonatjUAParser extends AbstractParseProvider
         // device is mixed with os
 
         return $result;
+    }
+
+    /** @param array $resultRaw */
+    private function hasResult(array $resultRaw): bool
+    {
+        return $this->isRealResult($resultRaw['browser']);
+    }
+
+    /** @param array $resultRaw */
+    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
+    {
+        $browser->setName($this->getRealResult($resultRaw['browser']));
+        $browser->getVersion()->setComplete($this->getRealResult($resultRaw['version']));
     }
 }

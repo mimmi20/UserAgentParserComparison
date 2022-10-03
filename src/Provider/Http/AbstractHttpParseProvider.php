@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider\Http;
 
 use GuzzleHttp\Client;
@@ -8,54 +11,33 @@ use Psr\Http\Message\RequestInterface;
 use UserAgentParserComparison\Exception;
 use UserAgentParserComparison\Provider\AbstractParseProvider;
 
+use function assert;
+
 /**
  * Abstraction for all HTTP providers
- *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  */
 abstract class AbstractHttpParseProvider extends AbstractParseProvider
 {
-    /**
-     *
-     * @var Client
-     */
-    private $client;
-
-    /**
-     *
-     * @param Client $client
-     */
-    public function __construct(Client $client)
+    public function __construct(private Client $client)
     {
-        $this->client = $client;
     }
 
-    /**
-     *
-     * @return Client
-     */
-    public function getClient()
+    public function getClient(): Client
     {
         return $this->client;
     }
 
-    /**
-     *
-     * @param  RequestInterface           $request
-     * @return Response
-     * @throws Exception\RequestException
-     */
-    protected function getResponse(RequestInterface $request)
+    /** @throws Exception\RequestException */
+    protected function getResponse(RequestInterface $request): Response
     {
         try {
-            /* @var $response \GuzzleHttp\Psr7\Response */
             $response = $this->getClient()->send($request);
+            assert($response instanceof Response);
         } catch (GuzzleHttpException $ex) {
             throw new Exception\RequestException('Could not get valid response from "' . $request->getUri() . '"', null, $ex);
         }
 
-        if ($response->getStatusCode() !== 200) {
+        if (200 !== $response->getStatusCode()) {
             throw new Exception\RequestException('Could not get valid response from "' . $request->getUri() . '". Status code is: "' . $response->getStatusCode() . '"');
         }
 

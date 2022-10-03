@@ -1,6 +1,11 @@
 <?php
+
+declare(strict_types = 1);
+
+use Psr\Log\NullLogger;
 use Ramsey\Uuid\Uuid;
 use UserAgentParserComparison\Provider;
+use UserAgentParserComparison\Provider\Test\AbstractTestProvider;
 
 include 'bootstrap.php';
 
@@ -15,19 +20,19 @@ $skipUserAgents = [
     'Ploetz + Zeller (http://www.ploetz-zeller.de) Link Validator v1.0 (support@p-und-z.de) for ARIS Business Architect',
 ];
 
-/* @var $pdo \PDO */
+/** @var PDO $pdo */
 
 $statementSelectProvider = $pdo->prepare('SELECT * FROM `test-provider` WHERE `proName` = :proName');
 $statementInsertProvider = $pdo->prepare('INSERT INTO `provider` (`proId`, `proType`, `proName`, `proHomepage`, `proVersion`, `proLastReleaseDate`, `proPackageName`, `proLanguage`, `proLocal`, `proApi`, `proCanDetectBrowserName`, `proCanDetectBrowserVersion`, `proCanDetectEngineName`, `proCanDetectEngineVersion`, `proCanDetectOsName`, `proCanDetectOsVersion`, `proCanDetectDeviceModel`, `proCanDetectDeviceBrand`, `proCanDetectDeviceType`, `proCanDetectDeviceIsMobile`, `proCanDetectDeviceIsTouch`, `proCanDetectBotIsBot`, `proCanDetectBotName`, `proCanDetectBotType`) VALUES (:proId, :proType, :proName, :proHomepage, :proVersion, :proLastReleaseDate, :proPackageName, :proLanguage, :proLocal, :proApi, :proCanDetectBrowserName, :proCanDetectBrowserVersion, :proCanDetectEngineName, :proCanDetectEngineVersion, :proCanDetectOsName, :proCanDetectOsVersion, :proCanDetectDeviceModel, :proCanDetectDeviceBrand, :proCanDetectDeviceType, :proCanDetectDeviceIsMobile, :proCanDetectDeviceIsTouch, :proCanDetectBotIsBot, :proCanDetectBotName, :proCanDetectBotType)');
 $statementUpdateProvider = $pdo->prepare('UPDATE `provider` SET `proType` = :proType, `proName` = :proName, `proHomepage` = :proHomepage, `proVersion` = :proVersion, `proLastReleaseDate` = :proLastReleaseDate, `proPackageName` = :proPackageName, `proLanguage` = :proLanguage, `proLocal` = :proLocal, `proApi` = :proApi, `proCanDetectBrowserName` = :proCanDetectBrowserName, `proCanDetectBrowserVersion` = :proCanDetectBrowserVersion, `proCanDetectEngineName` = :proCanDetectEngineName, `proCanDetectEngineVersion` = :proCanDetectEngineVersion, `proCanDetectOsName` = :proCanDetectOsName, `proCanDetectOsVersion` = :proCanDetectOsVersion, `proCanDetectDeviceModel` = :proCanDetectDeviceModel, `proCanDetectDeviceBrand` = :proCanDetectDeviceBrand, `proCanDetectDeviceType` = :proCanDetectDeviceType, `proCanDetectDeviceIsMobile` = :proCanDetectDeviceIsMobile, `proCanDetectDeviceIsTouch` = :proCanDetectDeviceIsTouch, `proCanDetectBotIsBot` = :proCanDetectBotIsBot, `proCanDetectBotName` = :proCanDetectBotName, `proCanDetectBotType` = :proCanDetectBotType WHERE `proId` = :proId');
 
-$statementSelectUa       = $pdo->prepare('SELECT * FROM `userAgent` WHERE `uaHash` = :uaHash');
-$statementInsertUa       = $pdo->prepare('INSERT INTO `useragent` (`uaId`, `uaHash`, `uaString`, `uaAdditionalHeaders`) VALUES (:uaId, :uaHash, :uaString, :uaAdditionalHeaders)');
-$statementUpdateUa       = $pdo->prepare('UPDATE `useragent` SET `uaHash` = :uaHash, `uaString` = :uaString, `uaAdditionalHeaders` = :uaAdditionalHeaders WHERE `uaId` = :uaId');
+$statementSelectUa = $pdo->prepare('SELECT * FROM `userAgent` WHERE `uaHash` = :uaHash');
+$statementInsertUa = $pdo->prepare('INSERT INTO `useragent` (`uaId`, `uaHash`, `uaString`, `uaAdditionalHeaders`) VALUES (:uaId, :uaHash, :uaString, :uaAdditionalHeaders)');
+$statementUpdateUa = $pdo->prepare('UPDATE `useragent` SET `uaHash` = :uaHash, `uaString` = :uaString, `uaAdditionalHeaders` = :uaAdditionalHeaders WHERE `uaId` = :uaId');
 
-$statementSelectResult   = $pdo->prepare('SELECT * FROM `result` WHERE `provider_id` = :proId AND `userAgent_id` = :uaId');
-$statementInsertResult   = $pdo->prepare('INSERT INTO `result` (`provider_id`, `userAgent_id`, `resId`, `resProviderVersion`, `resFilename`, `resParseTime`, `resLastChangeDate`, `resResultFound`, `resBrowserName`, `resBrowserVersion`, `resEngineName`, `resEngineVersion`, `resOsName`, `resOsVersion`, `resDeviceModel`, `resDeviceBrand`, `resDeviceType`, `resDeviceIsMobile`, `resDeviceIsTouch`, `resBotIsBot`, `resBotName`, `resBotType`, `resRawResult`) VALUES (:proId, :uaId, :resId, :resProviderVersion, :resFilename, :resParseTime, :resLastChangeDate, :resResultFound, :resBrowserName, :resBrowserVersion, :resEngineName, :resEngineVersion, :resOsName, :resOsVersion, :resDeviceModel, :resDeviceBrand, :resDeviceType, :resDeviceIsMobile, :resDeviceIsTouch, :resBotIsBot, :resBotName, :resBotType, :resRawResult)');
-$statementUpdateResult   = $pdo->prepare('UPDATE `result` SET `provider_id` = :proId, `userAgent_id` = :uaId, `resProviderVersion` = :resProviderVersion, `resFilename` = :resFilename, `resParseTime` = :resParseTime, `resLastChangeDate` = :resLastChangeDate, `resResultFound` = :resResultFound, `resBrowserName` = :resBrowserName, `resBrowserVersion` = :resBrowserVersion, `resEngineName` = :resEngineName, `resEngineVersion` = :resEngineVersion, `resOsName` = :resOsName, `resOsVersion` = :resOsVersion, `resDeviceModel` = :resDeviceModel, `resDeviceBrand` = :resDeviceBrand, `resDeviceType` = :resDeviceType, `resDeviceIsMobile` = :resDeviceIsMobile, `resDeviceIsTouch` = :resDeviceIsTouch, `resBotIsBot` = :resBotIsBot, `resBotName` = :resBotName, `resBotType` = :resBotType, `resRawResult` = :resRawResult WHERE `resId` = :resId');
+$statementSelectResult = $pdo->prepare('SELECT * FROM `result` WHERE `provider_id` = :proId AND `userAgent_id` = :uaId');
+$statementInsertResult = $pdo->prepare('INSERT INTO `result` (`provider_id`, `userAgent_id`, `resId`, `resProviderVersion`, `resFilename`, `resParseTime`, `resLastChangeDate`, `resResultFound`, `resBrowserName`, `resBrowserVersion`, `resEngineName`, `resEngineVersion`, `resOsName`, `resOsVersion`, `resDeviceModel`, `resDeviceBrand`, `resDeviceType`, `resDeviceIsMobile`, `resDeviceIsTouch`, `resBotIsBot`, `resBotName`, `resBotType`, `resRawResult`) VALUES (:proId, :uaId, :resId, :resProviderVersion, :resFilename, :resParseTime, :resLastChangeDate, :resResultFound, :resBrowserName, :resBrowserVersion, :resEngineName, :resEngineVersion, :resOsName, :resOsVersion, :resDeviceModel, :resDeviceBrand, :resDeviceType, :resDeviceIsMobile, :resDeviceIsTouch, :resBotIsBot, :resBotName, :resBotType, :resRawResult)');
+$statementUpdateResult = $pdo->prepare('UPDATE `result` SET `provider_id` = :proId, `userAgent_id` = :uaId, `resProviderVersion` = :resProviderVersion, `resFilename` = :resFilename, `resParseTime` = :resParseTime, `resLastChangeDate` = :resLastChangeDate, `resResultFound` = :resResultFound, `resBrowserName` = :resBrowserName, `resBrowserVersion` = :resBrowserVersion, `resEngineName` = :resEngineName, `resEngineVersion` = :resEngineVersion, `resOsName` = :resOsName, `resOsVersion` = :resOsVersion, `resDeviceModel` = :resDeviceModel, `resDeviceBrand` = :resDeviceBrand, `resDeviceType` = :resDeviceType, `resDeviceIsMobile` = :resDeviceIsMobile, `resDeviceIsTouch` = :resDeviceIsTouch, `resBotIsBot` = :resBotIsBot, `resBotName` = :resBotName, `resBotType` = :resBotType, `resRawResult` = :resRawResult WHERE `resId` = :resId');
 
 /*
  * Grab the userAgents!
@@ -45,13 +50,13 @@ $chain = new Provider\Chain([
     new Provider\Test\WhichBrowser(),
     new Provider\Test\Woothee(),
     new Provider\Test\ZsxSoft(),
-    new Provider\Test\BrowserDetector(new \Psr\Log\NullLogger()),
+    new Provider\Test\BrowserDetector(new NullLogger()),
 ]);
 
 $proType = 'testSuite';
 
 foreach ($chain->getProviders() as $provider) {
-    /* @var $provider \UserAgentParserComparison\Provider\Test\AbstractTestProvider */
+    assert($provider instanceof AbstractTestProvider);
 
     $capabilities               = $provider->getDetectionCapabilities();
     $proName                    = $provider->getName();
@@ -79,81 +84,83 @@ foreach ($chain->getProviders() as $provider) {
 
     echo $proName . PHP_EOL;
 
-    $statementSelectProvider->bindValue(':proName', $proName, \PDO::PARAM_STR);
+    $statementSelectProvider->bindValue(':proName', $proName, PDO::PARAM_STR);
 
     $statementSelectProvider->execute();
 
     $proId = null;
 
-    while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT)) {
+    while ($dbResultProvider = $statementSelectProvider->fetch(PDO::FETCH_ASSOC, PDO::FETCH_ORI_NEXT)) {
         // update!
         $proId = $dbResultProvider['proId'];
 
-        $statementUpdateProvider->bindValue(':proId', $proId, \PDO::PARAM_STR);
-        $statementUpdateProvider->bindValue(':proType', $proType, \PDO::PARAM_STR);
-        $statementUpdateProvider->bindValue(':proName', $proName, \PDO::PARAM_STR);
-        $statementUpdateProvider->bindValue(':proHomepage', $proHomepage, \PDO::PARAM_STR);
-        $statementUpdateProvider->bindValue(':proVersion', $proVersion, \PDO::PARAM_STR);
+        $statementUpdateProvider->bindValue(':proId', $proId, PDO::PARAM_STR);
+        $statementUpdateProvider->bindValue(':proType', $proType, PDO::PARAM_STR);
+        $statementUpdateProvider->bindValue(':proName', $proName, PDO::PARAM_STR);
+        $statementUpdateProvider->bindValue(':proHomepage', $proHomepage, PDO::PARAM_STR);
+        $statementUpdateProvider->bindValue(':proVersion', $proVersion, PDO::PARAM_STR);
         if (null !== $proReleaseDate) {
-            $statementUpdateProvider->bindValue(':proLastReleaseDate', $proReleaseDate->format('Y-m-d H:i:s'), \PDO::PARAM_STR);
+            $statementUpdateProvider->bindValue(':proLastReleaseDate', $proReleaseDate->format('Y-m-d H:i:s'), PDO::PARAM_STR);
         } else {
             $statementUpdateProvider->bindValue(':proLastReleaseDate', null);
         }
-        $statementUpdateProvider->bindValue(':proPackageName', $proPackageName, \PDO::PARAM_STR);
-        $statementUpdateProvider->bindValue(':proLanguage', $proLanguage, \PDO::PARAM_STR);
-        $statementUpdateProvider->bindValue(':proLocal', $proLocal, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proApi', $proApi, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proCanDetectBrowserName', $proCanDetectBrowserName, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proCanDetectBrowserVersion', $proCanDetectBrowserVersion, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proCanDetectEngineName', $proCanDetectEngineName, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proCanDetectEngineVersion', $proCanDetectEngineVersion, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proCanDetectOsName', $proCanDetectOsName, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proCanDetectOsVersion', $proCanDetectOsVersion, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proCanDetectDeviceModel', $proCanDetectDeviceModel, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proCanDetectDeviceBrand', $proCanDetectDeviceBrand, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proCanDetectDeviceType', $proCanDetectDeviceType, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proCanDetectDeviceIsMobile', $proCanDetectDeviceIsMobile, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proCanDetectDeviceIsTouch', $proCanDetectDeviceIsTouch, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proCanDetectBotIsBot', $proCanDetectBotIsBot, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proCanDetectBotName', $proCanDetectBotName, \PDO::PARAM_INT);
-        $statementUpdateProvider->bindValue(':proCanDetectBotType', $proCanDetectBotType, \PDO::PARAM_INT);
+
+        $statementUpdateProvider->bindValue(':proPackageName', $proPackageName, PDO::PARAM_STR);
+        $statementUpdateProvider->bindValue(':proLanguage', $proLanguage, PDO::PARAM_STR);
+        $statementUpdateProvider->bindValue(':proLocal', $proLocal, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proApi', $proApi, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectBrowserName', $proCanDetectBrowserName, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectBrowserVersion', $proCanDetectBrowserVersion, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectEngineName', $proCanDetectEngineName, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectEngineVersion', $proCanDetectEngineVersion, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectOsName', $proCanDetectOsName, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectOsVersion', $proCanDetectOsVersion, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectDeviceModel', $proCanDetectDeviceModel, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectDeviceBrand', $proCanDetectDeviceBrand, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectDeviceType', $proCanDetectDeviceType, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectDeviceIsMobile', $proCanDetectDeviceIsMobile, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectDeviceIsTouch', $proCanDetectDeviceIsTouch, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectBotIsBot', $proCanDetectBotIsBot, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectBotName', $proCanDetectBotName, PDO::PARAM_INT);
+        $statementUpdateProvider->bindValue(':proCanDetectBotType', $proCanDetectBotType, PDO::PARAM_INT);
 
         $statementUpdateProvider->execute();
 
         echo 'U';
     }
 
-    if ($proId === null) {
+    if (null === $proId) {
         $proId = Uuid::uuid4()->toString();
 
-        $statementInsertProvider->bindValue(':proId', $proId, \PDO::PARAM_STR);
-        $statementInsertProvider->bindValue(':proType', $proType, \PDO::PARAM_STR);
-        $statementInsertProvider->bindValue(':proName', $proName, \PDO::PARAM_STR);
-        $statementInsertProvider->bindValue(':proHomepage', $proHomepage, \PDO::PARAM_STR);
-        $statementInsertProvider->bindValue(':proVersion', $proVersion, \PDO::PARAM_STR);
+        $statementInsertProvider->bindValue(':proId', $proId, PDO::PARAM_STR);
+        $statementInsertProvider->bindValue(':proType', $proType, PDO::PARAM_STR);
+        $statementInsertProvider->bindValue(':proName', $proName, PDO::PARAM_STR);
+        $statementInsertProvider->bindValue(':proHomepage', $proHomepage, PDO::PARAM_STR);
+        $statementInsertProvider->bindValue(':proVersion', $proVersion, PDO::PARAM_STR);
         if (null !== $proReleaseDate) {
-            $statementInsertProvider->bindValue(':proLastReleaseDate', $proReleaseDate->format('Y-m-d H:i:s'), \PDO::PARAM_STR);
+            $statementInsertProvider->bindValue(':proLastReleaseDate', $proReleaseDate->format('Y-m-d H:i:s'), PDO::PARAM_STR);
         } else {
             $statementInsertProvider->bindValue(':proLastReleaseDate', null);
         }
-        $statementInsertProvider->bindValue(':proPackageName', $proPackageName, \PDO::PARAM_STR);
-        $statementInsertProvider->bindValue(':proLanguage', $proLanguage, \PDO::PARAM_STR);
-        $statementInsertProvider->bindValue(':proLocal', $proLocal, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proApi', $proApi, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proCanDetectBrowserName', $proCanDetectBrowserName, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proCanDetectBrowserVersion', $proCanDetectBrowserVersion, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proCanDetectEngineName', $proCanDetectEngineName, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proCanDetectEngineVersion', $proCanDetectEngineVersion, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proCanDetectOsName', $proCanDetectOsName, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proCanDetectOsVersion', $proCanDetectOsVersion, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proCanDetectDeviceModel', $proCanDetectDeviceModel, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proCanDetectDeviceBrand', $proCanDetectDeviceBrand, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proCanDetectDeviceType', $proCanDetectDeviceType, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proCanDetectDeviceIsMobile', $proCanDetectDeviceIsMobile, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proCanDetectDeviceIsTouch', $proCanDetectDeviceIsTouch, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proCanDetectBotIsBot', $proCanDetectBotIsBot, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proCanDetectBotName', $proCanDetectBotName, \PDO::PARAM_INT);
-        $statementInsertProvider->bindValue(':proCanDetectBotType', $proCanDetectBotType, \PDO::PARAM_INT);
+
+        $statementInsertProvider->bindValue(':proPackageName', $proPackageName, PDO::PARAM_STR);
+        $statementInsertProvider->bindValue(':proLanguage', $proLanguage, PDO::PARAM_STR);
+        $statementInsertProvider->bindValue(':proLocal', $proLocal, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proApi', $proApi, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectBrowserName', $proCanDetectBrowserName, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectBrowserVersion', $proCanDetectBrowserVersion, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectEngineName', $proCanDetectEngineName, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectEngineVersion', $proCanDetectEngineVersion, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectOsName', $proCanDetectOsName, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectOsVersion', $proCanDetectOsVersion, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectDeviceModel', $proCanDetectDeviceModel, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectDeviceBrand', $proCanDetectDeviceBrand, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectDeviceType', $proCanDetectDeviceType, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectDeviceIsMobile', $proCanDetectDeviceIsMobile, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectDeviceIsTouch', $proCanDetectDeviceIsTouch, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectBotIsBot', $proCanDetectBotIsBot, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectBotName', $proCanDetectBotName, PDO::PARAM_INT);
+        $statementInsertProvider->bindValue(':proCanDetectBotType', $proCanDetectBotType, PDO::PARAM_INT);
 
         $statementInsertProvider->execute();
 
@@ -166,28 +173,29 @@ foreach ($chain->getProviders() as $provider) {
      * Useragents
      */
     foreach ($provider->getTests() as $uaHash => $row) {
-        if (in_array($row['uaString'], $skipUserAgents)) {
+        if (in_array($row['uaString'], $skipUserAgents, true)) {
             echo 'S';
+
             continue;
         }
 
         /*
          * insert UA itself
          */
-        $statementSelectUa->bindValue(':uaHash', $uaHash, \PDO::PARAM_STR);
+        $statementSelectUa->bindValue(':uaHash', $uaHash, PDO::PARAM_STR);
 
         $statementSelectUa->execute();
 
-        $dbResultUa = $statementSelectUa->fetch(\PDO::FETCH_ASSOC);
+        $dbResultUa = $statementSelectUa->fetch(PDO::FETCH_ASSOC);
 
         if (false !== $dbResultUa) {
             // update!
             $uaId = $dbResultUa['uaId'];
 
             if (isset($row['uaAdditionalHeaders'])) {
-                $statementUpdateUa->bindValue(':uaId', $uaId, \PDO::PARAM_STR);
-                $statementUpdateUa->bindValue(':uaHash', $uaHash, \PDO::PARAM_STR);
-                $statementUpdateUa->bindValue(':uaString', $row['uaString'], \PDO::PARAM_STR);
+                $statementUpdateUa->bindValue(':uaId', $uaId, PDO::PARAM_STR);
+                $statementUpdateUa->bindValue(':uaHash', $uaHash, PDO::PARAM_STR);
+                $statementUpdateUa->bindValue(':uaString', $row['uaString'], PDO::PARAM_STR);
                 $statementUpdateUa->bindValue(':uaAdditionalHeaders', json_encode($row['uaAdditionalHeaders']));
 
                 $statementUpdateUa->execute();
@@ -201,9 +209,9 @@ foreach ($chain->getProviders() as $provider) {
                 $additionalHeaders = json_encode($row['uaAdditionalHeaders']);
             }
 
-            $statementInsertUa->bindValue(':uaId', $uaId, \PDO::PARAM_STR);
-            $statementInsertUa->bindValue(':uaHash', $uaHash, \PDO::PARAM_STR);
-            $statementInsertUa->bindValue(':uaString', $row['uaString'], \PDO::PARAM_STR);
+            $statementInsertUa->bindValue(':uaId', $uaId, PDO::PARAM_STR);
+            $statementInsertUa->bindValue(':uaHash', $uaHash, PDO::PARAM_STR);
+            $statementInsertUa->bindValue(':uaString', $row['uaString'], PDO::PARAM_STR);
             $statementInsertUa->bindValue(':uaAdditionalHeaders', $additionalHeaders);
 
             $statementInsertUa->execute();
@@ -214,21 +222,21 @@ foreach ($chain->getProviders() as $provider) {
          */
         $res = $row['result'];
 
-        $date = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        $date = new DateTimeImmutable('now', new DateTimeZone('UTC'));
 
-        $statementSelectResult->bindValue(':proId', $proId, \PDO::PARAM_STR);
-        $statementSelectResult->bindValue(':uaId', $uaId, \PDO::PARAM_STR);
+        $statementSelectResult->bindValue(':proId', $proId, PDO::PARAM_STR);
+        $statementSelectResult->bindValue(':uaId', $uaId, PDO::PARAM_STR);
 
         $statementSelectResult->execute();
 
-        $dbResultResult = $statementSelectResult->fetch(\PDO::FETCH_ASSOC);
+        $dbResultResult = $statementSelectResult->fetch(PDO::FETCH_ASSOC);
 
         if (false !== $dbResultResult) {
             // update!
-            $statementUpdateResult->bindValue(':resId', $dbResultResult['resId'], \PDO::PARAM_STR);
-            $statementUpdateResult->bindValue(':proId', $proId, \PDO::PARAM_STR);
-            $statementUpdateResult->bindValue(':uaId', $uaId, \PDO::PARAM_STR);
-            $statementUpdateResult->bindValue(':resProviderVersion', $proVersion, \PDO::PARAM_STR);
+            $statementUpdateResult->bindValue(':resId', $dbResultResult['resId'], PDO::PARAM_STR);
+            $statementUpdateResult->bindValue(':proId', $proId, PDO::PARAM_STR);
+            $statementUpdateResult->bindValue(':uaId', $uaId, PDO::PARAM_STR);
+            $statementUpdateResult->bindValue(':resProviderVersion', $proVersion, PDO::PARAM_STR);
 
             if (array_key_exists('resFilename', $res)) {
                 $statementUpdateResult->bindValue(':resFilename', str_replace('\\', '/', $res['resFilename']));
@@ -237,8 +245,8 @@ foreach ($chain->getProviders() as $provider) {
             }
 
             $statementUpdateResult->bindValue(':resParseTime', null);
-            $statementUpdateResult->bindValue(':resLastChangeDate', $date->format('Y-m-d H:i:s'), \PDO::PARAM_STR);
-            $statementUpdateResult->bindValue(':resResultFound', 1, \PDO::PARAM_INT);
+            $statementUpdateResult->bindValue(':resLastChangeDate', $date->format('Y-m-d H:i:s'), PDO::PARAM_STR);
+            $statementUpdateResult->bindValue(':resResultFound', 1, PDO::PARAM_INT);
 
             if (array_key_exists('resBrowserName', $res) && !in_array($res['resBrowserName'], ['UNKNOWN', 'unknown', ''], true)) {
                 $statementUpdateResult->bindValue(':resBrowserName', $res['resBrowserName']);
@@ -320,10 +328,10 @@ foreach ($chain->getProviders() as $provider) {
 
             echo 'U';
         } else {
-            $statementInsertResult->bindValue(':resId', Uuid::uuid4()->toString(), \PDO::PARAM_STR);
-            $statementInsertResult->bindValue(':proId', $proId, \PDO::PARAM_STR);
-            $statementInsertResult->bindValue(':uaId', $uaId, \PDO::PARAM_STR);
-            $statementInsertResult->bindValue(':resProviderVersion', $proVersion, \PDO::PARAM_STR);
+            $statementInsertResult->bindValue(':resId', Uuid::uuid4()->toString(), PDO::PARAM_STR);
+            $statementInsertResult->bindValue(':proId', $proId, PDO::PARAM_STR);
+            $statementInsertResult->bindValue(':uaId', $uaId, PDO::PARAM_STR);
+            $statementInsertResult->bindValue(':resProviderVersion', $proVersion, PDO::PARAM_STR);
 
             if (array_key_exists('resFilename', $res)) {
                 $statementInsertResult->bindValue(':resFilename', str_replace('\\', '/', $res['resFilename']));
@@ -332,8 +340,8 @@ foreach ($chain->getProviders() as $provider) {
             }
 
             $statementInsertResult->bindValue(':resParseTime', null);
-            $statementInsertResult->bindValue(':resLastChangeDate', $date->format('Y-m-d H:i:s'), \PDO::PARAM_STR);
-            $statementInsertResult->bindValue(':resResultFound', 1, \PDO::PARAM_INT);
+            $statementInsertResult->bindValue(':resLastChangeDate', $date->format('Y-m-d H:i:s'), PDO::PARAM_STR);
+            $statementInsertResult->bindValue(':resResultFound', 1, PDO::PARAM_INT);
 
             if (array_key_exists('resBrowserName', $res) && !in_array($res['resBrowserName'], ['UNKNOWN', 'unknown', ''], true)) {
                 $statementInsertResult->bindValue(':resBrowserName', $res['resBrowserName']);

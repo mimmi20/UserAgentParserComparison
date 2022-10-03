@@ -1,25 +1,21 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Harmonize;
 
-class DeviceBrand extends AbstractHarmonize
+final class DeviceBrand extends AbstractHarmonize
 {
-
-    protected static $replaces = [
+    protected static array $replaces = [
         'Sony' => [
             'Sony Ericsson',
-            'SonyEricsson'
+            'SonyEricsson',
         ],
-        
-        'BlackBerry' => [
-            'RIM'
-        ],
-        
-        'HCL' => [
-            'HCLme'
-        ],
-        
-        'TechnoTrend' => [
-            'TechnoTrend Goerler/Kathrein'
-        ]
+
+        'BlackBerry' => ['RIM'],
+
+        'HCL' => ['HCLme'],
+
+        'TechnoTrend' => ['TechnoTrend Goerler/Kathrein'],
     ];
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 use UserAgentParserComparison\Html\SimpleList;
 
 /**
@@ -8,11 +11,11 @@ include_once 'bootstrap.php';
 
 echo '~~~ create html list for all not-founds for all providers ~~~' . PHP_EOL;
 
-/* @var $pdo \PDO */
-
 /*
  * select all real providers
  */
+
+/** @var PDO $pdo */
 $statementSelectProvider = $pdo->prepare('SELECT * FROM `real-provider`');
 $statementSelectProvider->execute();
 
@@ -20,19 +23,18 @@ $statementSelectProvider->execute();
  * Start for each provider
  */
 
-while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT)) {
-
+while ($dbResultProvider = $statementSelectProvider->fetch(PDO::FETCH_ASSOC, PDO::FETCH_ORI_NEXT)) {
     echo $dbResultProvider['proName'], PHP_EOL;
-    
+
     $folder = $basePath . '/not-detected/' . $dbResultProvider['proName'];
-    if (! file_exists($folder)) {
+    if (!file_exists($folder)) {
         mkdir($folder, 0777, true);
     }
-    
+
     /*
      * no result found
      */
-    $sql = "
+    $sql       = '
         SELECT
             `result`.`resBrowserName` AS `name`,
             `userAgent`.`uaId`,
@@ -51,25 +53,25 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
         WHERE
             `result`.`provider_id` = :proId
             AND `result`.`resResultFound` = 0
-    ";
+    ';
     $statement = $pdo->prepare($sql);
-    $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+    $statement->bindValue(':proId', $dbResultProvider['proId'], PDO::PARAM_STR);
 
     $statement->execute();
-    
+
     $generate = new SimpleList($pdo, 'Not detected - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
-    $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
-    
+    $generate->setElements($statement->fetchAll(PDO::FETCH_ASSOC));
+
     file_put_contents($folder . '/no-result-found.html', $generate->getHtml());
-    
+
     /*
      * browserName
      */
     if ($dbResultProvider['proCanDetectBrowserName']) {
         echo '.';
-        
-        $sql = "
-            SELECT 
+
+        $sql       = '
+            SELECT
                 `found-results`.`resBrowserName` AS `name`,
                 `userAgent`.`uaId`,
                 `userAgent`.`uaString`,
@@ -77,7 +79,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         COUNT(`list-found-general-browser-names`.`resBrowserName`)
                     FROM `list-found-general-browser-names`
-                    WHERE 
+                    WHERE
                         `list-found-general-browser-names`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-browser-names`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionCount`,
@@ -85,7 +87,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         COUNT(DISTINCT `list-found-general-browser-names`.`resBrowserName`)
                     FROM `list-found-general-browser-names`
-                    WHERE 
+                    WHERE
                         `list-found-general-browser-names`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-browser-names`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionCountUnique`,
@@ -93,7 +95,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         GROUP_CONCAT(DISTINCT `list-found-general-browser-names`.`resBrowserName`)
                     FROM `list-found-general-browser-names`
-                    WHERE 
+                    WHERE
                         `list-found-general-browser-names`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-browser-names`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionValuesDistinct`
@@ -104,25 +106,25 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `found-results`.`provider_id` = :proId
                 AND `found-results`.`resBotIsBot` IS NULL
                 AND `found-results`.`resBrowserName` IS NULL
-        ";
+        ';
         $statement = $pdo->prepare($sql);
-        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], PDO::PARAM_STR);
 
         $statement->execute();
-        
+
         $generate = new SimpleList($pdo, 'No browser name found - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
-        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
-        
+        $generate->setElements($statement->fetchAll(PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/browser-names.html', $generate->getHtml());
     }
-    
+
     /*
      * renderingEngine
      */
     if ($dbResultProvider['proCanDetectEngineName']) {
         echo '.';
-        
-        $sql = "
+
+        $sql       = '
             SELECT
                 `found-results`.`resEngineName` AS `name`,
                 `userAgent`.`uaId`,
@@ -131,7 +133,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         COUNT(`list-found-general-engine-names`.`resEngineName`)
                     FROM `list-found-general-engine-names`
-                    WHERE 
+                    WHERE
                         `list-found-general-engine-names`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-engine-names`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionCount`,
@@ -139,7 +141,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         COUNT(DISTINCT `list-found-general-engine-names`.`resEngineName`)
                     FROM `list-found-general-engine-names`
-                    WHERE 
+                    WHERE
                         `list-found-general-engine-names`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-engine-names`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionCountUnique`,
@@ -147,7 +149,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         GROUP_CONCAT(DISTINCT `list-found-general-engine-names`.`resEngineName`)
                     FROM `list-found-general-engine-names`
-                    WHERE 
+                    WHERE
                         `list-found-general-engine-names`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-engine-names`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionValuesDistinct`
@@ -158,25 +160,25 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `found-results`.`provider_id` = :proId
                 AND `found-results`.`resBotIsBot` IS NULL
                 AND `found-results`.`resEngineName` IS NULL
-        ";
+        ';
         $statement = $pdo->prepare($sql);
-        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], PDO::PARAM_STR);
 
         $statement->execute();
-        
+
         $generate = new SimpleList($pdo, 'No rendering engine found - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
-        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
-        
+        $generate->setElements($statement->fetchAll(PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/rendering-engines.html', $generate->getHtml());
     }
-    
+
     /*
      * OSname
      */
     if ($dbResultProvider['proCanDetectOsName']) {
         echo '.';
-        
-        $sql = "
+
+        $sql       = '
             SELECT
                 `found-results`.`resOsName` AS `name`,
                 `userAgent`.`uaId`,
@@ -185,7 +187,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         COUNT(`list-found-general-os-names`.`resOsName`)
                     FROM `list-found-general-os-names`
-                    WHERE 
+                    WHERE
                         `list-found-general-os-names`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-os-names`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionCount`,
@@ -193,7 +195,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         COUNT(DISTINCT `list-found-general-os-names`.`resOsName`)
                     FROM `list-found-general-os-names`
-                    WHERE 
+                    WHERE
                         `list-found-general-os-names`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-os-names`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionCountUnique`,
@@ -201,7 +203,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         GROUP_CONCAT(DISTINCT `list-found-general-os-names`.`resOsName`)
                     FROM `list-found-general-os-names`
-                    WHERE 
+                    WHERE
                         `list-found-general-os-names`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-os-names`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionValuesDistinct`
@@ -212,15 +214,15 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `found-results`.`provider_id` = :proId
                 AND `resBotIsBot` IS NULL
                 AND `resOsName` IS NULL
-        ";
+        ';
         $statement = $pdo->prepare($sql);
-        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], PDO::PARAM_STR);
 
         $statement->execute();
-    
+
         $generate = new SimpleList($pdo, 'No operating system found - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
-        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
-    
+        $generate->setElements($statement->fetchAll(PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/operating-systems.html', $generate->getHtml());
     }
 
@@ -230,7 +232,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
     if ($dbResultProvider['proCanDetectDeviceBrand']) {
         echo '.';
 
-        $sql = "
+        $sql       = '
             SELECT
                 `found-results`.`resDeviceBrand` AS `name`,
                 `userAgent`.`uaId`,
@@ -239,7 +241,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         COUNT(`list-found-general-device-brands`.`resDeviceBrand`)
                     FROM `list-found-general-device-brands`
-                    WHERE 
+                    WHERE
                         `list-found-general-device-brands`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-device-brands`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionCount`,
@@ -247,7 +249,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         COUNT(DISTINCT `list-found-general-device-brands`.`resDeviceBrand`)
                     FROM `list-found-general-device-brands`
-                    WHERE 
+                    WHERE
                         `list-found-general-device-brands`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-device-brands`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionCountUnique`,
@@ -255,7 +257,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         GROUP_CONCAT(DISTINCT `list-found-general-device-brands`.`resDeviceBrand`)
                     FROM `list-found-general-device-brands`
-                    WHERE 
+                    WHERE
                         `list-found-general-device-brands`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-device-brands`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionValuesDistinct`
@@ -266,25 +268,25 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `found-results`.`provider_id` = :proId
                 AND `found-results`.`resBotIsBot` IS NULL
                 AND `found-results`.`resDeviceBrand` IS NULL
-        ";
+        ';
         $statement = $pdo->prepare($sql);
-        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], PDO::PARAM_STR);
 
         $statement->execute();
 
         $generate = new SimpleList($pdo, 'No device brands found - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
-        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
+        $generate->setElements($statement->fetchAll(PDO::FETCH_ASSOC));
 
         file_put_contents($folder . '/device-brands.html', $generate->getHtml());
     }
-    
+
     /*
      * deviceModel
      */
     if ($dbResultProvider['proCanDetectDeviceModel']) {
         echo '.';
-        
-        $sql = "
+
+        $sql       = '
             SELECT
                 `found-results`.`resDeviceModel` AS `name`,
                 `userAgent`.`uaId`,
@@ -293,7 +295,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         COUNT(`list-found-general-device-models`.`resDeviceModel`)
                     FROM `list-found-general-device-models`
-                    WHERE 
+                    WHERE
                         `list-found-general-device-models`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-device-models`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionCount`,
@@ -301,7 +303,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         COUNT(DISTINCT `list-found-general-device-models`.`resDeviceModel`)
                     FROM `list-found-general-device-models`
-                    WHERE 
+                    WHERE
                         `list-found-general-device-models`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-device-models`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionCountUnique`,
@@ -309,7 +311,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         GROUP_CONCAT(DISTINCT `list-found-general-device-models`.`resDeviceModel`)
                     FROM `list-found-general-device-models`
-                    WHERE 
+                    WHERE
                         `list-found-general-device-models`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-device-models`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionValuesDistinct`
@@ -320,25 +322,25 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `found-results`.`provider_id` = :proId
                 AND `found-results`.`resBotIsBot` IS NULL
                 AND `found-results`.`resDeviceModel` IS NULL
-        ";
+        ';
         $statement = $pdo->prepare($sql);
-        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], PDO::PARAM_STR);
 
         $statement->execute();
-    
+
         $generate = new SimpleList($pdo, 'No device model found - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
-        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
-    
+        $generate->setElements($statement->fetchAll(PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/device-models.html', $generate->getHtml());
     }
-    
+
     /*
      * deviceTypes
      */
     if ($dbResultProvider['proCanDetectDeviceType']) {
         echo '.';
-        
-        $sql = "
+
+        $sql       = '
             SELECT
                 `found-results`.`resDeviceType` AS `name`,
                 `userAgent`.`uaId`,
@@ -347,7 +349,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         COUNT(`list-found-general-device-types`.`resDeviceType`)
                     FROM `list-found-general-device-types`
-                    WHERE 
+                    WHERE
                         `list-found-general-device-types`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-device-types`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionCount`,
@@ -355,7 +357,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         COUNT(DISTINCT `list-found-general-device-types`.`resDeviceType`)
                     FROM `list-found-general-device-types`
-                    WHERE 
+                    WHERE
                         `list-found-general-device-types`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-device-types`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionCountUnique`,
@@ -363,7 +365,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         GROUP_CONCAT(DISTINCT `list-found-general-device-types`.`resDeviceType`)
                     FROM `list-found-general-device-types`
-                    WHERE 
+                    WHERE
                         `list-found-general-device-types`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-device-types`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionValuesDistinct`
@@ -374,25 +376,25 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                 `found-results`.`provider_id` = :proId
                 AND `found-results`.`resBotIsBot` IS NULL
                 AND `found-results`.`resDeviceType` IS NULL
-        ";
+        ';
         $statement = $pdo->prepare($sql);
-        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], PDO::PARAM_STR);
 
         $statement->execute();
-    
+
         $generate = new SimpleList($pdo, 'No device type found - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
-        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
-    
+        $generate->setElements($statement->fetchAll(PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/device-types.html', $generate->getHtml());
     }
-    
+
     /*
      * not detected as mobile
      */
     if ($dbResultProvider['proCanDetectDeviceIsMobile']) {
         echo '.';
-    
-        $sql = "
+
+        $sql       = '
             SELECT
                 `found-results`.`resBotName` AS `name`,
                 `userAgent`.`uaId`,
@@ -419,25 +421,25 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                         ON `result`.`provider_id` = `test-provider`.`proId`
                         AND `result`.`resDeviceIsMobile` = 1
                 )
-        ";
+        ';
         $statement = $pdo->prepare($sql);
-        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], PDO::PARAM_STR);
 
         $statement->execute();
-    
+
         $generate = new SimpleList($pdo, 'Not detected as mobile - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
-        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
-    
+        $generate->setElements($statement->fetchAll(PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/device-is-mobile.html', $generate->getHtml());
     }
-    
+
     /*
      * not detected as bot
      */
     if ($dbResultProvider['proCanDetectBotIsBot']) {
         echo '.';
-    
-        $sql = "
+
+        $sql       = '
             SELECT
             	`found-results`.`resBotName` AS `name`,
             	`userAgent`.`uaId`,
@@ -464,25 +466,25 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                         ON `result`.`provider_id` = `test-provider`.`proId`
             			AND `result`.`resBotIsBot` = 1
                 )
-        ";
+        ';
         $statement = $pdo->prepare($sql);
-        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], PDO::PARAM_STR);
 
         $statement->execute();
-    
+
         $generate = new SimpleList($pdo, 'Not detected as bot - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
-        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
-    
+        $generate->setElements($statement->fetchAll(PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/bot-is-bot.html', $generate->getHtml());
     }
-    
+
     /*
      * botNames
      */
     if ($dbResultProvider['proCanDetectBotName']) {
         echo '.';
-        
-        $sql = "
+
+        $sql       = '
             SELECT
                 `found-results`.`resBotName` AS `name`,
                 `userAgent`.`uaId`,
@@ -499,7 +501,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         COUNT(DISTINCT `list-found-general-bot-names`.`resBotName`)
                     FROM `list-found-general-bot-names`
-                    WHERE 
+                    WHERE
                         `list-found-general-bot-names`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-bot-names`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionCountUnique`,
@@ -507,7 +509,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         GROUP_CONCAT(DISTINCT `list-found-general-bot-names`.`resBotName`)
                     FROM `list-found-general-bot-names`
-                    WHERE 
+                    WHERE
                         `list-found-general-bot-names`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-bot-names`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionValuesDistinct`
@@ -521,29 +523,29 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         `result`.`userAgent_id`
                     FROM `test-provider`
-                    INNER JOIN `result` 
+                    INNER JOIN `result`
                         ON `result`.`provider_id` = `test-provider`.`proId`
                         AND `result`.`resBotName` IS NOT NULL
                 )
-        ";
+        ';
         $statement = $pdo->prepare($sql);
-        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], PDO::PARAM_STR);
 
         $statement->execute();
-    
+
         $generate = new SimpleList($pdo, 'No bot name found - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
-        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
-    
+        $generate->setElements($statement->fetchAll(PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/bot-names.html', $generate->getHtml());
     }
-    
+
     /*
      * botTypes
      */
     if ($dbResultProvider['proCanDetectBotType']) {
         echo '.';
-        
-        $sql = "
+
+        $sql       = '
             SELECT
                 `found-results`.`resBotType` AS `name`,
                 `userAgent`.`uaId`,
@@ -560,7 +562,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         COUNT(DISTINCT `list-found-general-bot-types`.`resBotType`)
                     FROM `list-found-general-bot-types`
-                    WHERE 
+                    WHERE
                         `list-found-general-bot-types`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-bot-types`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionCountUnique`,
@@ -568,7 +570,7 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         GROUP_CONCAT(DISTINCT `list-found-general-bot-types`.`resBotType`)
                     FROM `list-found-general-bot-types`
-                    WHERE 
+                    WHERE
                          `list-found-general-bot-types`.`userAgent_id` = `userAgent`.`uaId`
                         AND `list-found-general-bot-types`.`provider_id` != `found-results`.`provider_id`
                 ) AS `detectionValuesDistinct`
@@ -582,21 +584,21 @@ while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \P
                     SELECT
                         `result`.`userAgent_id`
                     FROM `test-provider`
-                    INNER JOIN `result` 
+                    INNER JOIN `result`
                         ON `result`.`provider_id` = `test-provider`.`proId`
                         AND `result`.`resBotType` IS NOT NULL
                 )
-        ";
+        ';
         $statement = $pdo->prepare($sql);
-        $statement->bindValue(':proId', $dbResultProvider['proId'], \PDO::PARAM_STR);
+        $statement->bindValue(':proId', $dbResultProvider['proId'], PDO::PARAM_STR);
 
         $statement->execute();
-    
+
         $generate = new SimpleList($pdo, 'No bot type found - ' . $dbResultProvider['proName'] . ' <small>' . $dbResultProvider['proVersion'] . '</small>');
-        $generate->setElements($statement->fetchAll(\PDO::FETCH_ASSOC));
-    
+        $generate->setElements($statement->fetchAll(PDO::FETCH_ASSOC));
+
         file_put_contents($folder . '/bot-types.html', $generate->getHtml());
     }
-    
+
     echo PHP_EOL;
 }

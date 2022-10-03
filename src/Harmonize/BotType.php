@@ -1,18 +1,17 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Harmonize;
 
-class BotType extends AbstractHarmonize
+final class BotType extends AbstractHarmonize
 {
-
-    protected static $replaces = [
-        
+    protected static array $replaces = [
         'RSS' => [
             'Feed Fetcher',
-            'Feed Parser'
+            'Feed Parser',
         ],
-        
-        'Site Monitor' => [
-            'Site Monitors'
-        ]
+
+        'Site Monitor' => ['Site Monitors'],
     ];
 }

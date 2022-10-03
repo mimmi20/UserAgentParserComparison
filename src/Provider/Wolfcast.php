@@ -1,149 +1,97 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider;
 
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
+use Wolfcast\BrowserDetection;
 
 /**
  * Abstraction for donatj/PhpUserAgent
  *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  * @see https://github.com/donatj/PhpUserAgent
  */
-class Wolfcast extends AbstractParseProvider
+final class Wolfcast extends AbstractParseProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'wolfcast';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://github.com/wolfcast/browser-detection';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = 'wolfcast/browser-detection';
 
     protected string $language = 'PHP';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'operatingSystem' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'device' => [
-            'model'    => false,
-            'brand'    => false,
-            'type'     => false,
+            'model' => false,
+            'brand' => false,
+            'type' => false,
             'isMobile' => true,
-            'isTouch'  => false,
+            'isTouch' => false,
         ],
 
         'bot' => [
             'isBot' => false,
-            'name'  => false,
-            'type'  => false,
+            'name' => false,
+            'type' => false,
         ],
     ];
 
-    /**
-     *
-     * @throws PackageNotLoadedException
-     */
+    /** @throws PackageNotLoadedException */
     public function __construct()
     {
         $this->checkIfInstalled();
     }
 
     /**
+     * @param array $headers
      *
-     * @param array $resultRaw
+     * @throws NoResultFoundException
      *
-     * @return bool
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    private function hasResult(array $resultRaw): bool
-    {
-        if ($this->isRealResult($resultRaw['browserName']) || $this->isRealResult($resultRaw['osName'])) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     *
-     * @param Model\Browser $browser
-     * @param array         $resultRaw
-     */
-    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
-    {
-        $browser->setName($this->getRealResult($resultRaw['browserName']));
-        $browser->getVersion()->setComplete($this->getRealResult($resultRaw['browserVersion']));
-    }
-
-    /**
-     *
-     * @param Model\OperatingSystem $os
-     * @param array                 $resultRaw
-     */
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, array $resultRaw): void
-    {
-        if ($this->isRealResult($resultRaw['osName']) === true) {
-            $os->setName($resultRaw['osName']);
-            $os->getVersion()->setComplete($this->getRealResult($resultRaw['osVersion']));
-        }
-    }
-
-    /**
-     *
-     * @param Model\Device $device
-     * @param array        $resultRaw
-     */
-    private function hydrateDevice(Model\Device $device, array $resultRaw): void
-    {
-        if ($resultRaw['isMobile'] === true) {
-            $device->setIsMobile(true);
-        }
-    }
-
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $result = new \Wolfcast\BrowserDetection($userAgent);
+        $result = new BrowserDetection($userAgent);
 
         $resultCache = [
-            'browserName'    => $result->getName(),
+            'browserName' => $result->getName(),
             'browserVersion' => $result->getVersion(),
 
-            'osName'    => $result->getPlatform(),
+            'osName' => $result->getPlatform(),
             'osVersion' => $result->getPlatformVersion(true),
 
-            'isMobile'    => $result->isMobile(),
+            'isMobile' => $result->isMobile(),
         ];
 
-        if ($this->hasResult($resultCache) !== true) {
+        if (true !== $this->hasResult($resultCache)) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -165,5 +113,39 @@ class Wolfcast extends AbstractParseProvider
         $this->hydrateDevice($result->getDevice(), $resultCache);
 
         return $result;
+    }
+
+    /** @param array $resultRaw */
+    private function hasResult(array $resultRaw): bool
+    {
+        return $this->isRealResult($resultRaw['browserName']) || $this->isRealResult($resultRaw['osName']);
+    }
+
+    /** @param array $resultRaw */
+    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
+    {
+        $browser->setName($this->getRealResult($resultRaw['browserName']));
+        $browser->getVersion()->setComplete($this->getRealResult($resultRaw['browserVersion']));
+    }
+
+    /** @param array $resultRaw */
+    private function hydrateOperatingSystem(Model\OperatingSystem $os, array $resultRaw): void
+    {
+        if (true !== $this->isRealResult($resultRaw['osName'])) {
+            return;
+        }
+
+        $os->setName($resultRaw['osName']);
+        $os->getVersion()->setComplete($this->getRealResult($resultRaw['osVersion']));
+    }
+
+    /** @param array $resultRaw */
+    private function hydrateDevice(Model\Device $device, array $resultRaw): void
+    {
+        if (true !== $resultRaw['isMobile']) {
+            return;
+        }
+
+        $device->setIsMobile(true);
     }
 }

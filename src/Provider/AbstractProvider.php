@@ -1,15 +1,23 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider;
 
-use UserAgentParserComparison\Exception;
+use Composer\InstalledVersions;
+use DateTimeImmutable;
+use OutOfBoundsException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
-use UserAgentParserComparison\Model;
+
+use function array_filter;
+use function array_key_exists;
+use function array_merge;
+use function file_get_contents;
+use function json_decode;
+use function reset;
 
 /**
  * Abstraction for all providers
- *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  */
 abstract class AbstractProvider
 {
@@ -40,39 +48,37 @@ abstract class AbstractProvider
      */
     protected array $allDetectionCapabilities = [
         'browser' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'renderingEngine' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'operatingSystem' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'device' => [
-            'model'    => false,
-            'brand'    => false,
-            'type'     => false,
+            'model' => false,
+            'brand' => false,
+            'type' => false,
             'isMobile' => false,
-            'isTouch'  => false,
+            'isTouch' => false,
         ],
 
         'bot' => [
             'isBot' => false,
-            'name'  => false,
-            'type'  => false,
+            'name' => false,
+            'type' => false,
         ],
     ];
 
     /**
      * Set this in each Provider implementation
-     *
-     * @var array
      */
     protected array $detectionCapabilities = [];
 
@@ -82,8 +88,6 @@ abstract class AbstractProvider
 
     /**
      * Return the name of the provider
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -92,8 +96,6 @@ abstract class AbstractProvider
 
     /**
      * Get the homepage
-     *
-     * @return string
      */
     public function getHomepage(): string
     {
@@ -102,33 +104,22 @@ abstract class AbstractProvider
 
     /**
      * Get the package name
-     *
-     * @return string|null
      */
-    public function getPackageName(): ?string
+    public function getPackageName(): string | null
     {
         return $this->packageName;
     }
 
-    /**
-     * @return string
-     */
     public function getLanguage(): string
     {
         return $this->language;
     }
 
-    /**
-     * @return bool
-     */
     public function isLocal(): bool
     {
         return $this->local;
     }
 
-    /**
-     * @return bool
-     */
     public function isApi(): bool
     {
         return $this->api;
@@ -136,33 +127,27 @@ abstract class AbstractProvider
 
     /**
      * Return the version of the provider
-     *
-     * @return string|null
      */
-    public function getVersion(): ?string
+    public function getVersion(): string | null
     {
         try {
-            return \Composer\InstalledVersions::getPrettyVersion($this->getPackageName());
-        } catch (\OutOfBoundsException $ex) {
+            return InstalledVersions::getPrettyVersion($this->getPackageName());
+        } catch (OutOfBoundsException) {
             return null;
         }
     }
 
     /**
      * Get the last change date of the provider
-     *
-     * @return \DateTimeImmutable|null
      */
-    public function getUpdateDate(): ?\DateTimeImmutable
+    public function getUpdateDate(): DateTimeImmutable | null
     {
         $installed = json_decode(file_get_contents('vendor/composer/installed.json'), true);
         $package   = $this->getPackageName();
 
         $filtered = array_filter(
             $installed['packages'],
-            function (array $value) use ($package): bool {
-                return array_key_exists('name', $value) && $package === $value['name'];
-            }
+            static fn (array $value): bool => array_key_exists('name', $value) && $package === $value['name'],
         );
 
         if ([] === $filtered) {
@@ -175,23 +160,18 @@ abstract class AbstractProvider
             return null;
         }
 
-        return new \DateTimeImmutable($filtered['time']);
+        return new DateTimeImmutable($filtered['time']);
     }
 
     /**
      * What kind of capabilities this provider can detect
-     *
-     * @return array
      */
     public function getDetectionCapabilities(): array
     {
         return array_merge($this->allDetectionCapabilities, $this->detectionCapabilities);
     }
 
-    /**
-     *
-     * @throws PackageNotLoadedException
-     */
+    /** @throws PackageNotLoadedException */
     protected function checkIfInstalled(): void
     {
         $installed = json_decode(file_get_contents('vendor/composer/installed.json'), true);
@@ -199,9 +179,7 @@ abstract class AbstractProvider
 
         $filtered = array_filter(
             $installed['packages'],
-            function ($value) use ($package): bool {
-                return array_key_exists('name', $value) && $package === $value['name'];
-            }
+            static fn ($value): bool => array_key_exists('name', $value) && $package === $value['name'],
         );
 
         if ([] === $filtered) {

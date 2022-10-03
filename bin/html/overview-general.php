@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 use UserAgentParserComparison\Html\OverviewGeneral;
 
 /*
@@ -10,16 +13,15 @@ echo '~~~ create html overview ~~~' . PHP_EOL;
 
 echo '.';
 
-/* @var $pdo \PDO */
-
+/** @var PDO $pdo */
 $generate = new OverviewGeneral($pdo, 'UserAgentParserComparison comparison overview');
 
 /*
  * persist!
  */
 $folder = $basePath;
-if (! file_exists($folder)) {
- mkdir($folder, 0777, true);
+if (!file_exists($folder)) {
+    mkdir($folder, 0777, true);
 }
 
 file_put_contents($folder . '/index.html', $generate->getHtml());

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider;
 
 use DeviceDetector\DeviceDetector;
@@ -9,72 +12,60 @@ use UserAgentParserComparison\Model;
 /**
  * Abstraction for matomo/device-detector
  *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  * @see https://github.com/matomo/device-detector
  */
-class MatomoDeviceDetector extends AbstractParseProvider
+final class MatomoDeviceDetector extends AbstractParseProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'MatomoDeviceDetector';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://github.com/matomo/device-detector';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = 'matomo/device-detector';
 
     protected string $language = 'PHP';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => true,
+            'name' => true,
             'version' => false,
         ],
 
         'operatingSystem' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'device' => [
-            'model'    => true,
-            'brand'    => true,
-            'type'     => true,
+            'model' => true,
+            'brand' => true,
+            'type' => true,
             'isMobile' => true,
-            'isTouch'  => true,
+            'isTouch' => true,
         ],
 
         'bot' => [
             'isBot' => true,
-            'name'  => true,
-            'type'  => true,
+            'name' => true,
+            'type' => true,
         ],
     ];
 
     protected array $defaultValues = [
-
-        'general' => [
-            '/^UNK$/i',
-        ],
+        'general' => ['/^UNK$/i'],
 
         'bot' => [
             'name' => [
@@ -84,29 +75,19 @@ class MatomoDeviceDetector extends AbstractParseProvider
         ],
     ];
 
-    private DeviceDetector $parser;
-
-    /**
-     *
-     * @param  DeviceDetector|null            $parser
-     * @throws PackageNotLoadedException
-     */
-    public function __construct(DeviceDetector $parser = null)
+    /** @throws PackageNotLoadedException */
+    public function __construct(private DeviceDetector | null $parser = null)
     {
-        if ($parser === null) {
-            $this->checkIfInstalled();
+        if (null !== $parser) {
+            return;
         }
 
-        $this->parser = $parser;
+        $this->checkIfInstalled();
     }
 
-    /**
-     *
-     * @return DeviceDetector
-     */
     public function getParser(): DeviceDetector
     {
-        if ($this->parser !== null) {
+        if (null !== $this->parser) {
             return $this->parser;
         }
 
@@ -116,173 +97,13 @@ class MatomoDeviceDetector extends AbstractParseProvider
     }
 
     /**
+     * @param array $headers
      *
-     * @param DeviceDetector $dd
+     * @throws NoResultFoundException
      *
-     * @return array
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    private function getResultRaw(DeviceDetector $dd): array
-    {
-        $raw = [
-            'client'          => $dd->getClient(),
-            'operatingSystem' => $dd->getOs(),
-
-            'device' => [
-                'brand'     => $dd->getBrand(),
-                'brandName' => $dd->getBrandName(),
-
-                'model' => $dd->getModel(),
-
-                'device'     => $dd->getDevice(),
-                'deviceName' => $dd->getDeviceName(),
-            ],
-
-            'bot' => $dd->getBot(),
-
-            'extra' => [
-                'isBot' => $dd->isBot(),
-
-                // client
-                'isBrowser'     => $dd->isBrowser(),
-                'isFeedReader'  => $dd->isFeedReader(),
-                'isMobileApp'   => $dd->isMobileApp(),
-                'isPIM'         => $dd->isPIM(),
-                'isLibrary'     => $dd->isLibrary(),
-                'isMediaPlayer' => $dd->isMediaPlayer(),
-
-                // deviceType
-                'isCamera'              => $dd->isCamera(),
-                'isCarBrowser'          => $dd->isCarBrowser(),
-                'isConsole'             => $dd->isConsole(),
-                'isFeaturePhone'        => $dd->isFeaturePhone(),
-                'isPhablet'             => $dd->isPhablet(),
-                'isPortableMediaPlayer' => $dd->isPortableMediaPlayer(),
-                'isSmartDisplay'        => $dd->isSmartDisplay(),
-                'isSmartphone'          => $dd->isSmartphone(),
-                'isTablet'              => $dd->isTablet(),
-                'isTV'                  => $dd->isTV(),
-
-                // other special
-                'isDesktop'      => $dd->isDesktop(),
-                'isMobile'       => $dd->isMobile(),
-                'isTouchEnabled' => $dd->isTouchEnabled(),
-            ],
-        ];
-
-        return $raw;
-    }
-
-    /**
-     *
-     * @param DeviceDetector $dd
-     *
-     * @return bool
-     */
-    private function hasResult(DeviceDetector $dd): bool
-    {
-        if ($dd->isBot() === true) {
-            return true;
-        }
-
-        $client = $dd->getClient();
-        if (isset($client['name']) && $this->isRealResult($client['name'])) {
-            return true;
-        }
-
-        $os = $dd->getOs();
-        if (isset($os['name']) && $this->isRealResult($os['name'])) {
-            return true;
-        }
-
-        if ($dd->getDevice() !== null) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     *
-     * @param Model\Bot     $bot
-     * @param array|boolean $botRaw
-     */
-    private function hydrateBot(Model\Bot $bot, $botRaw): void
-    {
-        $bot->setIsBot(true);
-
-        if (isset($botRaw['name'])) {
-            $bot->setName($this->getRealResult($botRaw['name'], 'bot', 'name'));
-        }
-        if (isset($botRaw['category'])) {
-            $bot->setType($this->getRealResult($botRaw['category']));
-        }
-    }
-
-    /**
-     *
-     * @param Model\Browser $browser
-     * @param array|string  $clientRaw
-     */
-    private function hydrateBrowser(Model\Browser $browser, $clientRaw): void
-    {
-        if (isset($clientRaw['name'])) {
-            $browser->setName($this->getRealResult($clientRaw['name']));
-        }
-
-        if (isset($clientRaw['version'])) {
-            $browser->getVersion()->setComplete($this->getRealResult($clientRaw['version']));
-        }
-    }
-
-    /**
-     *
-     * @param Model\RenderingEngine $engine
-     * @param array|string          $clientRaw
-     */
-    private function hydrateRenderingEngine(Model\RenderingEngine $engine, $clientRaw): void
-    {
-        if (isset($clientRaw['engine'])) {
-            $engine->setName($this->getRealResult($clientRaw['engine']));
-        }
-    }
-
-    /**
-     *
-     * @param Model\OperatingSystem $os
-     * @param array|string          $osRaw
-     */
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, $osRaw): void
-    {
-        if (isset($osRaw['name'])) {
-            $os->setName($this->getRealResult($osRaw['name']));
-        }
-
-        if (isset($osRaw['version'])) {
-            $os->getVersion()->setComplete($this->getRealResult($osRaw['version']));
-        }
-    }
-
-    /**
-     *
-     * @param Model\Device $device
-     * @param DeviceDetector  $dd
-     */
-    private function hydrateDevice(Model\Device $device, DeviceDetector $dd): void
-    {
-        $device->setModel($this->getRealResult($dd->getModel()));
-        $device->setBrand($this->getRealResult($dd->getBrandName()));
-        $device->setType($this->getRealResult($dd->getDeviceName()));
-
-        if ($dd->isMobile() === true) {
-            $device->setIsMobile(true);
-        }
-
-        if ($dd->isTouchEnabled() === true) {
-            $device->setIsTouch(true);
-        }
-    }
-
-    public function parse($userAgent, array $headers = []): Model\UserAgent
+    public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
         $dd = $this->getParser();
 
@@ -292,7 +113,7 @@ class MatomoDeviceDetector extends AbstractParseProvider
         /*
          * No result found?
          */
-        if ($this->hasResult($dd) !== true) {
+        if (true !== $this->hasResult($dd)) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -305,7 +126,7 @@ class MatomoDeviceDetector extends AbstractParseProvider
         /*
          * Bot detection
          */
-        if ($dd->isBot() === true) {
+        if (true === $dd->isBot()) {
             $this->hydrateBot($result->getBot(), $dd->getBot());
 
             return $result;
@@ -320,5 +141,145 @@ class MatomoDeviceDetector extends AbstractParseProvider
         $this->hydrateDevice($result->getDevice(), $dd);
 
         return $result;
+    }
+
+    /** @return array */
+    private function getResultRaw(DeviceDetector $dd): array
+    {
+        return [
+            'client' => $dd->getClient(),
+            'operatingSystem' => $dd->getOs(),
+
+            'device' => [
+                'brand' => $dd->getBrand(),
+                'brandName' => $dd->getBrandName(),
+
+                'model' => $dd->getModel(),
+
+                'device' => $dd->getDevice(),
+                'deviceName' => $dd->getDeviceName(),
+            ],
+
+            'bot' => $dd->getBot(),
+
+            'extra' => [
+                'isBot' => $dd->isBot(),
+
+                // client
+                'isBrowser' => $dd->isBrowser(),
+                'isFeedReader' => $dd->isFeedReader(),
+                'isMobileApp' => $dd->isMobileApp(),
+                'isPIM' => $dd->isPIM(),
+                'isLibrary' => $dd->isLibrary(),
+                'isMediaPlayer' => $dd->isMediaPlayer(),
+
+                // deviceType
+                'isCamera' => $dd->isCamera(),
+                'isCarBrowser' => $dd->isCarBrowser(),
+                'isConsole' => $dd->isConsole(),
+                'isFeaturePhone' => $dd->isFeaturePhone(),
+                'isPhablet' => $dd->isPhablet(),
+                'isPortableMediaPlayer' => $dd->isPortableMediaPlayer(),
+                'isSmartDisplay' => $dd->isSmartDisplay(),
+                'isSmartphone' => $dd->isSmartphone(),
+                'isTablet' => $dd->isTablet(),
+                'isTV' => $dd->isTV(),
+
+                // other special
+                'isDesktop' => $dd->isDesktop(),
+                'isMobile' => $dd->isMobile(),
+                'isTouchEnabled' => $dd->isTouchEnabled(),
+            ],
+        ];
+    }
+
+    private function hasResult(DeviceDetector $dd): bool
+    {
+        if (true === $dd->isBot()) {
+            return true;
+        }
+
+        $client = $dd->getClient();
+        if (isset($client['name']) && $this->isRealResult($client['name'])) {
+            return true;
+        }
+
+        $os = $dd->getOs();
+        if (isset($os['name']) && $this->isRealResult($os['name'])) {
+            return true;
+        }
+
+        return null !== $dd->getDevice();
+    }
+
+    /** @param array|bool $botRaw */
+    private function hydrateBot(Model\Bot $bot, $botRaw): void
+    {
+        $bot->setIsBot(true);
+
+        if (isset($botRaw['name'])) {
+            $bot->setName($this->getRealResult($botRaw['name'], 'bot', 'name'));
+        }
+
+        if (!isset($botRaw['category'])) {
+            return;
+        }
+
+        $bot->setType($this->getRealResult($botRaw['category']));
+    }
+
+    /** @param array|string $clientRaw */
+    private function hydrateBrowser(Model\Browser $browser, $clientRaw): void
+    {
+        if (isset($clientRaw['name'])) {
+            $browser->setName($this->getRealResult($clientRaw['name']));
+        }
+
+        if (!isset($clientRaw['version'])) {
+            return;
+        }
+
+        $browser->getVersion()->setComplete($this->getRealResult($clientRaw['version']));
+    }
+
+    /** @param array|string $clientRaw */
+    private function hydrateRenderingEngine(Model\RenderingEngine $engine, $clientRaw): void
+    {
+        if (!isset($clientRaw['engine'])) {
+            return;
+        }
+
+        $engine->setName($this->getRealResult($clientRaw['engine']));
+    }
+
+    /** @param array|string $osRaw */
+    private function hydrateOperatingSystem(Model\OperatingSystem $os, $osRaw): void
+    {
+        if (isset($osRaw['name'])) {
+            $os->setName($this->getRealResult($osRaw['name']));
+        }
+
+        if (!isset($osRaw['version'])) {
+            return;
+        }
+
+        $os->getVersion()->setComplete($this->getRealResult($osRaw['version']));
+    }
+
+    private function hydrateDevice(Model\Device $device, DeviceDetector $dd): void
+    {
+        $device->setModel($this->getRealResult($dd->getModel()));
+        $device->setBrand($this->getRealResult($dd->getBrandName()));
+        $device->setType($this->getRealResult($dd->getDeviceName()));
+
+        if (true === $dd->isMobile()) {
+            $device->setIsMobile(true);
+        }
+
+        if (true !== $dd->isTouchEnabled()) {
+            return;
+        }
+
+        $device->setIsTouch(true);
     }
 }
