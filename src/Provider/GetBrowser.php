@@ -70,8 +70,6 @@ final class GetBrowser extends AbstractBrowscap
     }
 
     /**
-     * @param array $headers
-     *
      * @throws NoResultFoundException
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter

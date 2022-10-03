@@ -94,8 +94,6 @@ final class BrowserDetector extends AbstractParseProvider
     }
 
     /**
-     * @param array $headers
-     *
      * @throws NoResultFoundException
      * @throws InvalidArgumentException
      *

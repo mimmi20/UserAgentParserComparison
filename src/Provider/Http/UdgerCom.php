@@ -81,11 +81,7 @@ final class UdgerCom extends AbstractHttpParseProvider
         return null;
     }
 
-    /**
-     * @param array $headers
-     *
-     * @throws Exception\RequestException
-     */
+    /** @throws Exception\RequestException */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
         $resultRaw = $this->getResult($userAgent, $headers);

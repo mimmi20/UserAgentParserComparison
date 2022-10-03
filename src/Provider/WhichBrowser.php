@@ -92,11 +92,7 @@ final class WhichBrowser extends AbstractParseProvider
         return $this->parser;
     }
 
-    /**
-     * @param array $headers
-     *
-     * @throws NoResultFoundException
-     */
+    /** @throws NoResultFoundException */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
         $headers['User-Agent'] = $userAgent;

@@ -97,8 +97,6 @@ final class MatomoDeviceDetector extends AbstractParseProvider
     }
 
     /**
-     * @param array $headers
-     *
      * @throws NoResultFoundException
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter

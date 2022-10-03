@@ -71,8 +71,6 @@ final class Cbschuld extends AbstractParseProvider
     }
 
     /**
-     * @param array $headers
-     *
      * @throws NoResultFoundException
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter

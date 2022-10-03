@@ -63,8 +63,6 @@ abstract class AbstractBrowscap extends AbstractParseProvider
     }
 
     /**
-     * @param array $headers
-     *
      * @throws NoResultFoundException
      * @throws Exception
      *
