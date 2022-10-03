@@ -4,7 +4,6 @@ parameters:
     maximumNumberOfProcesses: 1
     processTimeout: 200.0
   paths:
-    - bin
     - src
   scanFiles:
     - %currentWorkingDirectory%/vendor/autoload.php
