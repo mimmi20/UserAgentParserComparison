@@ -1,0 +1,28 @@
+parameters:
+  level: max
+  parallel:
+    maximumNumberOfProcesses: 1
+    processTimeout: 200.0
+  paths:
+    - bin
+    - src
+  scanFiles:
+    - %currentWorkingDirectory%/vendor/autoload.php
+    - %currentWorkingDirectory%/vendor/squizlabs/php_codesniffer/autoload.php
+    - %currentWorkingDirectory%/vendor/squizlabs/php_codesniffer/src/Util/Tokens.php
+  checkGenericClassInNonGenericObjectType: false
+  checkMissingIterableValueType: false
+  treatPhpDocTypesAsCertain: false
+  exceptions:
+    implicitThrows: false
+    checkedExceptionRegexes:
+      - '#Exception#'
+      - '#Throwable#'
+    check:
+      missingCheckedExceptionInThrows: true
+      tooWideThrowType: true
+  ignoreErrors:
+    - '~expects string,~'
+    - '~Cannot call method get\(\) on Symfony\\Component\\Console\\Helper\\HelperSet\|null~'
+    - '~on mixed~'
+    - '~mixed given~'

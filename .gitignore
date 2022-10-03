@@ -45,7 +45,7 @@ Temporary Items
 .settings
 .buildpath
 .project
-.php_cs.cache
+.php-cs-fixer.cache
 vendor
 .tmp
 
