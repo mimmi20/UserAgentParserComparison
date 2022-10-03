@@ -16,7 +16,7 @@ Download this repo to a folder
 
 ### Step2) Install dependencies
 
-```
+```shell
 composer update -o --prefer-source
 ```
 
@@ -30,7 +30,7 @@ Download all (currently 3) `browscap.ini` files for PHP from [here](http://brows
 And put it to `data/*.ini`
 
 ### Step 4) init caches
-```
+```shell
 php bin/cache/initBrowscap.php
 php bin/cache/initMatomo.php
 php bin/cache/initBrowserDetector.php
@@ -48,7 +48,7 @@ And adjust your configuration
 
 ### Step 6) Init database
 
-```
+```shell
 php bin/db/initDb.php
 php bin/db/initProviders.php
 php bin/db/initUserAgents.php
@@ -57,7 +57,7 @@ php -d browscap=data/full_php_browscap.ini bin/db/initResults.php
 
 #### For vNEXT (not needed until yet)
 
-```
+```shell
 php bin/db/initResultsEvaluation.php
 php bin/db/initUserAgentsEvaluation.php
 ```
@@ -65,7 +65,7 @@ php bin/db/initUserAgentsEvaluation.php
 
 ## Step 7) Generate reports
 
-```
+```shell
 php bin/html/*.php # just all inside that folder
 ```
 
