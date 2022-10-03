@@ -85,25 +85,6 @@ $whichbrowserCache   = new \MatthiasMullie\Scrapbook\Psr6\Pool(
     )
 );
 
-/*
- * HTTP
- */
-//$handler = new CurlHandler();
-//$stack = HandlerStack::create($handler);
-//
-//$client = new Client([
-//    'handler' => $stack,
-//    'timeout' => 3,
-//
-//    'curl' => [
-//        CURLOPT_SSL_VERIFYHOST => false,
-//        CURLOPT_SSL_VERIFYPEER => false
-//    ]
-//]);
-//
-//$userAgentString = new Provider\Http\UserAgentStringCom($client);
-
-
 return new Provider\Chain([
     $browscapProviderStandard,
     $browscapProviderLite,
@@ -121,6 +102,4 @@ return new Provider\Chain([
     new Provider\Zsxsoft(),
     //new Provider\Endorphin(),
     new Provider\MobileDetect(),
-
-    //$userAgentString,
 ]);
