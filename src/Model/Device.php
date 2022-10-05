@@ -1,50 +1,50 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Model;
 
 /**
  * Device model
- *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  */
 final class Device
 {
-    private ?string $model = null;
+    private string | null $model = null;
 
-    private ?string $brand = null;
+    private string | null $brand = null;
 
-    private ?string $type = null;
+    private string | null $type = null;
 
     private bool $isMobile = false;
 
     private bool $isTouch = false;
 
-    public function setModel(?string $model): void
+    public function setModel(string | null $model): void
     {
         $this->model = $model;
     }
 
-    public function getModel(): ?string
+    public function getModel(): string | null
     {
         return $this->model;
     }
 
-    public function setBrand(?string $brand): void
+    public function setBrand(string | null $brand): void
     {
         $this->brand = $brand;
     }
 
-    public function getBrand(): ?string
+    public function getBrand(): string | null
     {
         return $this->brand;
     }
 
-    public function setType(?string $type): void
+    public function setType(string | null $type): void
     {
         $this->type = $type;
     }
 
-    public function getType(): ?string
+    public function getType(): string | null
     {
         return $this->type;
     }
@@ -70,18 +70,17 @@ final class Device
     }
 
     /**
-     *
-     * @return string[]|int[]|bool[]|null[]
+     * @return bool[]|int[]|null[]|string[]
      * @phpstan-return array{model: string|null, brand: string|null, type: string|null, isMobile: bool, isTouch: bool}
      */
     public function toArray(): array
     {
         return [
-            'model'    => $this->getModel(),
-            'brand'    => $this->getBrand(),
-            'type'     => $this->getType(),
+            'model' => $this->getModel(),
+            'brand' => $this->getBrand(),
+            'type' => $this->getType(),
             'isMobile' => $this->getIsMobile(),
-            'isTouch'  => $this->getIsTouch(),
+            'isTouch' => $this->getIsTouch(),
         ];
     }
 }

@@ -1,119 +1,121 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Evaluation;
 
-class ResultsPerUserAgent
+use function array_count_values;
+use function array_unique;
+use function count;
+use function explode;
+use function max;
+use function ucfirst;
+
+final class ResultsPerUserAgent
 {
+    private array $values;
+    private array $harmonizedValues;
+    private string $type;
+    private int | null $foundCount;
+    private int | null $foundCountUnique;
+    private int | null $maxSameResultCount;
+    private int | null $harmonizedFoundUnique;
+    private int | null $harmonizedMaxSameResultCount;
 
-    private $values;
-
-    private $harmonizedValues;
-
-    private $type;
-
-    private $foundCount;
-
-    private $foundCountUnique;
-
-    private $maxSameResultCount;
-
-    private $harmonizedFoundUnique;
-
-    private $harmonizedMaxSameResultCount;
-
-    public function setValue($value)
+    public function setValue(string | null $value): void
     {
-        if ($value === null) {
+        if (null === $value) {
             $values = [];
         } else {
             $values = explode('~~~', $value);
         }
-        
+
         $this->values = $values;
     }
 
-    public function getValues()
+    public function getValues(): array
     {
         return $this->values;
     }
 
-    public function setType($type)
+    public function setType(string $type): void
     {
         $this->type = $type;
     }
 
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
 
-    public function evaluate()
+    public function evaluate(): void
     {
-        $this->foundCount = count($this->getValues());
-        $this->foundCountUnique = $this->getUniqueCount($this->getValues());
+        $this->foundCount         = count($this->getValues());
+        $this->foundCountUnique   = $this->getUniqueCount($this->getValues());
         $this->maxSameResultCount = $this->getMaxSameCount($this->getValues());
-        
+
         $harmonizedValues = $this->getHarmonizedValues();
-        
-        $this->harmonizedFoundUnique = $this->getUniqueCount($harmonizedValues);
+
+        $this->harmonizedFoundUnique        = $this->getUniqueCount($harmonizedValues);
         $this->harmonizedMaxSameResultCount = $this->getMaxSameCount($harmonizedValues);
     }
 
-    protected function getHarmonizedValues()
-    {
-        if ($this->harmonizedValues !== null) {
-            return $this->harmonizedValues;
-        }
-        
-        $class = '\UserAgentParserComparison\Harmonize\\' . ucfirst($this->getType());
-        
-        $this->harmonizedValues =  $class::getHarmonizedValues($this->getValues());
-        
-        return $this->harmonizedValues;
-    }
-    
-    public function getUniqueHarmonizedValues()
+    public function getUniqueHarmonizedValues(): array
     {
         return array_unique($this->getHarmonizedValues());
     }
 
-    private function getUniqueCount(array $values)
-    {
-        return count(array_unique($values));
-    }
-
-    private function getMaxSameCount(array $values)
-    {
-        if (count($values) === 0) {
-            return 0;
-        }
-        
-        $count = array_count_values($values);
-        
-        return max($count);
-    }
-
-    public function getFoundCount()
+    public function getFoundCount(): int | null
     {
         return $this->foundCount;
     }
 
-    public function getFoundCountUnique()
+    public function getFoundCountUnique(): int | null
     {
         return $this->foundCountUnique;
     }
 
-    public function getMaxSameResultCount()
+    public function getMaxSameResultCount(): int | null
     {
         return $this->maxSameResultCount;
     }
 
-    public function getHarmonizedFoundUnique()
+    public function getHarmonizedFoundUnique(): int | null
     {
         return $this->harmonizedFoundUnique;
     }
 
-    public function getHarmonizedMaxSameResultCount()
+    public function getHarmonizedMaxSameResultCount(): int | null
     {
         return $this->harmonizedMaxSameResultCount;
+    }
+
+    private function getHarmonizedValues(): array
+    {
+        if (null !== $this->harmonizedValues) {
+            return $this->harmonizedValues;
+        }
+
+        $class = '\UserAgentParserComparison\Harmonize\\' . ucfirst($this->getType());
+
+        $this->harmonizedValues =  $class::getHarmonizedValues($this->getValues());
+
+        return $this->harmonizedValues;
+    }
+
+    private function getUniqueCount(array $values): int | null
+    {
+        return count(array_unique($values));
+    }
+
+    private function getMaxSameCount(array $values): int | null
+    {
+        if (0 === count($values)) {
+            return 0;
+        }
+
+        $count = array_count_values($values);
+
+        return max($count);
     }
 }

@@ -1,12 +1,14 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Exception;
+
+use Exception;
 
 /**
  * This is thrown by the Provider if not result is found.
- *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  */
-class NoResultFoundException extends \Exception implements ExceptionInterface
+final class NoResultFoundException extends Exception implements ExceptionInterface
 {
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider;
 
 use UserAgent;
@@ -9,77 +12,63 @@ use UserAgentParserComparison\Model;
 /**
  * Abstraction for zsxsoft/php-useragent
  *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  * @see https://github.com/zsxsoft/php-useragent
  */
-class Zsxsoft extends AbstractParseProvider
+final class Zsxsoft extends AbstractParseProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'Zsxsoft';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://github.com/zsxsoft/php-useragent';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = 'zsxsoft/php-useragent';
 
     protected string $language = 'PHP';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'operatingSystem' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'device' => [
-            'model'    => true,
-            'brand'    => true,
-            'type'     => false,
+            'model' => true,
+            'brand' => true,
+            'type' => false,
             'isMobile' => false,
-            'isTouch'  => false,
+            'isTouch' => false,
         ],
 
         'bot' => [
             'isBot' => false,
-            'name'  => false,
-            'type'  => false,
+            'name' => false,
+            'type' => false,
         ],
     ];
 
     protected array $defaultValues = [
-
-        'general' => [
-            '/^Unknown$/i',
-        ],
+        'general' => ['/^Unknown$/i'],
 
         'browser' => [
-            'name' => [
-                '/^Mozilla Compatible$/i',
-            ],
+            'name' => ['/^Mozilla Compatible$/i'],
         ],
 
         'device' => [
@@ -90,29 +79,19 @@ class Zsxsoft extends AbstractParseProvider
         ],
     ];
 
-    private ?UserAgent $parser = null;
-
-    /**
-     *
-     * @param  UserAgent|null            $parser
-     * @throws PackageNotLoadedException
-     */
-    public function __construct(?UserAgent $parser = null)
+    /** @throws PackageNotLoadedException */
+    public function __construct(private UserAgent | null $parser = null)
     {
-        if ($parser === null) {
-            $this->checkIfInstalled();
+        if (null !== $parser) {
+            return;
         }
 
-        $this->parser = $parser;
+        $this->checkIfInstalled();
     }
 
-    /**
-     *
-     * @return UserAgent
-     */
     public function getParser(): UserAgent
     {
-        if ($this->parser !== null) {
+        if (null !== $this->parser) {
             return $this->parser;
         }
 
@@ -122,13 +101,48 @@ class Zsxsoft extends AbstractParseProvider
     }
 
     /**
+     * @throws NoResultFoundException
      *
-     * @param array $browser
-     * @param array $os
-     * @param array $device
-     *
-     * @return bool
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
+    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    {
+        $parser = $this->getParser();
+        $parser->analyze($userAgent);
+
+        $browser  = $parser->browser;
+        $os       = $parser->os;
+        $device   = $parser->device;
+        $platform = $parser->platform;
+
+        /*
+         * No result found?
+         */
+        if (true !== $this->hasResult($browser, $os, $device)) {
+            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+        }
+
+        /*
+         * Hydrate the model
+         */
+        $result = new Model\UserAgent($this->getName(), $this->getVersion());
+        $result->setProviderResultRaw([
+            'browser' => $browser,
+            'os' => $os,
+            'device' => $device,
+            'platform' => $platform,
+        ]);
+
+        /*
+         * hydrate the result
+         */
+        $this->hydrateBrowser($result->getBrowser(), $browser);
+        $this->hydrateOperatingSystem($result->getOperatingSystem(), $os);
+        $this->hydrateDevice($result->getDevice(), $device);
+
+        return $result;
+    }
+
     private function hasResult(array $browser, array $os, array $device): bool
     {
         if (isset($browser['name']) && $this->isRealResult($browser['name'], 'browser', 'name')) {
@@ -143,96 +157,48 @@ class Zsxsoft extends AbstractParseProvider
             return true;
         }
 
-        if (isset($device['model']) && $this->isRealResult($device['model'], 'device', 'model')) {
-            return true;
-        }
-
-        return false;
+        return isset($device['model']) && $this->isRealResult($device['model'], 'device', 'model');
     }
 
-    /**
-     *
-     * @param Model\Browser $browser
-     * @param array         $browserRaw
-     */
+    /** @param array $browserRaw */
     private function hydrateBrowser(Model\Browser $browser, array $browserRaw): void
     {
         if (isset($browserRaw['name'])) {
             $browser->setName($this->getRealResult($browserRaw['name'], 'browser', 'name'));
         }
 
-        if (isset($browserRaw['version'])) {
-            $browser->getVersion()->setComplete($this->getRealResult($browserRaw['version']));
+        if (!isset($browserRaw['version'])) {
+            return;
         }
+
+        $browser->getVersion()->setComplete($this->getRealResult($browserRaw['version']));
     }
 
-    /**
-     *
-     * @param Model\OperatingSystem $os
-     * @param array                 $osRaw
-     */
+    /** @param array $osRaw */
     private function hydrateOperatingSystem(Model\OperatingSystem $os, array $osRaw): void
     {
         if (isset($osRaw['name'])) {
             $os->setName($this->getRealResult($osRaw['name']));
         }
 
-        if (isset($osRaw['version'])) {
-            $os->getVersion()->setComplete($this->getRealResult($osRaw['version']));
+        if (!isset($osRaw['version'])) {
+            return;
         }
+
+        $os->getVersion()->setComplete($this->getRealResult($osRaw['version']));
     }
 
-    /**
-     *
-     * @param Model\Device $device
-     * @param array        $deviceRaw
-     */
+    /** @param array $deviceRaw */
     private function hydrateDevice(Model\Device $device, array $deviceRaw): void
     {
         if (isset($deviceRaw['model'])) {
             $device->setModel($this->getRealResult($deviceRaw['model'], 'device', 'model'));
         }
 
-        if (isset($deviceRaw['brand'])) {
-            $device->setBrand($this->getRealResult($deviceRaw['brand']));
-        }
-    }
-
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
-    {
-        $parser = $this->getParser();
-        $parser->analyze($userAgent);
-
-        $browser  = $parser->browser;
-        $os       = $parser->os;
-        $device   = $parser->device;
-        $platform = $parser->platform;
-
-        /*
-         * No result found?
-         */
-        if ($this->hasResult($browser, $os, $device) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+        if (!isset($deviceRaw['brand'])) {
+            return;
         }
 
-        /*
-         * Hydrate the model
-         */
-        $result = new Model\UserAgent($this->getName(), $this->getVersion());
-        $result->setProviderResultRaw([
-            'browser'  => $browser,
-            'os'       => $os,
-            'device'   => $device,
-            'platform' => $platform,
-        ]);
-
-        /*
-         * hydrate the result
-         */
-        $this->hydrateBrowser($result->getBrowser(), $browser);
-        $this->hydrateOperatingSystem($result->getOperatingSystem(), $os);
-        $this->hydrateDevice($result->getDevice(), $device);
-
-        return $result;
+        $device->setBrand($this->getRealResult($deviceRaw['brand']));
     }
 }

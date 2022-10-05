@@ -1,23 +1,23 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Model;
 
 /**
  * User agent model
- *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  */
-class UserAgent
+final class UserAgent
 {
     /**
      * Provider name
      */
-    private ?string $providerName;
+    private string | null $providerName;
 
     /**
      * Provider version
      */
-    private ?string $providerVersion;
+    private string | null $providerVersion;
 
     private Browser $browser;
 
@@ -29,12 +29,10 @@ class UserAgent
 
     private Bot $bot;
 
-    /**
-     * @var mixed
-     */
+    /** @var mixed */
     private $providerResultRaw;
 
-    public function __construct(?string $providerName = null, ?string $providerVersion = null)
+    public function __construct(string | null $providerName = null, string | null $providerVersion = null)
     {
         $this->providerName    = $providerName;
         $this->providerVersion = $providerVersion;
@@ -46,12 +44,12 @@ class UserAgent
         $this->bot             = new Bot();
     }
 
-    public function getProviderName(): ?string
+    public function getProviderName(): string | null
     {
         return $this->providerName;
     }
 
-    public function getProviderVersion(): ?string
+    public function getProviderVersion(): string | null
     {
         return $this->providerVersion;
     }
@@ -116,17 +114,13 @@ class UserAgent
         return $this->getDevice()->getIsMobile();
     }
 
-    /**
-     * @param mixed $providerResultRaw
-     */
-    public function setProviderResultRaw($providerResultRaw)
+    /** @param mixed $providerResultRaw */
+    public function setProviderResultRaw($providerResultRaw): void
     {
         $this->providerResultRaw = $providerResultRaw;
     }
 
-    /**
-     * @return mixed
-     */
+    /** @return mixed */
     public function getProviderResultRaw()
     {
         return $this->providerResultRaw;
@@ -139,15 +133,15 @@ class UserAgent
     public function toArray(bool $includeResultRaw = false): array
     {
         $data = [
-            'browser'          => $this->getBrowser()->toArray(),
-            'renderingEngine'  => $this->getRenderingEngine()->toArray(),
-            'operatingSystem'  => $this->getOperatingSystem()->toArray(),
-            'device'           => $this->getDevice()->toArray(),
-            'bot'              => $this->getBot()->toArray(),
+            'browser' => $this->getBrowser()->toArray(),
+            'renderingEngine' => $this->getRenderingEngine()->toArray(),
+            'operatingSystem' => $this->getOperatingSystem()->toArray(),
+            'device' => $this->getDevice()->toArray(),
+            'bot' => $this->getBot()->toArray(),
         ];
 
         // should be only used for debug
-        if ($includeResultRaw === true) {
+        if (true === $includeResultRaw) {
             $data['providerResultRaw'] = $this->getProviderResultRaw();
         }
 

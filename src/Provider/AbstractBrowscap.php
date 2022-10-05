@@ -1,48 +1,41 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider;
 
 use BrowscapPHP\Browscap;
-use DateTime;
+use BrowscapPHP\Exception;
 use stdClass;
-use UserAgentParserComparison\Exception\InvalidArgumentException;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Model;
+
+use function assert;
 
 /**
  * Abstraction for all browscap types
  *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  * @see https://github.com/browscap/browscap-php
  */
 abstract class AbstractBrowscap extends AbstractParseProvider
 {
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://github.com/browscap/browscap-php';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = 'browscap/browscap-php';
 
     protected string $language = 'PHP';
 
     protected array $defaultValues = [
-
-        'general' => [
-            '/^unknown$/i',
-        ],
+        'general' => ['/^unknown$/i'],
 
         'browser' => [
-            'name' => [
-                '/^Default Browser$/i',
-            ],
+            'name' => ['/^Default Browser$/i'],
         ],
 
         'device' => [
@@ -60,162 +53,32 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         ],
     ];
 
-    /**
-     *
-     * @var Browscap
-     */
-    private Browscap $parser;
-
-    public function __construct(Browscap $parser)
+    public function __construct(private Browscap $parser)
     {
-        $this->parser = $parser;
     }
 
-    /**
-     *
-     * @return Browscap
-     */
     public function getParser(): Browscap
     {
         return $this->parser;
     }
 
     /**
+     * @throws NoResultFoundException
+     * @throws Exception
      *
-     * @param stdClass $resultRaw
-     *
-     * @return bool
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    protected function hasResult(stdClass $resultRaw): bool
-    {
-        if (isset($resultRaw->browser) && $this->isRealResult($resultRaw->browser, 'browser', 'name') === true) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     *
-     * @param  stdClass $resultRaw
-     * @return boolean
-     */
-    protected function isBot(stdClass $resultRaw): bool
-    {
-        if (isset($resultRaw->crawler) && $resultRaw->crawler === true) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     *
-     * @param Model\Bot $bot
-     * @param stdClass  $resultRaw
-     */
-    protected function hydrateBot(Model\Bot $bot, stdClass $resultRaw): void
-    {
-        $bot->setIsBot(true);
-
-        if (isset($resultRaw->browser)) {
-            $bot->setName($this->getRealResult($resultRaw->browser, 'bot', 'name'));
-        }
-
-        if (isset($resultRaw->issyndicationreader) && $resultRaw->issyndicationreader === true) {
-            $bot->setType('RSS');
-        } elseif (isset($resultRaw->browser_type)) {
-            $bot->setType($this->getRealResult($resultRaw->browser_type));
-        }
-    }
-
-    /**
-     *
-     * @param Model\Browser $browser
-     * @param stdClass      $resultRaw
-     */
-    protected function hydrateBrowser(Model\Browser $browser, stdClass $resultRaw): void
-    {
-        if (isset($resultRaw->browser)) {
-            $browser->setName($this->getRealResult($resultRaw->browser, 'browser', 'name'));
-        }
-
-        if (isset($resultRaw->version)) {
-            $browser->getVersion()->setComplete($this->getRealResult($resultRaw->version));
-        }
-    }
-
-    /**
-     *
-     * @param Model\RenderingEngine $engine
-     * @param stdClass              $resultRaw
-     */
-    protected function hydrateRenderingEngine(Model\RenderingEngine $engine, stdClass $resultRaw): void
-    {
-        if (isset($resultRaw->renderingengine_name)) {
-            $engine->setName($this->getRealResult($resultRaw->renderingengine_name));
-        }
-
-        if (isset($resultRaw->renderingengine_version)) {
-            $engine->getVersion()->setComplete($this->getRealResult($resultRaw->renderingengine_version));
-        }
-    }
-
-    /**
-     *
-     * @param Model\OperatingSystem $os
-     * @param stdClass              $resultRaw
-     */
-    protected function hydrateOperatingSystem(Model\OperatingSystem $os, stdClass $resultRaw): void
-    {
-        if (isset($resultRaw->platform)) {
-            $os->setName($this->getRealResult($resultRaw->platform));
-        }
-
-        if (isset($resultRaw->platform_version)) {
-            $os->getVersion()->setComplete($this->getRealResult($resultRaw->platform_version));
-        }
-    }
-
-    /**
-     *
-     * @param Model\Device $device
-     * @param stdClass     $resultRaw
-     */
-    protected function hydrateDevice(Model\Device $device, stdClass $resultRaw): void
-    {
-        if (isset($resultRaw->device_name)) {
-            $device->setModel($this->getRealResult($resultRaw->device_name, 'device', 'model'));
-        }
-
-        if (isset($resultRaw->device_brand_name)) {
-            $device->setBrand($this->getRealResult($resultRaw->device_brand_name));
-        }
-
-        if (isset($resultRaw->device_type)) {
-            $device->setType($this->getRealResult($resultRaw->device_type));
-        }
-
-        if (isset($resultRaw->ismobiledevice) && $this->isRealResult($resultRaw->ismobiledevice) === true && $resultRaw->ismobiledevice === true) {
-            $device->setIsMobile(true);
-        }
-
-        if (isset($resultRaw->device_pointing_method) && $resultRaw->device_pointing_method === 'touchscreen') {
-            $device->setIsTouch(true);
-        }
-    }
-
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
         $parser = $this->getParser();
 
-        /* @var $resultRaw \stdClass */
         $resultRaw = $parser->getBrowser($userAgent);
+        assert($resultRaw instanceof stdClass);
 
         /*
          * No result found?
          */
-        if ($this->hasResult($resultRaw) !== true) {
+        if (true !== $this->hasResult($resultRaw)) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -228,7 +91,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         /*
          * Bot detection (does only work with full_php_browscap.ini)
          */
-        if ($this->isBot($resultRaw) === true) {
+        if (true === $this->isBot($resultRaw)) {
             $this->hydrateBot($result->getBot(), $resultRaw);
 
             return $result;
@@ -243,5 +106,94 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         $this->hydrateDevice($result->getDevice(), $resultRaw);
 
         return $result;
+    }
+
+    protected function hasResult(stdClass $resultRaw): bool
+    {
+        return isset($resultRaw->browser) && true === $this->isRealResult($resultRaw->browser, 'browser', 'name');
+    }
+
+    protected function isBot(stdClass $resultRaw): bool
+    {
+        return isset($resultRaw->crawler) && true === $resultRaw->crawler;
+    }
+
+    protected function hydrateBot(Model\Bot $bot, stdClass $resultRaw): void
+    {
+        $bot->setIsBot(true);
+
+        if (isset($resultRaw->browser)) {
+            $bot->setName($this->getRealResult($resultRaw->browser, 'bot', 'name'));
+        }
+
+        if (isset($resultRaw->issyndicationreader) && true === $resultRaw->issyndicationreader) {
+            $bot->setType('RSS');
+        } elseif (isset($resultRaw->browser_type)) {
+            $bot->setType($this->getRealResult($resultRaw->browser_type));
+        }
+    }
+
+    protected function hydrateBrowser(Model\Browser $browser, stdClass $resultRaw): void
+    {
+        if (isset($resultRaw->browser)) {
+            $browser->setName($this->getRealResult($resultRaw->browser, 'browser', 'name'));
+        }
+
+        if (!isset($resultRaw->version)) {
+            return;
+        }
+
+        $browser->getVersion()->setComplete($this->getRealResult($resultRaw->version));
+    }
+
+    protected function hydrateRenderingEngine(Model\RenderingEngine $engine, stdClass $resultRaw): void
+    {
+        if (isset($resultRaw->renderingengine_name)) {
+            $engine->setName($this->getRealResult($resultRaw->renderingengine_name));
+        }
+
+        if (!isset($resultRaw->renderingengine_version)) {
+            return;
+        }
+
+        $engine->getVersion()->setComplete($this->getRealResult($resultRaw->renderingengine_version));
+    }
+
+    protected function hydrateOperatingSystem(Model\OperatingSystem $os, stdClass $resultRaw): void
+    {
+        if (isset($resultRaw->platform)) {
+            $os->setName($this->getRealResult($resultRaw->platform));
+        }
+
+        if (!isset($resultRaw->platform_version)) {
+            return;
+        }
+
+        $os->getVersion()->setComplete($this->getRealResult($resultRaw->platform_version));
+    }
+
+    protected function hydrateDevice(Model\Device $device, stdClass $resultRaw): void
+    {
+        if (isset($resultRaw->device_name)) {
+            $device->setModel($this->getRealResult($resultRaw->device_name, 'device', 'model'));
+        }
+
+        if (isset($resultRaw->device_brand_name)) {
+            $device->setBrand($this->getRealResult($resultRaw->device_brand_name));
+        }
+
+        if (isset($resultRaw->device_type)) {
+            $device->setType($this->getRealResult($resultRaw->device_type));
+        }
+
+        if (isset($resultRaw->ismobiledevice) && true === $this->isRealResult($resultRaw->ismobiledevice) && true === $resultRaw->ismobiledevice) {
+            $device->setIsMobile(true);
+        }
+
+        if (!isset($resultRaw->device_pointing_method) || 'touchscreen' !== $resultRaw->device_pointing_method) {
+            return;
+        }
+
+        $device->setIsTouch(true);
     }
 }

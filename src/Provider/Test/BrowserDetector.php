@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider\Test;
 
 use BrowserDetector\Factory\BrowserFactory;
@@ -14,8 +17,14 @@ use BrowserDetector\RequestBuilder;
 use BrowserDetector\Version\NotNumericException;
 use BrowserDetector\Version\Version;
 use BrowserDetector\Version\VersionFactory;
+use FilterIterator;
+use Iterator;
+use JsonException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 use UaBrowserType\TypeLoader;
 use UaDeviceType\Unknown;
 use UaResult\Browser\Browser;
@@ -25,105 +34,95 @@ use UaResult\Device\Display;
 use UaResult\Engine\Engine;
 use UaResult\Os\Os;
 use UaResult\Result\Result;
+use UnexpectedValueException;
 use UserAgentParserComparison\Exception\NoResultFoundException;
-use UserAgentsTest\ResultFactory;
 
-/**
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
- * @see https://github.com/browscap/browscap-php
- */
-class BrowserDetector extends AbstractTestProvider
+use function array_key_exists;
+use function assert;
+use function bin2hex;
+use function count;
+use function file_get_contents;
+use function is_array;
+use function json_decode;
+use function json_encode;
+use function sha1;
+use function sprintf;
+
+use const JSON_THROW_ON_ERROR;
+use const PHP_EOL;
+
+/** @see https://github.com/browscap/browscap-php */
+final class BrowserDetector extends AbstractTestProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'BrowserDetector';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://github.com/mimmi20/browser-detector';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = 'mimmi20/browser-detector';
 
     protected string $language = 'PHP';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'operatingSystem' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'device' => [
-            'model'    => true,
-            'brand'    => true,
-            'type'     => true,
+            'model' => true,
+            'brand' => true,
+            'type' => true,
             'isMobile' => true,
-            'isTouch'  => false,
+            'isTouch' => false,
         ],
 
         'bot' => [
             'isBot' => true,
-            'name'  => true,
-            'type'  => true,
+            'name' => true,
+            'type' => true,
         ],
     ];
 
-    private LoggerInterface $logger;
-
-    /**
-     * @param LoggerInterface $logger
-     */
-    public function __construct(LoggerInterface $logger)
+    public function __construct(private LoggerInterface $logger)
     {
-        $this->logger = $logger;
     }
 
-    /**
-     * @throws NoResultFoundException
-     *
-     * @return iterable
-     */
+    /** @throws NoResultFoundException */
     public function getTests(): iterable
     {
         $path = 'vendor/mimmi20/browser-detector/tests/data';
 
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
-        $files = new class($iterator, 'json') extends \FilterIterator {
-            private string $extension;
-
-            public function __construct(\Iterator $iterator , string $extension)
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
+        $files    = new class ($iterator, 'json') extends FilterIterator {
+            public function __construct(Iterator $iterator, private string $extension)
             {
                 parent::__construct($iterator);
-                $this->extension = $extension;
             }
 
             public function accept(): bool
             {
                 $file = $this->getInnerIterator()->current();
 
-                assert($file instanceof \SplFileInfo);
+                assert($file instanceof SplFileInfo);
 
                 return $file->isFile() && $file->getExtension() === $this->extension;
             }
@@ -132,17 +131,11 @@ class BrowserDetector extends AbstractTestProvider
         $companyLoaderFactory = new CompanyLoaderFactory();
 
         $companyLoader = $companyLoaderFactory();
-        assert($companyLoader instanceof CompanyLoader, sprintf('$companyLoader should be an instance of %s, but is %s', CompanyLoader::class, get_class($companyLoader)));
+        assert($companyLoader instanceof CompanyLoader, sprintf('$companyLoader should be an instance of %s, but is %s', CompanyLoader::class, $companyLoader::class));
 
-        $resultFactory = new class($companyLoader, $this->logger) {
-            private CompanyLoaderInterface $companyLoader;
-
-            private LoggerInterface $logger;
-
-            public function __construct(CompanyLoaderInterface $companyLoader, LoggerInterface $logger)
+        $resultFactory = new class ($companyLoader, $this->logger) {
+            public function __construct(private CompanyLoaderInterface $companyLoader, private LoggerInterface $logger)
             {
-                $this->companyLoader = $companyLoader;
-                $this->logger        = $logger;
             }
 
             /**
@@ -150,10 +143,10 @@ class BrowserDetector extends AbstractTestProvider
              * @phpstan-param array{headers?: array<string, string>, device?: (stdClass|array{deviceName?: (string|null), marketingName?: (string|null), manufacturer?: string, brand?: string, type?: (string|null), display?: (null|array{width?: (int|null), height?: (int|null), touch?: (bool|null), size?: (int|float|null)}|stdClass)}), browser?: (stdClass|array{name?: (string|null), manufacturer?: string, version?: (stdClass|string|null), type?: (string|null), bits?: (int|null), modus?: (string|null)}), os?: (stdClass|array{name?: (string|null), marketingName?: (string|null), manufacturer?: string, version?: (stdClass|string|null), bits?: (int|null)}), engine?: (stdClass|array{name?: (string|null), manufacturer?: string, version?: (stdClass|string|null)})} $data
              *
              * @throws NotFoundException
-             * @throws \UnexpectedValueException
+             * @throws UnexpectedValueException
              * @throws NotNumericException
              */
-            public function fromArray(LoggerInterface $logger, array $data): ?Result
+            public function fromArray(LoggerInterface $logger, array $data): Result | null
             {
                 if (!array_key_exists('headers', $data)) {
                     return null;
@@ -169,7 +162,7 @@ class BrowserDetector extends AbstractTestProvider
                     new Company('Unknown', null, null),
                     new Company('Unknown', null, null),
                     new Unknown(),
-                    new Display(null, null, null, null)
+                    new Display(null, null, null, null),
                 );
 
                 if (array_key_exists('device', $data)) {
@@ -177,7 +170,7 @@ class BrowserDetector extends AbstractTestProvider
                         $this->companyLoader,
                         new \UaDeviceType\TypeLoader(),
                         new DisplayFactory(),
-                        $logger
+                        $logger,
                     );
 
                     $device = $deviceFactory->fromArray((array) $data['device'], $request->getDeviceUserAgent());
@@ -191,7 +184,7 @@ class BrowserDetector extends AbstractTestProvider
                     new Version('0'),
                     new \UaBrowserType\Unknown(),
                     null,
-                    null
+                    null,
                 );
 
                 if (array_key_exists('browser', $data)) {
@@ -203,7 +196,7 @@ class BrowserDetector extends AbstractTestProvider
                     null,
                     new Company('Unknown', null, null),
                     new Version('0'),
-                    null
+                    null,
                 );
 
                 if (array_key_exists('os', $data)) {
@@ -213,7 +206,7 @@ class BrowserDetector extends AbstractTestProvider
                 $engine = new Engine(
                     null,
                     new Company('Unknown', null, null),
-                    new Version('0')
+                    new Version('0'),
                 );
 
                 if (array_key_exists('engine', $data)) {
@@ -225,7 +218,7 @@ class BrowserDetector extends AbstractTestProvider
         };
 
         foreach ($files as $file) {
-            assert($file instanceof \SplFileInfo);
+            assert($file instanceof SplFileInfo);
 
             $file = $file->getPathname();
 
@@ -240,9 +233,9 @@ class BrowserDetector extends AbstractTestProvider
                     $content,
                     true,
                     512,
-                    JSON_THROW_ON_ERROR
+                    JSON_THROW_ON_ERROR,
                 );
-            } catch (\JsonException $e) {
+            } catch (JsonException) {
                 continue;
             }
 
@@ -292,7 +285,7 @@ class BrowserDetector extends AbstractTestProvider
                     'result' => $data,
                 ];
 
-                if (count($encodedData['headers']) > 1) {
+                if (1 < count($encodedData['headers'])) {
                     unset($encodedData['headers']['user-agent']);
 
                     $toInsert['uaAdditionalHeaders'] = $encodedData['headers'];

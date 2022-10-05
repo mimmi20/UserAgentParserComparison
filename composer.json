@@ -1,70 +1,76 @@
 {
-    "name": "thadafinser/user-agent-parser-matrix",
-    "description": "Generate a comparison matrix for different UserAgent parsers",
-    "license": "MIT",
-    
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    
-    "authors": [
-        {
-            "name": "ThaDafinser",
-            "email": "martin.keckeis1@gmail.com"
-        }
-    ],
-    
-    "autoload": {
-        "psr-4": {
-            "UserAgentParserComparison\\":  "src"
-        }
-    },
-    
-    "require": {
-        "php": "^8.1.0",
-        "ext-curl": "*",
-        "ext-json": "*",
-        "ext-pdo": "*",
-        "ext-simplexml": "*",
-        "composer-runtime-api": "^2.0",
-        "browscap/browscap": "^6.1.1",
-        "browscap/browscap-php": "^7.1.0",
-        "cbschuld/browser.php": "^v1.9.6",
-        "donatj/phpuseragentparser": "^v1.7.0",
-        "endorphin-studio/browser-detector": "^6.0.1",
-        "jenssegers/agent": "^v2.6.4",
-        "league/flysystem": "^3.5.1",
-        "matomo/device-detector": "^6.0.3",
-        "matthiasmullie/scrapbook": "^1.4.8",
-        "mimmi20/browser-detector": "^7.0.2",
-        "mobiledetect/mobiledetectlib": "^2.8.39",
-        "ramsey/uuid-doctrine": "^1.8.1",
-        "sinergi/browser-detector": "^6.1.4",
-        "symfony/yaml": "^v6.1.4",
-        "thadafinser/uap-core": "^v0.5.0.4",
-        "ua-parser/uap-php": "^v3.9.14",
-        "whichbrowser/parser": "^v2.1.7",
-        "wolfcast/browser-detection": "^2.9.6",
-        "woothee/woothee": "^v1.10.0",
-        "woothee/woothee-testset": "^v1.13.0",
-        "zsxsoft/php-useragent": "^1.5.0"
-    },
-    
-    "require-dev": {
-        "friendsofphp/php-cs-fixer": "^v3.11.0",
-        "phpunit/phpunit": "^9.5.24"
-    },
-
-    "config": {
-        "preferred-install": {
-            "browscap/browscap": "source",
-            "mimmi20/browser-detector": "source",
-            "matomo/device-detector": "source",
-            "sinergi/browser-detector": "source",
-            "whichbrowser/parser": "source",
-            "woothee/woothee-testset": "source",
-            "*": "dist"
-        },
-        "lock": false,
-        "sort-packages": true
+  "name": "thadafinser/user-agent-parser-matrix",
+  "description": "Generate a comparison matrix for different UserAgent parsers",
+  "license": "MIT",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "authors": [
+    {
+      "name": "ThaDafinser",
+      "email": "martin.keckeis1@gmail.com"
     }
+  ],
+  "autoload": {
+    "psr-4": {
+      "UserAgentParserComparison\\": "src"
+    }
+  },
+  "require": {
+    "php": "^8.1.0",
+    "ext-curl": "*",
+    "ext-fileinfo": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-pdo": "*",
+    "ext-simplexml": "*",
+    "composer-runtime-api": "^2.0",
+    "browscap/browscap": "^6.1.1",
+    "browscap/browscap-php": "^7.1.0",
+    "cbschuld/browser.php": "^v1.9.6",
+    "donatj/phpuseragentparser": "^v1.7.0",
+    "endorphin-studio/browser-detector": "^6.0.1",
+    "jenssegers/agent": "^v2.6.4",
+    "league/flysystem": "^3.5.1",
+    "matomo/device-detector": "^6.0.3",
+    "matthiasmullie/scrapbook": "^1.4.8",
+    "mimmi20/browser-detector": "^7.0.2",
+    "mobiledetect/mobiledetectlib": "^2.8.39",
+    "ramsey/uuid-doctrine": "^1.8.1",
+    "sinergi/browser-detector": "^6.1.4",
+    "symfony/yaml": "^v6.1.4",
+    "thadafinser/uap-core": "^v0.5.0.4",
+    "ua-parser/uap-php": "^v3.9.14",
+    "whichbrowser/parser": "^v2.1.7",
+    "wolfcast/browser-detection": "^2.9.6",
+    "woothee/woothee": "^v1.10.0",
+    "woothee/woothee-testset": "^v1.13.0",
+    "zsxsoft/php-useragent": "^1.5.0"
+  },
+  "require-dev": {
+    "ext-dom": "*",
+    "ext-tokenizer": "*",
+    "ext-xml": "*",
+    "ext-xmlwriter": "*",
+    "mimmi20/coding-standard": "^3.0.11",
+    "phpstan/extension-installer": "^1.1.0",
+    "phpstan/phpstan": "^1.8.6",
+    "phpstan/phpstan-deprecation-rules": "^1.0.0"
+  },
+  "config": {
+    "preferred-install": {
+      "browscap/browscap": "source",
+      "mimmi20/browser-detector": "source",
+      "matomo/device-detector": "source",
+      "sinergi/browser-detector": "source",
+      "whichbrowser/parser": "source",
+      "woothee/woothee-testset": "source",
+      "*": "dist"
+    },
+    "lock": false,
+    "sort-packages": true,
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "phpstan/extension-installer": true
+    }
+  }
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider;
 
 use UserAgentParserComparison\Exception;
@@ -6,38 +9,20 @@ use UserAgentParserComparison\Model;
 
 /**
  * A chain provider, to use multiple providers at the same time
- *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  */
-class Chain extends AbstractParseProvider
+final class Chain extends AbstractParseProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'Chain';
 
-    /**
-     *
-     * @var AbstractProvider[]
-     */
-    private array $providers = [];
-
-    /**
-     *
-     * @param AbstractProvider[] $providers
-     */
-    public function __construct(array $providers = [])
+    /** @param AbstractProvider[] $providers */
+    public function __construct(private array $providers = [])
     {
-        $this->providers = $providers;
     }
 
-    /**
-     *
-     * @return AbstractProvider[]
-     */
+    /** @return AbstractProvider[] */
     public function getProviders(): array
     {
         return $this->providers;
@@ -50,11 +35,9 @@ class Chain extends AbstractParseProvider
                 continue;
             }
 
-            /* @var $provider AbstractParseProvider */
-
             try {
                 return $provider->parse($userAgent, $headers);
-            } catch (Exception\NoResultFoundException $ex) {
+            } catch (Exception\NoResultFoundException) {
                 // just catch this and continue to the next provider
             }
         }

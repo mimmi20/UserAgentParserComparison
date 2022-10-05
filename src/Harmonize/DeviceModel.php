@@ -1,8 +1,10 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Harmonize;
 
-class DeviceModel extends AbstractHarmonize
+final class DeviceModel extends AbstractHarmonize
 {
-
-    protected static $replaces = [];
+    protected static array $replaces = [];
 }

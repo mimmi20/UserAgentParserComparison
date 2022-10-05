@@ -1,10 +1,10 @@
 <?php
 
-use Ramsey\Uuid\Uuid;
+declare(strict_types = 1);
 
 include 'bootstrap.php';
 
-/* @var $pdo \PDO */
+/** @var PDO $pdo */
 
 echo '~~~ Prepare Database ~~~' . PHP_EOL;
 
@@ -221,40 +221,40 @@ $pdo->prepare('CREATE OR REPLACE VIEW `test-provider` AS SELECT * FROM `provider
 
 $pdo->prepare('CREATE OR REPLACE VIEW `providers-general-overview` AS SELECT
                 `real-provider`.*,
-            
+
                 SUM(`resResultFound`) AS `resultFound`,
-            
+
                 COUNT(`resBrowserName`) AS `browserFound`,
                 COUNT(DISTINCT `resBrowserName`) AS `browserFoundUnique`,
-            
+
                 COUNT(`resEngineName`) AS `engineFound`,
                 COUNT(DISTINCT `resEngineName`) AS `engineFoundUnique`,
-            
+
                 COUNT(`resOsName`) AS `osFound`,
                 COUNT(DISTINCT `resOsName`) AS `osFoundUnique`,
-            
+
                 COUNT(`resDeviceModel`) AS `deviceModelFound`,
                 COUNT(DISTINCT `resDeviceModel`) AS `deviceModelFoundUnique`,
-            
+
                 COUNT(`resDeviceBrand`) AS `deviceBrandFound`,
                 COUNT(DISTINCT `resDeviceBrand`) AS `deviceBrandFoundUnique`,
-            
+
                 COUNT(`resDeviceType`) AS `deviceTypeFound`,
                 COUNT(DISTINCT `resDeviceType`) AS `deviceTypeFoundUnique`,
-            
+
                 COUNT(`resDeviceIsMobile`) AS `asMobileDetected`,
-            
+
                 COUNT(`resBotIsBot`) AS `asBotDetected`,
-            
+
                 AVG(`resParseTime`) AS `avgParseTime`
             FROM `result`
             INNER JOIN `real-provider`
                 ON `proId` = `provider_id`
             GROUP BY
                 `proId`
-            ORDER BY 
+            ORDER BY
                 `proName`')->execute();
-$pdo->prepare('CREATE OR REPLACE VIEW `useragents-general-overview` AS SELECT 
+$pdo->prepare('CREATE OR REPLACE VIEW `useragents-general-overview` AS SELECT
                 `proName`,
                 COUNT(*) AS `countNumber`
             FROM `test-provider`
@@ -264,7 +264,7 @@ $pdo->prepare('CREATE OR REPLACE VIEW `useragents-general-overview` AS SELECT
             ORDER BY `proName`')->execute();
 
 $pdo->prepare('CREATE OR REPLACE VIEW `list-found-general-browser-names` AS SELECT * FROM `result` WHERE `provider_id` IN (SELECT `proId` FROM `real-provider`) AND `resBrowserName` IS NOT NULL')->execute();
-$pdo->prepare('CREATE OR REPLACE VIEW `found-general-browser-names` AS SELECT 
+$pdo->prepare('CREATE OR REPLACE VIEW `found-general-browser-names` AS SELECT
         `resBrowserName` AS `name`,
         `uaId`,
         `uaString`,
@@ -348,6 +348,6 @@ $pdo->prepare('CREATE OR REPLACE VIEW `found-general-bot-types` AS SELECT
 
 $pdo->prepare('CREATE OR REPLACE VIEW `found-results` AS SELECT * FROM `result` WHERE `resResultFound` = 1 AND `provider_id` IN (SELECT `proId` FROM `real-provider`)')->execute();
 
-//$pdo->prepare('CREATE OR REPLACE VIEW `useragentevaluation`')->execute();
-//$pdo->prepare('CREATE OR REPLACE VIEW `useragentevaluation`')->execute();
-//$pdo->prepare('CREATE OR REPLACE VIEW `useragentevaluation`')->execute();
+// $pdo->prepare('CREATE OR REPLACE VIEW `useragentevaluation`')->execute();
+// $pdo->prepare('CREATE OR REPLACE VIEW `useragentevaluation`')->execute();
+// $pdo->prepare('CREATE OR REPLACE VIEW `useragentevaluation`')->execute();

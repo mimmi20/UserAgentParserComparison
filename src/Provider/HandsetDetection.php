@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider;
 
 use HandsetDetection as Parser;
@@ -9,72 +12,60 @@ use UserAgentParserComparison\Model;
 /**
  * Abstraction for ua-parser/uap-php
  *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  * @see https://github.com/HandsetDetection/php-apikit
  */
-class HandsetDetection extends AbstractParseProvider
+final class HandsetDetection extends AbstractParseProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'HandsetDetection';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://github.com/HandsetDetection/php-apikit';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = 'handsetdetection/php-apikit';
 
     protected string $language = 'PHP';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'operatingSystem' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'device' => [
-            'model'    => true,
-            'brand'    => true,
-            'type'     => false,
+            'model' => true,
+            'brand' => true,
+            'type' => false,
             'isMobile' => false,
-            'isTouch'  => false,
+            'isTouch' => false,
         ],
 
         'bot' => [
             'isBot' => false,
-            'name'  => false,
-            'type'  => false,
+            'name' => false,
+            'type' => false,
         ],
     ];
 
     protected array $defaultValues = [
-
-        'general' => [
-            '/^generic$/i',
-        ],
+        'general' => ['/^generic$/i'],
 
         'device' => [
             'model' => [
@@ -87,94 +78,13 @@ class HandsetDetection extends AbstractParseProvider
         ],
     ];
 
-    /**
-     *
-     * @var Parser\HD4
-     */
-    private Parser\HD4 $parser;
-
-    /**
-     *
-     * @param Parser\HD4 $parser
-     */
-    public function __construct(Parser\HD4 $parser)
+    public function __construct(private Parser\HD4 $parser)
     {
-        $this->parser = $parser;
     }
 
-    /**
-     *
-     * @return Parser\HD4
-     */
-    public function getParser()
+    public function getParser(): Parser\HD4
     {
         return $this->parser;
-    }
-
-    /**
-     *
-     * @param array $resultRaw
-     *
-     * @return bool
-     */
-    private function hasResult(array $resultRaw): bool
-    {
-        if (isset($resultRaw['general_browser']) && $this->isRealResult($resultRaw['general_browser'])) {
-            return true;
-        }
-
-        if (isset($resultRaw['general_platform']) && $this->isRealResult($resultRaw['general_platform'])) {
-            return true;
-        }
-
-        if (isset($resultRaw['general_model']) && $this->isRealResult($resultRaw['general_model'], 'device', 'model') && $this->isRealResult($resultRaw['general_vendor'], 'device', 'brand')) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     *
-     * @param Model\Browser $browser
-     * @param array         $resultRaw
-     */
-    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
-    {
-        if (isset($resultRaw['general_browser'])) {
-            $browser->setName($this->getRealResult($resultRaw['general_browser']));
-        }
-        if (isset($resultRaw['general_browser_version'])) {
-            $browser->getVersion()->setComplete($this->getRealResult($resultRaw['general_browser_version']));
-        }
-    }
-
-    /**
-     *
-     * @param Model\OperatingSystem $os
-     * @param array                 $resultRaw
-     */
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, array $resultRaw): void
-    {
-        if (isset($resultRaw['general_platform'])) {
-            $os->setName($this->getRealResult($resultRaw['general_platform']));
-        }
-        if (isset($resultRaw['general_platform_version'])) {
-            $os->getVersion()->setComplete($this->getRealResult($resultRaw['general_platform_version']));
-        }
-    }
-
-    /**
-     *
-     * @param Model\UserAgent $device
-     * @param array           $resultRaw
-     */
-    private function hydrateDevice(Model\Device $device, array $resultRaw): void
-    {
-        if (isset($resultRaw['general_model']) && $this->isRealResult($resultRaw['general_model'], 'device', 'model') && isset($resultRaw['general_vendor']) && $this->isRealResult($resultRaw['general_vendor'], 'device', 'brand')) {
-            $device->setModel($this->getRealResult($resultRaw['general_model'], 'device', 'model'));
-            $device->setBrand($this->getRealResult($resultRaw['general_vendor'], 'device', 'brand'));
-        }
     }
 
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
@@ -189,8 +99,8 @@ class HandsetDetection extends AbstractParseProvider
         $result    = $parser->deviceDetect($headers);
         $resultRaw = $parser->getReply();
 
-        if ($result !== true) {
-            if (isset($resultRaw['status']) && $resultRaw['status'] == '299') {
+        if (true !== $result) {
+            if (isset($resultRaw['status']) && '299' === $resultRaw['status']) {
                 throw new InvalidArgumentException('You need to warm-up the cache first to use this provider');
             }
 
@@ -200,7 +110,7 @@ class HandsetDetection extends AbstractParseProvider
         /*
          * No result found?
          */
-        if (! isset($resultRaw['hd_specs']) || $this->hasResult($resultRaw['hd_specs']) !== true) {
+        if (!isset($resultRaw['hd_specs']) || true !== $this->hasResult($resultRaw['hd_specs'])) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -219,5 +129,58 @@ class HandsetDetection extends AbstractParseProvider
         $this->hydrateDevice($result->getDevice(), $resultRaw['hd_specs']);
 
         return $result;
+    }
+
+    /** @param array $resultRaw */
+    private function hasResult(array $resultRaw): bool
+    {
+        if (isset($resultRaw['general_browser']) && $this->isRealResult($resultRaw['general_browser'])) {
+            return true;
+        }
+
+        if (isset($resultRaw['general_platform']) && $this->isRealResult($resultRaw['general_platform'])) {
+            return true;
+        }
+
+        return isset($resultRaw['general_model']) && $this->isRealResult($resultRaw['general_model'], 'device', 'model') && $this->isRealResult($resultRaw['general_vendor'], 'device', 'brand');
+    }
+
+    /** @param array $resultRaw */
+    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
+    {
+        if (isset($resultRaw['general_browser'])) {
+            $browser->setName($this->getRealResult($resultRaw['general_browser']));
+        }
+
+        if (!isset($resultRaw['general_browser_version'])) {
+            return;
+        }
+
+        $browser->getVersion()->setComplete($this->getRealResult($resultRaw['general_browser_version']));
+    }
+
+    /** @param array $resultRaw */
+    private function hydrateOperatingSystem(Model\OperatingSystem $os, array $resultRaw): void
+    {
+        if (isset($resultRaw['general_platform'])) {
+            $os->setName($this->getRealResult($resultRaw['general_platform']));
+        }
+
+        if (!isset($resultRaw['general_platform_version'])) {
+            return;
+        }
+
+        $os->getVersion()->setComplete($this->getRealResult($resultRaw['general_platform_version']));
+    }
+
+    /** @param Model\UserAgent $device */
+    private function hydrateDevice(Model\Device $device, array $resultRaw): void
+    {
+        if (!isset($resultRaw['general_model']) || !$this->isRealResult($resultRaw['general_model'], 'device', 'model') || !isset($resultRaw['general_vendor']) || !$this->isRealResult($resultRaw['general_vendor'], 'device', 'brand')) {
+            return;
+        }
+
+        $device->setModel($this->getRealResult($resultRaw['general_model'], 'device', 'model'));
+        $device->setBrand($this->getRealResult($resultRaw['general_vendor'], 'device', 'brand'));
     }
 }

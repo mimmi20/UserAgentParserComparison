@@ -1,6 +1,15 @@
 <?php
 
-chdir(dirname(dirname(__DIR__)));
+declare(strict_types = 1);
+
+use DeviceDetector\Cache\PSR16Bridge;
+use DeviceDetector\DeviceDetector;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
+use MatthiasMullie\Scrapbook\Adapters\Flysystem;
+use MatthiasMullie\Scrapbook\Psr16\SimpleCache;
+
+chdir(dirname(__DIR__, 2));
 /*
  * Matomo cache init
  */
@@ -13,16 +22,16 @@ echo '.';
 /*
  * File
  */
-$adapter = new \League\Flysystem\Local\LocalFilesystemAdapter('data/cache/.tmp/matomo');
-$filesystem = new \League\Flysystem\Filesystem($adapter);
-$cache = new \MatthiasMullie\Scrapbook\Psr16\SimpleCache(
-    new \MatthiasMullie\Scrapbook\Adapters\Flysystem($filesystem)
+$adapter    = new LocalFilesystemAdapter('data/cache/.tmp/matomo');
+$filesystem = new Filesystem($adapter);
+$cache      = new SimpleCache(
+    new Flysystem($filesystem),
 );
 
 $cache->clear();
 
-$dd = new \DeviceDetector\DeviceDetector();
-$dd->setCache(new \DeviceDetector\Cache\PSR16Bridge($cache));
+$dd = new DeviceDetector();
+$dd->setCache(new PSR16Bridge($cache));
 $dd->setUserAgent('test');
 $dd->parse();
 

@@ -1,6 +1,15 @@
 <?php
 
-chdir(dirname(dirname(__DIR__)));
+declare(strict_types = 1);
+
+use BrowserDetector\DetectorFactory;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
+use MatthiasMullie\Scrapbook\Adapters\Flysystem;
+use MatthiasMullie\Scrapbook\Psr16\SimpleCache;
+use Psr\Log\NullLogger;
+
+chdir(dirname(__DIR__, 2));
 /*
  * BrowserDetector cache init
  */
@@ -13,19 +22,19 @@ echo '.';
 /*
  * File
  */
-$detectorAdapter = new \League\Flysystem\Local\LocalFilesystemAdapter('data/cache/.tmp/browser-detector');
-$detectorCache   = new \MatthiasMullie\Scrapbook\Psr16\SimpleCache(
-    new \MatthiasMullie\Scrapbook\Adapters\Flysystem(
-        new \League\Flysystem\Filesystem($detectorAdapter)
-    )
+$detectorAdapter = new LocalFilesystemAdapter('data/cache/.tmp/browser-detector');
+$detectorCache   = new SimpleCache(
+    new Flysystem(
+        new Filesystem($detectorAdapter),
+    ),
 );
 
 $detectorCache->clear();
 
-$logger = new \Psr\Log\NullLogger();
+$logger = new NullLogger();
 
-$browserDetectorFactory  = new \BrowserDetector\DetectorFactory($detectorCache, $logger);
-$browserDetector = $browserDetectorFactory();
+$browserDetectorFactory = new DetectorFactory($detectorCache, $logger);
+$browserDetector        = $browserDetectorFactory();
 $browserDetector('test');
 
 echo PHP_EOL;

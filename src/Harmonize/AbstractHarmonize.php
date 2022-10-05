@@ -1,9 +1,13 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Harmonize;
+
+use function str_ireplace;
 
 abstract class AbstractHarmonize
 {
-
     public static function getHarmonizedValue(mixed $value): mixed
     {
         if (null === $value) {
@@ -13,7 +17,7 @@ abstract class AbstractHarmonize
         foreach (static::$replaces as $replace => $searches) {
             $value = str_ireplace($searches, $replace, $value);
         }
-        
+
         return $value;
     }
 
@@ -22,7 +26,7 @@ abstract class AbstractHarmonize
         foreach ($values as $key => $value) {
             $values[$key] = self::getHarmonizedValue($value);
         }
-        
+
         return $values;
     }
 }

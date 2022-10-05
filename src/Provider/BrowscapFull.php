@@ -1,16 +1,15 @@
 <?php
-namespace UserAgentParserComparison\Provider;
 
-use BrowscapPHP\Browscap;
+declare(strict_types = 1);
+
+namespace UserAgentParserComparison\Provider;
 
 /**
  * Abstraction for Browscap full type
  *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  * @see https://github.com/browscap/browscap-php
  */
-class BrowscapFull extends AbstractBrowscap
+final class BrowscapFull extends AbstractBrowscap
 {
     /**
      * Name of the provider
@@ -18,34 +17,33 @@ class BrowscapFull extends AbstractBrowscap
     protected string $name = 'BrowscapFull';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'operatingSystem' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'device' => [
-            'model'    => true,
-            'brand'    => true,
-            'type'     => true,
+            'model' => true,
+            'brand' => true,
+            'type' => true,
             'isMobile' => true,
-            'isTouch'  => true,
+            'isTouch' => true,
         ],
 
         'bot' => [
             'isBot' => true,
-            'name'  => true,
-            'type'  => true,
+            'name' => true,
+            'type' => true,
         ],
     ];
 }

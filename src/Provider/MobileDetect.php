@@ -1,75 +1,67 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider;
 
+use Mobile_Detect;
 use UserAgentParserComparison\Exception\NoResultFoundException;
-use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
 
-/**
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
- * @see https://github.com/browscap/browscap-php
- */
-class MobileDetect extends AbstractParseProvider
+/** @see https://github.com/browscap/browscap-php */
+final class MobileDetect extends AbstractParseProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'MobileDetect';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://github.com/serbanghita/Mobile-Detect';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = 'mobiledetect/mobiledetectlib';
 
     protected string $language = 'PHP';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'renderingEngine' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'operatingSystem' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'device' => [
-            'model'    => false,
-            'brand'    => false,
-            'type'     => false,
+            'model' => false,
+            'brand' => false,
+            'type' => false,
             'isMobile' => true,
-            'isTouch'  => false,
+            'isTouch' => false,
         ],
 
         'bot' => [
             'isBot' => false,
-            'name'  => false,
-            'type'  => false,
+            'name' => false,
+            'type' => false,
         ],
     ];
 
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $parser = new \Mobile_Detect();
+        $parser = new Mobile_Detect();
         $parser->setHttpHeaders($headers);
         $parser->setUserAgent($userAgent);
 
@@ -84,7 +76,7 @@ class MobileDetect extends AbstractParseProvider
         /*
          * No result found?
          */
-        if ($this->hasResult($resultCache) !== true) {
+        if (true !== $this->hasResult($resultCache)) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -102,30 +94,19 @@ class MobileDetect extends AbstractParseProvider
         return $result;
     }
 
-    /**
-     *
-     * @param array $resultRaw
-     *
-     * @return bool
-     */
+    /** @param array $resultRaw */
     private function hasResult(array $resultRaw): bool
     {
-        if ($resultRaw['isMobile'] === true) {
-            return true;
-        }
-
-        return false;
+        return true === $resultRaw['isMobile'];
     }
 
-    /**
-     *
-     * @param Model\Device $device
-     * @param array        $resultRaw
-     */
+    /** @param array $resultRaw */
     private function hydrateDevice(Model\Device $device, array $resultRaw): void
     {
-        if ($resultRaw['isMobile'] === true) {
-            $device->setIsMobile(true);
+        if (true !== $resultRaw['isMobile']) {
+            return;
         }
+
+        $device->setIsMobile(true);
     }
 }

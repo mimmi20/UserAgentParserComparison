@@ -1,17 +1,17 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Harmonize;
 
-class BotName extends AbstractHarmonize
+final class BotName extends AbstractHarmonize
 {
-
-    protected static $replaces = [
+    protected static array $replaces = [
         'Google App Engine' => [
             'Google AppEngine',
-            'AppEngine-Google'
+            'AppEngine-Google',
         ],
-        
-        'Java' => [
-            'Java Standard Library'
-        ]
+
+        'Java' => ['Java Standard Library'],
     ];
 }

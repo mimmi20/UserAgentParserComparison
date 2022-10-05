@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 use UserAgentParserComparison\Html\OverviewProvider;
 
 /*
@@ -6,24 +9,22 @@ use UserAgentParserComparison\Html\OverviewProvider;
  */
 include_once 'bootstrap.php';
 
-/* @var $pdo \PDO */
-
 echo '~~~ create html overview for all providers ~~~' . PHP_EOL;
 
+/** @var PDO $pdo */
 $statementSelectProvider = $pdo->prepare('SELECT * FROM `real-provider`');
 $statementSelectProvider->execute();
 
-while ($dbResultProvider = $statementSelectProvider->fetch(\PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT)) {
-
+while ($dbResultProvider = $statementSelectProvider->fetch(PDO::FETCH_ASSOC, PDO::FETCH_ORI_NEXT)) {
     echo '.';
-    
+
     $generate = new OverviewProvider($pdo, $dbResultProvider, 'Overview - ' . $dbResultProvider['proName']);
-    
+
     /*
      * persist!
      */
     $folder = $basePath;
-    if (! file_exists($folder)) {
+    if (!file_exists($folder)) {
         mkdir($folder, 0777, true);
     }
 

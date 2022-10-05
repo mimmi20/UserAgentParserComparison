@@ -1,85 +1,78 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider\Test;
 
+use Exception;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 
-/**
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
- * @see https://github.com/browscap/browscap-php
- */
-class ZsxSoft extends AbstractTestProvider
+use function bin2hex;
+use function is_array;
+use function serialize;
+use function sha1;
+
+/** @see https://github.com/browscap/browscap-php */
+final class ZsxSoft extends AbstractTestProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'Zsxsoft';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://github.com/zsxsoft/php-useragent';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = 'zsxsoft/php-useragent';
 
     protected string $language = 'PHP';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'operatingSystem' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'device' => [
-            'model'    => true,
-            'brand'    => true,
-            'type'     => true,
+            'model' => true,
+            'brand' => true,
+            'type' => true,
             'isMobile' => true,
-            'isTouch'  => true,
+            'isTouch' => true,
         ],
 
         'bot' => [
             'isBot' => true,
-            'name'  => true,
-            'type'  => true,
+            'name' => true,
+            'type' => true,
         ],
     ];
 
-    /**
-     * @throws NoResultFoundException
-     *
-     * @return iterable
-     */
+    /** @throws NoResultFoundException */
     public function getTests(): iterable
     {
         $fixtureData = include 'vendor/zsxsoft/php-useragent/tests/UserAgentList.php';
 
-        if (! is_array($fixtureData)) {
-            throw new \Exception('wrong result!');
+        if (!is_array($fixtureData)) {
+            throw new Exception('wrong result!');
         }
 
         foreach ($fixtureData as $row) {
-
             $data = [
                 'resFilename' => 'vendor/zsxsoft/php-useragent/tests/UserAgentList.php',
 
@@ -100,12 +93,12 @@ class ZsxSoft extends AbstractTestProvider
 
                 'resBotIsBot' => null,
                 'resBotName' => null,
-                'resBotType' => null
+                'resBotType' => null,
             ];
 
             $result = $this->hydrateZsxsoft($data, $row);
 
-            $key = bin2hex(sha1($row[0][0], true));
+            $key      = bin2hex(sha1($row[0][0], true));
             $toInsert = [
                 'uaString' => $row[0][0],
                 'result' => $result,
@@ -121,17 +114,19 @@ class ZsxSoft extends AbstractTestProvider
 
         $data['resRawResult'] = serialize($row);
 
-        if (isset($row[2]) && $row[2] != '') {
+        if (isset($row[2]) && '' !== $row[2]) {
             $data['resBrowserName'] = $row[2];
         }
-        if (isset($row[3]) && $row[3] != '') {
+
+        if (isset($row[3]) && '' !== $row[3]) {
             $data['resBrowserVersion'] = $row[3];
         }
 
-        if (isset($row[5]) && $row[5] != '') {
+        if (isset($row[5]) && '' !== $row[5]) {
             $data['resOsName'] = $row[5];
         }
-        if (isset($row[6]) && $row[6] != '') {
+
+        if (isset($row[6]) && '' !== $row[6]) {
             $data['resOsVersion'] = $row[6];
         }
 

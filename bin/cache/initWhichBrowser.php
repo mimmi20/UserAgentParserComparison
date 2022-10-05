@@ -1,6 +1,13 @@
 <?php
 
-chdir(dirname(dirname(__DIR__)));
+declare(strict_types = 1);
+
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
+use MatthiasMullie\Scrapbook\Adapters\Flysystem;
+use MatthiasMullie\Scrapbook\Psr6\Pool;
+
+chdir(dirname(__DIR__, 2));
 /*
  * BrowserDetector cache init
  */
@@ -13,11 +20,11 @@ echo '.';
 /*
  * File
  */
-$whichbrowserAdapter = new \League\Flysystem\Local\LocalFilesystemAdapter('data/cache/.tmp/whichbrowser');
-$whichbrowserCache   = new \MatthiasMullie\Scrapbook\Psr6\Pool(
-    new \MatthiasMullie\Scrapbook\Adapters\Flysystem(
-        new \League\Flysystem\Filesystem($whichbrowserAdapter)
-    )
+$whichbrowserAdapter = new LocalFilesystemAdapter('data/cache/.tmp/whichbrowser');
+$whichbrowserCache   = new Pool(
+    new Flysystem(
+        new Filesystem($whichbrowserAdapter),
+    ),
 );
 
 $whichbrowserCache->clear();

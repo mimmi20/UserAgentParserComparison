@@ -1,9 +1,14 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Harmonize;
 
-class Version extends AbstractHarmonize
+use function mb_stripos;
+use function preg_match;
+
+final class Version extends AbstractHarmonize
 {
-    
     /**
      * Only compare the major and minor version!
      */
@@ -13,18 +18,18 @@ class Version extends AbstractHarmonize
             return $value;
         }
 
-        preg_match("/\d+(?:\.*\d*)[1,2]*/", $value, $result);
-        
-        if (! isset($result[0])) {
+        preg_match('/\d+(?:\.*\d*)[1,2]*/', $value, $result);
+
+        if (!isset($result[0])) {
             return $value;
         }
-        
+
         $useValue = $result[0];
-        
-        if (stripos($useValue, '.') === false) {
+
+        if (false === mb_stripos($useValue, '.')) {
             $useValue .= '.0';
         }
-        
+
         return $useValue;
     }
 
@@ -36,7 +41,7 @@ class Version extends AbstractHarmonize
         foreach ($values as $key => $value) {
             $values[$key] = self::getHarmonizedValue($value);
         }
-        
+
         return $values;
     }
 }

@@ -1,42 +1,35 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Harmonize;
 
-class DeviceType extends AbstractHarmonize
+final class DeviceType extends AbstractHarmonize
 {
-
-    protected static $replaces = [
-        
+    protected static array $replaces = [
         'car' => [
             'car browser',
-            'Car Entertainment System'
+            'Car Entertainment System',
         ],
-        
-        'camera' => [
-            'Digital Camera'
-        ],
-        
-        'console' => [
-            'gaming:console'
-        ],
-        
-        'desktop' => [
-            'pc'
-        ],
-        
-        'ereader' => [
-            'Ebook Reader'
-        ],
-        
+
+        'camera' => ['Digital Camera'],
+
+        'console' => ['gaming:console'],
+
+        'desktop' => ['pc'],
+
+        'ereader' => ['Ebook Reader'],
+
         'tv' => [
             'Smart-TV',
             'television',
             'tv',
-            'TV Device'
+            'TV Device',
         ],
-        
+
         'smartphone' => [
             'smartphone',
-            'mobile:smart'
-        ]
+            'mobile:smart',
+        ],
     ];
 }

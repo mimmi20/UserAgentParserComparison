@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Provider;
 
 use Sinergi\BrowserDetector;
@@ -9,185 +12,92 @@ use UserAgentParserComparison\Model;
 /**
  * Abstraction for sinergi/browser-detector
  *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  * @see https://github.com/sinergi/php-browser-detector
  */
-class SinergiBrowserDetector extends AbstractParseProvider
+final class SinergiBrowserDetector extends AbstractParseProvider
 {
     /**
      * Name of the provider
-     *
-     * @var string
      */
     protected string $name = 'SinergiBrowserDetector';
 
     /**
      * Homepage of the provider
-     *
-     * @var string
      */
     protected string $homepage = 'https://github.com/sinergi/php-browser-detector';
 
     /**
      * Composer package name
-     *
-     * @var string
      */
     protected string $packageName = 'sinergi/browser-detector';
 
     protected string $language = 'PHP';
 
     protected array $detectionCapabilities = [
-
         'browser' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'renderingEngine' => [
-            'name'    => false,
+            'name' => false,
             'version' => false,
         ],
 
         'operatingSystem' => [
-            'name'    => true,
+            'name' => true,
             'version' => true,
         ],
 
         'device' => [
-            'model'    => true,
-            'brand'    => false,
-            'type'     => false,
+            'model' => true,
+            'brand' => false,
+            'type' => false,
             'isMobile' => true,
-            'isTouch'  => false,
+            'isTouch' => false,
         ],
 
         'bot' => [
             'isBot' => true,
-            'name'  => false,
-            'type'  => false,
+            'name' => false,
+            'type' => false,
         ],
     ];
 
     protected array $defaultValues = [
-
-        'general' => [
-            '/^unknown$/i',
-        ],
+        'general' => ['/^unknown$/i'],
 
         'device' => [
-            'model' => [
-                '/^Windows Phone$/i',
-            ],
+            'model' => ['/^Windows Phone$/i'],
         ],
     ];
 
-    /**
-     *
-     * @throws PackageNotLoadedException
-     */
+    /** @throws PackageNotLoadedException */
     public function __construct()
     {
         $this->checkIfInstalled();
     }
 
-    /**
-     *
-     * @param  string                  $userAgent
-     * @return BrowserDetector\Browser
-     */
-    public function getBrowserParser($userAgent)
+    public function getBrowserParser(string $userAgent): BrowserDetector\Browser
     {
         return new BrowserDetector\Browser($userAgent);
     }
 
-    /**
-     *
-     * @param  string             $userAgent
-     * @return BrowserDetector\Os
-     */
-    public function getOperatingSystemParser($userAgent)
+    public function getOperatingSystemParser(string $userAgent): BrowserDetector\Os
     {
         return new BrowserDetector\Os($userAgent);
     }
 
-    /**
-     *
-     * @param  string                 $userAgent
-     * @return BrowserDetector\Device
-     */
-    public function getDeviceParser($userAgent)
+    public function getDeviceParser(string $userAgent): BrowserDetector\Device
     {
         return new BrowserDetector\Device($userAgent);
     }
 
     /**
+     * @throws NoResultFoundException
      *
-     * @param BrowserDetector\Browser $browserRaw
-     * @param BrowserDetector\Os      $osRaw
-     * @param BrowserDetector\Device  $deviceRaw
-     *
-     * @return boolean
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    private function hasResult(BrowserDetector\Browser $browserRaw, BrowserDetector\Os $osRaw, BrowserDetector\Device $deviceRaw): bool
-    {
-        if ($this->isRealResult($browserRaw->getName())) {
-            return true;
-        }
-
-        if ($this->isRealResult($osRaw->getName())) {
-            return true;
-        }
-
-        if ($this->isRealResult($deviceRaw->getName(), 'device', 'model')) {
-            return true;
-        }
-
-        if ($browserRaw->isRobot() === true) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     *
-     * @param Model\Browser           $browser
-     * @param BrowserDetector\Browser $browserRaw
-     */
-    private function hydrateBrowser(Model\Browser $browser, BrowserDetector\Browser $browserRaw): void
-    {
-        $browser->setName($this->getRealResult($browserRaw->getName()));
-        $browser->getVersion()->setComplete($this->getRealResult($browserRaw->getVersion()));
-    }
-
-    /**
-     *
-     * @param Model\OperatingSystem $os
-     * @param BrowserDetector\Os    $osRaw
-     */
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, BrowserDetector\Os $osRaw): void
-    {
-        $os->setName($this->getRealResult($osRaw->getName()));
-        $os->getVersion()->setComplete($this->getRealResult($osRaw->getVersion()));
-    }
-
-    /**
-     *
-     * @param Model\Device           $device
-     * @param BrowserDetector\Os     $osRaw
-     * @param BrowserDetector\Device $deviceRaw
-     */
-    private function hydrateDevice(Model\Device $device, BrowserDetector\Os $osRaw, BrowserDetector\Device $deviceRaw): void
-    {
-        $device->setModel($this->getRealResult($deviceRaw->getName(), 'device', 'model'));
-
-        if ($osRaw->isMobile() === true) {
-            $device->setIsMobile(true);
-        }
-    }
-
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
         $browserRaw = $this->getBrowserParser($userAgent);
@@ -197,7 +107,7 @@ class SinergiBrowserDetector extends AbstractParseProvider
         /*
          * No result found?
          */
-        if ($this->hasResult($browserRaw, $osRaw, $deviceRaw) !== true) {
+        if (true !== $this->hasResult($browserRaw, $osRaw, $deviceRaw)) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -206,15 +116,15 @@ class SinergiBrowserDetector extends AbstractParseProvider
          */
         $result = new Model\UserAgent($this->getName(), $this->getVersion());
         $result->setProviderResultRaw([
-            'browser'         => $browserRaw,
+            'browser' => $browserRaw,
             'operatingSystem' => $osRaw,
-            'device'          => $deviceRaw,
+            'device' => $deviceRaw,
         ]);
 
         /*
          * Bot detection
          */
-        if ($browserRaw->isRobot() === true) {
+        if (true === $browserRaw->isRobot()) {
             $bot = $result->getBot();
             $bot->setIsBot(true);
 
@@ -230,5 +140,45 @@ class SinergiBrowserDetector extends AbstractParseProvider
         $this->hydrateDevice($result->getDevice(), $osRaw, $deviceRaw);
 
         return $result;
+    }
+
+    private function hasResult(BrowserDetector\Browser $browserRaw, BrowserDetector\Os $osRaw, BrowserDetector\Device $deviceRaw): bool
+    {
+        if ($this->isRealResult($browserRaw->getName())) {
+            return true;
+        }
+
+        if ($this->isRealResult($osRaw->getName())) {
+            return true;
+        }
+
+        if ($this->isRealResult($deviceRaw->getName(), 'device', 'model')) {
+            return true;
+        }
+
+        return true === $browserRaw->isRobot();
+    }
+
+    private function hydrateBrowser(Model\Browser $browser, BrowserDetector\Browser $browserRaw): void
+    {
+        $browser->setName($this->getRealResult($browserRaw->getName()));
+        $browser->getVersion()->setComplete($this->getRealResult($browserRaw->getVersion()));
+    }
+
+    private function hydrateOperatingSystem(Model\OperatingSystem $os, BrowserDetector\Os $osRaw): void
+    {
+        $os->setName($this->getRealResult($osRaw->getName()));
+        $os->getVersion()->setComplete($this->getRealResult($osRaw->getVersion()));
+    }
+
+    private function hydrateDevice(Model\Device $device, BrowserDetector\Os $osRaw, BrowserDetector\Device $deviceRaw): void
+    {
+        $device->setModel($this->getRealResult($deviceRaw->getName(), 'device', 'model'));
+
+        if (true !== $osRaw->isMobile()) {
+            return;
+        }
+
+        $device->setIsMobile(true);
     }
 }

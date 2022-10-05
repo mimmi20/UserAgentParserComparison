@@ -1,37 +1,61 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Html;
 
-class OverviewProvider extends AbstractHtml
+use PDO;
+
+use function var_dump;
+
+final class OverviewProvider extends AbstractHtml
 {
-
-    private array $provider;
-
-    public function __construct(\PDO $pdo, array $provider, ?string $title = null)
+    public function __construct(PDO $pdo, private array $provider, string | null $title = null)
     {
-        $this->pdo = $pdo;
-        $this->provider = $provider;
+        $this->pdo   = $pdo;
         $this->title = $title;
+    }
+
+    public function getHtml(): string
+    {
+        $body = '
+<div class="section">
+    <h1 class="header center orange-text">' . $this->provider['proName'] . ' overview - <small>' . $this->provider['proVersion'] . '</small></h1>
+
+    <div class="row center">
+        <h5 class="header light">
+            We took <strong>' . $this->getUserAgentCount() . '</strong> different user agents and analyzed them with this provider<br />
+        </h5>
+    </div>
+</div>
+
+<div class="section">
+    ' . $this->getTable() . '
+</div>
+';
+
+        return parent::getHtmlCombined($body);
     }
 
     private function getResult(): array
     {
-        $sql = "
+        $sql = '
             SELECT
                 SUM(`resResultFound`) AS `resultFound`,
-    
+
                 COUNT(`resBrowserName`) AS `browserFound`,
                 COUNT(`resEngineName`) AS `engineFound`,
                 COUNT(`resOsName`) AS `osFound`,
-    
+
                 COUNT(`resDeviceModel`) AS `deviceModelFound`,
                 COUNT(`resDeviceBrand`) as `deviceBrandFound`,
                 COUNT(`resDeviceType`) AS `deviceTypeFound`,
                 COUNT(`resDeviceIsMobile`) AS `asMobileDetected`,
-    
+
                 COUNT(`resBotIsBot`) AS `asBotDetected`,
                 COUNT(`resBotName`) AS `botNameFound`,
                 COUNT(`resBotType`) AS `botTypeFound`,
-    
+
                 AVG(`resParseTime`) AS `avgParseTime`
             FROM `result`
             INNER JOIN `real-provider` ON `proId` = `provider_id`
@@ -39,11 +63,11 @@ class OverviewProvider extends AbstractHtml
                 `provider_id` = :proId
             GROUP BY
                 `proId`
-        ";
+        ';
 
         $statement = $this->pdo->prepare($sql);
 
-        $statement->bindValue(':proId', $this->provider['proId'], \PDO::PARAM_STR);
+        $statement->bindValue(':proId', $this->provider['proId'], PDO::PARAM_STR);
 
         $statement->execute();
 
@@ -66,16 +90,16 @@ class OverviewProvider extends AbstractHtml
                 'botTypeFound' => 0,
             ];
         }
-        
+
         return $result;
     }
 
     private function getTable(): string
     {
         $provider = $this->provider;
-        
+
         $html = '<table class="striped">';
-        
+
         /*
          * Header
          */
@@ -94,17 +118,17 @@ class OverviewProvider extends AbstractHtml
             </tr>
             </thead>
         ';
-        
+
         /*
          * body
          */
         $count                     = $this->getUserAgentCount();
         $totalUserAgentsOnePercent = $count / 100;
-        
+
         $row = $this->getResult();
-        
+
         $html .= '<tbody>';
-        
+
         /*
          * Results found
          */
@@ -121,7 +145,7 @@ class OverviewProvider extends AbstractHtml
             </td>
             </tr>
         ';
-        
+
         /*
          * browser
          */
@@ -151,7 +175,7 @@ class OverviewProvider extends AbstractHtml
                 </tr>
             ';
         }
-        
+
         /*
          * engine
          */
@@ -181,7 +205,7 @@ class OverviewProvider extends AbstractHtml
                 </tr>
             ';
         }
-        
+
         /*
          * os
          */
@@ -211,7 +235,7 @@ class OverviewProvider extends AbstractHtml
                 </tr>
             ';
         }
-        
+
         /*
          * device brand
          */
@@ -241,7 +265,7 @@ class OverviewProvider extends AbstractHtml
                 </tr>
             ';
         }
-        
+
         /*
          * device model
          */
@@ -271,7 +295,7 @@ class OverviewProvider extends AbstractHtml
                 </tr>
             ';
         }
-        
+
         /*
          * device type
          */
@@ -301,7 +325,7 @@ class OverviewProvider extends AbstractHtml
                 </tr>
             ';
         }
-        
+
         /*
          * Is mobile
          */
@@ -331,7 +355,7 @@ class OverviewProvider extends AbstractHtml
                 </tr>
             ';
         }
-        
+
         /*
          * Is bot
          */
@@ -361,7 +385,7 @@ class OverviewProvider extends AbstractHtml
                 </tr>
             ';
         }
-        
+
         /*
          * Bot name
          */
@@ -391,7 +415,7 @@ class OverviewProvider extends AbstractHtml
                 </tr>
             ';
         }
-        
+
         /*
          * Bot type
          */
@@ -421,31 +445,10 @@ class OverviewProvider extends AbstractHtml
                 </tr>
             ';
         }
-        
+
         $html .= '</tbody>';
         $html .= '</table>';
-        
+
         return $html;
-    }
-
-    public function getHtml(): string
-    {
-        $body = '
-<div class="section">
-    <h1 class="header center orange-text">' . $this->provider['proName'] . ' overview - <small>' . $this->provider['proVersion'] . '</small></h1>
-
-    <div class="row center">
-        <h5 class="header light">
-            We took <strong>' . $this->getUserAgentCount() . '</strong> different user agents and analyzed them with this provider<br />
-        </h5>
-    </div>
-</div>
-
-<div class="section">
-    ' . $this->getTable() . '
-</div>
-';
-        
-        return parent::getHtmlCombined($body);
     }
 }

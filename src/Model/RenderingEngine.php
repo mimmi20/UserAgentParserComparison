@@ -1,15 +1,15 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace UserAgentParserComparison\Model;
 
 /**
  * Rendering engine model
- *
- * @author Martin Keckeis <martin.keckeis1@gmail.com>
- * @license MIT
  */
 final class RenderingEngine
 {
-    private ?string $name = null;
+    private string | null $name = null;
 
     private Version $version;
 
@@ -18,12 +18,12 @@ final class RenderingEngine
         $this->version = new Version();
     }
 
-    public function setName(?string $name): void
+    public function setName(string | null $name): void
     {
         $this->name = $name;
     }
 
-    public function getName(): ?string
+    public function getName(): string | null
     {
         return $this->name;
     }
@@ -39,13 +39,13 @@ final class RenderingEngine
     }
 
     /**
-     * @return string[]|array[]|null[]
+     * @return array[]|null[]|string[]
      * @phpstan-return array{name: string|null, version: array{major: int|string|null, minor: int|string|null, patch: int|string|null, alias: string|null, complete: string|null}}
      */
     public function toArray(): array
     {
         return [
-            'name'    => $this->getName(),
+            'name' => $this->getName(),
             'version' => $this->getVersion()->toArray(),
         ];
     }
