@@ -24,7 +24,7 @@
     "ext-pdo": "*",
     "ext-simplexml": "*",
     "composer-runtime-api": "^2.0",
-    "browscap/browscap": "^6.1.1",
+    "browscap/browscap": "^6.1.2",
     "browscap/browscap-php": "^7.1.0",
     "cbschuld/browser.php": "^v1.9.6",
     "donatj/phpuseragentparser": "^v1.7.0",
