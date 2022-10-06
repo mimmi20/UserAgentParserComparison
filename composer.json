@@ -41,7 +41,7 @@
     "thadafinser/uap-core": "^v0.5.0.4",
     "ua-parser/uap-php": "^v3.9.14",
     "whichbrowser/parser": "^v2.1.7",
-    "wolfcast/browser-detection": "^2.9.6",
+    "wolfcast/browser-detection": "^2.9.7",
     "woothee/woothee": "^v1.10.0",
     "woothee/woothee-testset": "^v1.13.0",
     "zsxsoft/php-useragent": "^1.5.0"
