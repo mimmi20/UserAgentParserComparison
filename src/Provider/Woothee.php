@@ -34,6 +34,12 @@ final class Woothee extends AbstractParseProvider
 
     protected string $language = 'PHP';
 
+    /**
+     * Set this in each Provider implementation
+     *
+     * @var array<string, array<string, bool>>
+     * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
+     */
     protected array $detectionCapabilities = [
         'browser' => [
             'name' => true,
@@ -65,6 +71,7 @@ final class Woothee extends AbstractParseProvider
         ],
     ];
 
+    /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
         'general' => ['/^UNKNOWN$/i'],
 
@@ -140,7 +147,6 @@ final class Woothee extends AbstractParseProvider
         return $result;
     }
 
-    /** @param array $resultRaw */
     private function hasResult(array $resultRaw): bool
     {
         if (isset($resultRaw['category']) && $this->isRealResult($resultRaw['category'], 'device', 'type')) {
@@ -150,13 +156,11 @@ final class Woothee extends AbstractParseProvider
         return isset($resultRaw['name']) && $this->isRealResult($resultRaw['name']);
     }
 
-    /** @param  array $resultRaw */
     private function isBot(array $resultRaw): bool
     {
         return isset($resultRaw['category']) && DataSet::DATASET_CATEGORY_CRAWLER === $resultRaw['category'];
     }
 
-    /** @param array $resultRaw */
     private function hydrateBot(Model\Bot $bot, array $resultRaw): void
     {
         $bot->setIsBot(true);
@@ -168,7 +172,6 @@ final class Woothee extends AbstractParseProvider
         $bot->setName($this->getRealResult($resultRaw['name'], 'bot', 'name'));
     }
 
-    /** @param array $resultRaw */
     private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
     {
         if (isset($resultRaw['name'])) {
@@ -182,7 +185,6 @@ final class Woothee extends AbstractParseProvider
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw['version']));
     }
 
-    /** @param array $resultRaw */
     private function hydrateDevice(Model\Device $device, array $resultRaw): void
     {
         if (!isset($resultRaw['category'])) {

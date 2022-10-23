@@ -45,6 +45,9 @@ abstract class AbstractProvider
     /**
      * Per default the provider cannot detect anything
      * Activate them in $detectionCapabilities
+     *
+     * @var array<string, array<string, bool>>
+     * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $allDetectionCapabilities = [
         'browser' => [
@@ -79,9 +82,13 @@ abstract class AbstractProvider
 
     /**
      * Set this in each Provider implementation
+     *
+     * @var array<string, array<string, bool>>
+     * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [];
 
+    /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
         'general' => [],
     ];
@@ -165,6 +172,9 @@ abstract class AbstractProvider
 
     /**
      * What kind of capabilities this provider can detect
+     *
+     * @return array<string, array<string, bool>>
+     * @phpstan-return array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     public function getDetectionCapabilities(): array
     {

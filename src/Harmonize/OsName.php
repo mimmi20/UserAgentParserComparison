@@ -6,6 +6,7 @@ namespace UserAgentParserComparison\Harmonize;
 
 final class OsName extends AbstractHarmonize
 {
+    /** @var array<string, array<int, string>> */
     protected static array $replaces = [
         'BlackBerry' => ['BlackBerry OS'],
 

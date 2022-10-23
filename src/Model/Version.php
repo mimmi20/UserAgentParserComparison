@@ -29,6 +29,7 @@ final class Version
 
     private string | null $complete = null;
 
+    /** @var array<int, string> */
     private static array $notAllowedAlias = [
         'a',
         'alpha',

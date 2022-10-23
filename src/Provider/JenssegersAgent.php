@@ -33,6 +33,12 @@ final class JenssegersAgent extends AbstractParseProvider
 
     protected string $language = 'PHP';
 
+    /**
+     * Set this in each Provider implementation
+     *
+     * @var array<string, array<string, bool>>
+     * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
+     */
     protected array $detectionCapabilities = [
         'browser' => [
             'name' => true,
@@ -64,6 +70,7 @@ final class JenssegersAgent extends AbstractParseProvider
         ],
     ];
 
+    /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
         'general' => [],
 
@@ -151,7 +158,6 @@ final class JenssegersAgent extends AbstractParseProvider
         return $result;
     }
 
-    /** @param array $resultRaw */
     private function hasResult(array $resultRaw): bool
     {
         if (true === $resultRaw['isMobile'] || true === $resultRaw['isRobot']) {
@@ -161,14 +167,12 @@ final class JenssegersAgent extends AbstractParseProvider
         return true === $this->isRealResult($resultRaw['browserName'], 'browser', 'name') || true === $this->isRealResult($resultRaw['osName']) || true === $this->isRealResult($resultRaw['botName']);
     }
 
-    /** @param array $resultRaw */
     private function hydrateBot(Model\Bot $bot, array $resultRaw): void
     {
         $bot->setIsBot(true);
         $bot->setName($this->getRealResult($resultRaw['botName']));
     }
 
-    /** @param array $resultRaw */
     private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
     {
         if (true !== $this->isRealResult($resultRaw['browserName'], 'browser', 'name')) {
@@ -179,7 +183,6 @@ final class JenssegersAgent extends AbstractParseProvider
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw['browserVersion']));
     }
 
-    /** @param array $resultRaw */
     private function hydrateOperatingSystem(Model\OperatingSystem $os, array $resultRaw): void
     {
         if (true !== $this->isRealResult($resultRaw['osName'])) {
@@ -190,7 +193,6 @@ final class JenssegersAgent extends AbstractParseProvider
         $os->getVersion()->setComplete($this->getRealResult($resultRaw['osVersion']));
     }
 
-    /** @param array $resultRaw */
     private function hydrateDevice(Model\Device $device, array $resultRaw): void
     {
         if (true !== $resultRaw['isMobile']) {

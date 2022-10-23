@@ -33,6 +33,12 @@ final class Wolfcast extends AbstractParseProvider
 
     protected string $language = 'PHP';
 
+    /**
+     * Set this in each Provider implementation
+     *
+     * @var array<string, array<string, bool>>
+     * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
+     */
     protected array $detectionCapabilities = [
         'browser' => [
             'name' => true,
@@ -113,20 +119,17 @@ final class Wolfcast extends AbstractParseProvider
         return $result;
     }
 
-    /** @param array $resultRaw */
     private function hasResult(array $resultRaw): bool
     {
         return $this->isRealResult($resultRaw['browserName']) || $this->isRealResult($resultRaw['osName']);
     }
 
-    /** @param array $resultRaw */
     private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
     {
         $browser->setName($this->getRealResult($resultRaw['browserName']));
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw['browserVersion']));
     }
 
-    /** @param array $resultRaw */
     private function hydrateOperatingSystem(Model\OperatingSystem $os, array $resultRaw): void
     {
         if (true !== $this->isRealResult($resultRaw['osName'])) {
@@ -137,7 +140,6 @@ final class Wolfcast extends AbstractParseProvider
         $os->getVersion()->setComplete($this->getRealResult($resultRaw['osVersion']));
     }
 
-    /** @param array $resultRaw */
     private function hydrateDevice(Model\Device $device, array $resultRaw): void
     {
         if (true !== $resultRaw['isMobile']) {

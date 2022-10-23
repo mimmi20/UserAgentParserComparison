@@ -41,6 +41,12 @@ final class BrowserDetector extends AbstractParseProvider
 
     protected string $language = 'PHP';
 
+    /**
+     * Set this in each Provider implementation
+     *
+     * @var array<string, array<string, bool>>
+     * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
+     */
     protected array $detectionCapabilities = [
         'browser' => [
             'name' => true,
@@ -72,6 +78,7 @@ final class BrowserDetector extends AbstractParseProvider
         ],
     ];
 
+    /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
         'general' => ['/^UNK$/i'],
 
@@ -138,7 +145,10 @@ final class BrowserDetector extends AbstractParseProvider
         return $result;
     }
 
-    /** @return array */
+    /**
+     * @return array<string, mixed>
+     * @phpstan-return array{client: array<mixed>|string|null, operatingSystem: array<mixed>|string|null, device: array<string, mixed>, bot: array<mixed>|bool|null, extra: array<string, mixed>}
+     */
     private function getResultRaw(Result $result): array
     {
         return [

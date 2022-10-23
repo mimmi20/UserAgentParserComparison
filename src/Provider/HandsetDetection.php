@@ -33,6 +33,12 @@ final class HandsetDetection extends AbstractParseProvider
 
     protected string $language = 'PHP';
 
+    /**
+     * Set this in each Provider implementation
+     *
+     * @var array<string, array<string, bool>>
+     * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
+     */
     protected array $detectionCapabilities = [
         'browser' => [
             'name' => true,
@@ -64,6 +70,7 @@ final class HandsetDetection extends AbstractParseProvider
         ],
     ];
 
+    /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
         'general' => ['/^generic$/i'],
 
@@ -131,7 +138,6 @@ final class HandsetDetection extends AbstractParseProvider
         return $result;
     }
 
-    /** @param array $resultRaw */
     private function hasResult(array $resultRaw): bool
     {
         if (isset($resultRaw['general_browser']) && $this->isRealResult($resultRaw['general_browser'])) {
@@ -145,7 +151,6 @@ final class HandsetDetection extends AbstractParseProvider
         return isset($resultRaw['general_model']) && $this->isRealResult($resultRaw['general_model'], 'device', 'model') && $this->isRealResult($resultRaw['general_vendor'], 'device', 'brand');
     }
 
-    /** @param array $resultRaw */
     private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
     {
         if (isset($resultRaw['general_browser'])) {
@@ -159,7 +164,6 @@ final class HandsetDetection extends AbstractParseProvider
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw['general_browser_version']));
     }
 
-    /** @param array $resultRaw */
     private function hydrateOperatingSystem(Model\OperatingSystem $os, array $resultRaw): void
     {
         if (isset($resultRaw['general_platform'])) {

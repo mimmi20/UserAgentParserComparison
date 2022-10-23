@@ -13,8 +13,12 @@ use function ucfirst;
 
 final class ResultsPerUserAgent
 {
+    /** @var array<int, string> */
     private array $values;
+
+    /** @var array<int|string, mixed> */
     private array $harmonizedValues;
+
     private string $type;
     private int | null $foundCount;
     private int | null $foundCountUnique;
@@ -33,6 +37,7 @@ final class ResultsPerUserAgent
         $this->values = $values;
     }
 
+    /** @return array<int, string> */
     public function getValues(): array
     {
         return $this->values;
@@ -60,6 +65,7 @@ final class ResultsPerUserAgent
         $this->harmonizedMaxSameResultCount = $this->getMaxSameCount($harmonizedValues);
     }
 
+    /** @return array<int|string, mixed> */
     public function getUniqueHarmonizedValues(): array
     {
         return array_unique($this->getHarmonizedValues());
@@ -90,6 +96,7 @@ final class ResultsPerUserAgent
         return $this->harmonizedMaxSameResultCount;
     }
 
+    /** @return array<int|string, mixed> */
     private function getHarmonizedValues(): array
     {
         if (null !== $this->harmonizedValues) {

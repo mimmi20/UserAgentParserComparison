@@ -31,6 +31,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
 
     protected string $language = 'PHP';
 
+    /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
         'general' => ['/^unknown$/i'],
 

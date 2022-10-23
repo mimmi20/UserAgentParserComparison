@@ -37,6 +37,7 @@ final class OverviewProvider extends AbstractHtml
         return parent::getHtmlCombined($body);
     }
 
+    /** @return array<string, int> */
     private function getResult(): array
     {
         $sql = '
