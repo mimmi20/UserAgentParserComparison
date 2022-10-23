@@ -32,6 +32,12 @@ final class DonatjUAParser extends AbstractParseProvider
 
     protected string $language = 'PHP';
 
+    /**
+     * Set this in each Provider implementation
+     *
+     * @var array<string, array<string, bool>>
+     * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
+     */
     protected array $detectionCapabilities = [
         'browser' => [
             'name' => true,
@@ -107,13 +113,11 @@ final class DonatjUAParser extends AbstractParseProvider
         return $result;
     }
 
-    /** @param array $resultRaw */
     private function hasResult(array $resultRaw): bool
     {
         return $this->isRealResult($resultRaw['browser']);
     }
 
-    /** @param array $resultRaw */
     private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
     {
         $browser->setName($this->getRealResult($resultRaw['browser']));

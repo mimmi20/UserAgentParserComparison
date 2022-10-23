@@ -6,6 +6,7 @@ namespace UserAgentParserComparison\Harmonize;
 
 final class BrowserName extends AbstractHarmonize
 {
+    /** @var array<string, array<int, string>> */
     protected static array $replaces = [
         '360 Browser' => ['360 Phone Browser'],
 

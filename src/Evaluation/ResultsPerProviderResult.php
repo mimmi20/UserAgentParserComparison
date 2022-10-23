@@ -9,18 +9,26 @@ use function ucfirst;
 
 final class ResultsPerProviderResult
 {
+    /** @var array<mixed> */
     private array $currentValue;
+
+    /** @var array<int, string> */
     private array $values;
+
+    /** @var array<int|string, mixed> */
     private array $harmonizedValues;
+
     private string $type;
     private int $sameResultCount           = 0;
     private int $harmonizedSameResultCount = 0;
 
+    /** @param array<mixed> $currentValue */
     public function setCurrentValue(array $currentValue): void
     {
         $this->currentValue = $currentValue;
     }
 
+    /** @return array<mixed> */
     public function getCurrentValue(): array
     {
         return $this->currentValue;
@@ -37,6 +45,7 @@ final class ResultsPerProviderResult
         $this->values = $values;
     }
 
+    /** @return array<int, string> */
     public function getValues(): array
     {
         return $this->values;
@@ -92,6 +101,7 @@ final class ResultsPerProviderResult
         return '\UserAgentParserComparison\Harmonize\\' . ucfirst($this->getType());
     }
 
+    /** @return array<int|string, mixed> */
     private function getHarmonizedValues(): array
     {
         if (null !== $this->harmonizedValues) {

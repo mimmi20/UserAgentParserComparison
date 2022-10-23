@@ -21,6 +21,11 @@ abstract class AbstractHarmonize
         return $value;
     }
 
+    /**
+     * @param array<int|string, mixed> $values
+     *
+     * @return array<int|string, mixed>
+     */
     public static function getHarmonizedValues(array $values): array
     {
         foreach ($values as $key => $value) {

@@ -15,17 +15,19 @@ use const JSON_THROW_ON_ERROR;
 
 final class UserAgentDetail extends AbstractHtml
 {
+    /** @var array<mixed> */
     private array $userAgent = [];
 
-    /** @var array[] */
+    /** @var array<array<mixed>> */
     private array $results = [];
 
+    /** @param array<mixed> $userAgent */
     public function setUserAgent(array $userAgent): void
     {
         $this->userAgent = $userAgent;
     }
 
-    /** @param array[] $results */
+    /** @param array<array<mixed>> $results */
     public function setResults(array $results): void
     {
         $this->results = $results;

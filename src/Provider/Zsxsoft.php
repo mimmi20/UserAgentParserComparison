@@ -33,6 +33,12 @@ final class Zsxsoft extends AbstractParseProvider
 
     protected string $language = 'PHP';
 
+    /**
+     * Set this in each Provider implementation
+     *
+     * @var array<string, array<string, bool>>
+     * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
+     */
     protected array $detectionCapabilities = [
         'browser' => [
             'name' => true,
@@ -64,6 +70,7 @@ final class Zsxsoft extends AbstractParseProvider
         ],
     ];
 
+    /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
         'general' => ['/^Unknown$/i'],
 
@@ -160,7 +167,6 @@ final class Zsxsoft extends AbstractParseProvider
         return isset($device['model']) && $this->isRealResult($device['model'], 'device', 'model');
     }
 
-    /** @param array $browserRaw */
     private function hydrateBrowser(Model\Browser $browser, array $browserRaw): void
     {
         if (isset($browserRaw['name'])) {
@@ -174,7 +180,6 @@ final class Zsxsoft extends AbstractParseProvider
         $browser->getVersion()->setComplete($this->getRealResult($browserRaw['version']));
     }
 
-    /** @param array $osRaw */
     private function hydrateOperatingSystem(Model\OperatingSystem $os, array $osRaw): void
     {
         if (isset($osRaw['name'])) {
@@ -188,7 +193,6 @@ final class Zsxsoft extends AbstractParseProvider
         $os->getVersion()->setComplete($this->getRealResult($osRaw['version']));
     }
 
-    /** @param array $deviceRaw */
     private function hydrateDevice(Model\Device $device, array $deviceRaw): void
     {
         if (isset($deviceRaw['model'])) {

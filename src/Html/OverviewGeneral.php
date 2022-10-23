@@ -59,6 +59,7 @@ final class OverviewGeneral extends AbstractHtml
         return parent::getHtmlCombined($body);
     }
 
+    /** @return iterable<array<string, mixed>> */
     private function getProviders(): iterable
     {
         $statement = $this->pdo->prepare('SELECT * FROM `providers-general-overview`');
@@ -68,6 +69,7 @@ final class OverviewGeneral extends AbstractHtml
         yield from $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /** @return iterable<array<string, mixed>> */
     private function getUserAgentPerProviderCount(): iterable
     {
         $statement = $this->pdo->prepare('SELECT * FROM `useragents-general-overview`');

@@ -9,8 +9,10 @@ use function htmlspecialchars;
 
 final class SimpleList extends AbstractHtml
 {
+    /** @var array<array<mixed>> */
     private array $elements = [];
 
+    /** @param array<array<mixed>> $elements */
     public function setElements(array $elements): void
     {
         $this->elements = $elements;
