@@ -54,7 +54,7 @@
     "mimmi20/coding-standard": "^3.0.20",
     "phpstan/extension-installer": "^1.2.0",
     "phpstan/phpstan": "^1.9.3",
-    "phpstan/phpstan-deprecation-rules": "^1.0.0"
+    "phpstan/phpstan-deprecation-rules": "^1.1.1"
   },
   "config": {
     "preferred-install": {
