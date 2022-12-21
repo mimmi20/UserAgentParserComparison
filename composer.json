@@ -37,7 +37,7 @@
     "mobiledetect/mobiledetectlib": "^2.8.41",
     "ramsey/uuid-doctrine": "^1.8.2",
     "sinergi/browser-detector": "^6.1.4",
-    "symfony/yaml": "^v6.2.0",
+    "symfony/yaml": "^v6.2.2",
     "thadafinser/uap-core": "^v0.5.0.4",
     "ua-parser/uap-php": "^v3.9.14",
     "whichbrowser/parser": "^v2.1.7",
