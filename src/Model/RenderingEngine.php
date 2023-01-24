@@ -10,7 +10,6 @@ namespace UserAgentParserComparison\Model;
 final class RenderingEngine
 {
     private string | null $name = null;
-
     private Version $version;
 
     public function __construct()

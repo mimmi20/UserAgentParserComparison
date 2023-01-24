@@ -6,31 +6,30 @@ namespace UserAgentParserComparison\Provider\Test;
 
 use UserAgentParserComparison\Exception\NoResultFoundException;
 
-use function array_map;
 use function bin2hex;
-use function explode;
-use function implode;
+use function file_exists;
+use function file_get_contents;
+use function filesize;
+use function json_decode;
 use function sha1;
-use function simplexml_load_file;
-use function trim;
 
 /** @see https://github.com/browscap/browscap-php */
-final class Sinergi extends AbstractTestProvider
+final class Endorphin extends AbstractTestProvider
 {
     /**
      * Name of the provider
      */
-    protected string $name = 'SinergiBrowserDetector';
+    protected string $name = 'Endorphin Browser Detector';
 
     /**
      * Homepage of the provider
      */
-    protected string $homepage = 'https://github.com/sinergi/php-browser-detector';
+    protected string $homepage = 'https://github.com/endorphin-studio/browser-detector';
 
     /**
      * Composer package name
      */
-    protected string $packageName = 'sinergi/browser-detector';
+    protected string $packageName = 'endorphin-studio/browser-detector';
 
     protected string $language = 'PHP';
 
@@ -52,20 +51,20 @@ final class Sinergi extends AbstractTestProvider
         ],
 
         'operatingSystem' => [
-            'name' => true,
-            'version' => true,
+            'name' => false,
+            'version' => false,
         ],
 
         'device' => [
-            'model' => true,
+            'model' => false,
             'brand' => false,
             'type' => false,
-            'isMobile' => true,
+            'isMobile' => false,
             'isTouch' => false,
         ],
 
         'bot' => [
-            'isBot' => true,
+            'isBot' => false,
             'name' => false,
             'type' => false,
         ],
@@ -79,7 +78,7 @@ final class Sinergi extends AbstractTestProvider
      */
     public function getTests(): iterable
     {
-        $source = new \BrowscapHelper\Source\SinergiSource();
+        $source = new \BrowscapHelper\Source\EndorphinSource();
         $baseMessage = sprintf('reading from source %s ', $source->getName());
         $messageLength = 0;
 
@@ -92,27 +91,27 @@ final class Sinergi extends AbstractTestProvider
             $toInsert = [
                 'uaString' => $test['headers']['user-agent'],
                 'result' => [
-                    'resFilename' => $test['file'] ?? '',
+                    'resFilename' => '',
 
                     'resRawResult' => serialize($test['raw'] ?? null),
 
-                    'resBrowserName' => $test['client']['name'],
-                    'resBrowserVersion' => $test['client']['version'],
+                    'resBrowserName' => isset($test['client']['isbot']) ? null : $test['client']['name'],
+                    'resBrowserVersion' => isset($test['client']['isbot']) ? null : ($test['client']['version'] ?? null),
 
-                    'resEngineName' => null,
-                    'resEngineVersion' => null,
+                    'resEngineName' => $test['engine']['name'],
+                    'resEngineVersion' => $test['engine']['version'],
 
                     'resOsName' => $test['platform']['name'],
-                    'resOsVersion' => $test['platform']['version'],
+                    'resOsVersion' => $test['platform']['version'] ?? null,
 
-                    'resDeviceModel' => $test['device']['deviceName'],
-                    'resDeviceBrand' => null,
-                    'resDeviceType' => null,
-                    'resDeviceIsMobile' => null,
+                    'resDeviceModel' => $test['device']['deviceName'] ?? null,
+                    'resDeviceBrand' => $test['device']['brand'] ?? null,
+                    'resDeviceType' => $test['device']['type'] ?? null,
+                    'resDeviceIsMobile' => $test['device']['ismobile'] ?? null,
                     'resDeviceIsTouch' => null,
 
-                    'resBotIsBot' => null,
-                    'resBotName' => null,
+                    'resBotIsBot' => $test['client']['isbot'] ?? null,
+                    'resBotName' => isset($test['client']['isbot']) ? $test['client']['name'] : null,
                     'resBotType' => null,
                 ],
             ];

@@ -16,17 +16,10 @@ use function trim;
  */
 final class Version
 {
-    /** @var int|string */
-    private $major = '';
-
-    /** @var int|string|null */
-    private $minor = '';
-
-    /** @var int|string|null */
-    private $patch = '';
-
+    private int|string|null $major = '';
+    private int|string|null $minor = '';
+    private int|string|null $patch = '';
     private string | null $alias = null;
-
     private string | null $complete = null;
 
     /** @var array<int, string> */
@@ -43,7 +36,7 @@ final class Version
     ];
 
     /** @param int|string|null $major */
-    public function setMajor($major): void
+    public function setMajor(int|string|null $major): void
     {
         $this->major = $major;
 
@@ -51,13 +44,13 @@ final class Version
     }
 
     /** @return int|string|null */
-    public function getMajor()
+    public function getMajor(): int|string|null
     {
         return $this->major;
     }
 
     /** @param int|string|null $minor */
-    public function setMinor($minor): void
+    public function setMinor(int|string|null $minor): void
     {
         $this->minor = $minor;
 
@@ -65,13 +58,13 @@ final class Version
     }
 
     /** @return int|string|null */
-    public function getMinor()
+    public function getMinor(): int|string|null
     {
         return $this->minor;
     }
 
     /** @param int|string|null $patch */
-    public function setPatch($patch): void
+    public function setPatch(int|string|null $patch): void
     {
         $this->patch = $patch;
 
@@ -79,7 +72,7 @@ final class Version
     }
 
     /** @return int|string|null */
-    public function getPatch()
+    public function getPatch(): int|string|null
     {
         return $this->patch;
     }

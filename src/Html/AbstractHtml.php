@@ -89,9 +89,9 @@ abstract class AbstractHtml
                 <br />
                 The secondary goal is to provide a source for all user agent parsers to improve their detection based on this results.<br />
                 <br />
-                You can also improve this further, by suggesting ideas at <a href="https://github.com/ThaDafinser/UserAgentParserComparison">ThaDafinser/UserAgentParserComparison</a><br />
+                You can also improve this further, by suggesting ideas at <a href="https://github.com/mimmi20/UserAgentParserComparison">mimmi20/UserAgentParserComparison</a><br />
                 <br />
-                The comparison is based on the abstraction by <a href="https://github.com/ThaDafinser/UserAgentParserComparison">ThaDafinser/UserAgentParserComparison</a>
+                The comparison is based on the abstraction by <a href="https://github.com/mimmi20/UserAgentParserComparison">mimmi20/UserAgentParserComparison</a>
             </h5>
         </div>
 
@@ -100,7 +100,7 @@ abstract class AbstractHtml
     <div class="card">
         <div class="card-content">
             Comparison created <i>' . date('Y-m-d H:i:s') . '</i> | by
-            <a href="https://github.com/ThaDafinser">ThaDafinser</a>
+            <a href="https://github.com/mimmi20">mimmi20</a>
         </div>
     </div>
 

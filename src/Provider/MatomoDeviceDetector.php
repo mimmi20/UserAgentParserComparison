@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use DeviceDetector\ClientHints;
 use DeviceDetector\DeviceDetector;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
@@ -83,24 +84,9 @@ final class MatomoDeviceDetector extends AbstractParseProvider
     ];
 
     /** @throws PackageNotLoadedException */
-    public function __construct(private DeviceDetector | null $parser = null)
+    public function __construct(private readonly DeviceDetector $parser)
     {
-        if (null !== $parser) {
-            return;
-        }
-
         $this->checkIfInstalled();
-    }
-
-    public function getParser(): DeviceDetector
-    {
-        if (null !== $this->parser) {
-            return $this->parser;
-        }
-
-        $this->parser = new DeviceDetector();
-
-        return $this->parser;
     }
 
     /**
@@ -110,15 +96,16 @@ final class MatomoDeviceDetector extends AbstractParseProvider
      */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $dd = $this->getParser();
+        $clientHints = ClientHints::factory($headers);
 
-        $dd->setUserAgent($userAgent);
-        $dd->parse();
+        $this->parser->setUserAgent($userAgent);
+        $this->parser->setClientHints($clientHints);
+        $this->parser->parse();
 
         /*
          * No result found?
          */
-        if (true !== $this->hasResult($dd)) {
+        if (true !== $this->hasResult($this->parser)) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -126,13 +113,13 @@ final class MatomoDeviceDetector extends AbstractParseProvider
          * Hydrate the model
          */
         $result = new Model\UserAgent($this->getName(), $this->getVersion());
-        $result->setProviderResultRaw($this->getResultRaw($dd));
+        $result->setProviderResultRaw($this->getResultRaw($this->parser));
 
         /*
          * Bot detection
          */
-        if (true === $dd->isBot()) {
-            $this->hydrateBot($result->getBot(), $dd->getBot());
+        if (true === $this->parser->isBot()) {
+            $this->hydrateBot($result->getBot(), $this->parser->getBot());
 
             return $result;
         }
@@ -140,10 +127,10 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         /*
          * hydrate the result
          */
-        $this->hydrateBrowser($result->getBrowser(), $dd->getClient());
-        $this->hydrateRenderingEngine($result->getRenderingEngine(), $dd->getClient());
-        $this->hydrateOperatingSystem($result->getOperatingSystem(), $dd->getOs());
-        $this->hydrateDevice($result->getDevice(), $dd);
+        $this->hydrateBrowser($result->getBrowser(), $this->parser->getClient());
+        $this->hydrateRenderingEngine($result->getRenderingEngine(), $this->parser->getClient());
+        $this->hydrateOperatingSystem($result->getOperatingSystem(), $this->parser->getOs());
+        $this->hydrateDevice($result->getDevice(), $this->parser);
 
         return $result;
     }
@@ -279,15 +266,7 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         $device->setModel($this->getRealResult($dd->getModel()));
         $device->setBrand($this->getRealResult($dd->getBrandName()));
         $device->setType($this->getRealResult($dd->getDeviceName()));
-
-        if (true === $dd->isMobile()) {
-            $device->setIsMobile(true);
-        }
-
-        if (true !== $dd->isTouchEnabled()) {
-            return;
-        }
-
-        $device->setIsTouch(true);
+        $device->setIsMobile($dd->isMobile());
+        $device->setIsTouch($dd->isTouchEnabled());
     }
 }

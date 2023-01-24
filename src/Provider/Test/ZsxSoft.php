@@ -72,91 +72,50 @@ final class ZsxSoft extends AbstractTestProvider
      * @return iterable<array<string, mixed>>
      * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
      *
-     * @throws NoResultFoundException
+     * @throws \LogicException
+     * @throws \RuntimeException
      */
     public function getTests(): iterable
     {
-        $fixtureData = include 'vendor/zsxsoft/php-useragent/tests/UserAgentList.php';
+        $source = new \BrowscapHelper\Source\ZsxsoftSource();
+        $baseMessage = sprintf('reading from source %s ', $source->getName());
+        $messageLength = 0;
 
-        if (!is_array($fixtureData)) {
-            throw new NoResultFoundException('wrong result!');
+        if (!$source->isReady($baseMessage)) {
+            return [];
         }
 
-        foreach ($fixtureData as $row) {
-            $data = [
-                'resFilename' => 'vendor/zsxsoft/php-useragent/tests/UserAgentList.php',
-
-                'resRawResult' => serialize(null),
-
-                'resBrowserName' => null,
-                'resBrowserVersion' => null,
-
-                'resEngineName' => null,
-                'resEngineVersion' => null,
-
-                'resOsName' => null,
-                'resOsVersion' => null,
-
-                'resDeviceModel' => null,
-                'resDeviceBrand' => null,
-                'resDeviceType' => null,
-                'resDeviceIsMobile' => null,
-                'resDeviceIsTouch' => null,
-
-                'resBotIsBot' => null,
-                'resBotName' => null,
-                'resBotType' => null,
-            ];
-
-            $result = $this->hydrateZsxsoft($data, $row);
-
-            $key      = bin2hex(sha1($row[0][0], true));
+        foreach ($source->getProperties($baseMessage, $messageLength) as $test) {
+            $key      = bin2hex(sha1($test['headers']['user-agent'], true));
             $toInsert = [
-                'uaString' => $row[0][0],
-                'result' => $result,
+                'uaString' => $test['headers']['user-agent'],
+                'result' => [
+                    'resFilename' => $test['file'] ?? '',
+
+                    'resRawResult' => serialize($test['raw'] ?? null),
+
+                    'resBrowserName' => $test['client']['isbot'] ? null : $test['client']['name'],
+                    'resBrowserVersion' => $test['client']['isbot'] ? null : $test['client']['version'],
+
+                    'resEngineName' => null,
+                    'resEngineVersion' => null,
+
+                    'resOsName' => $test['platform']['name'],
+                    'resOsVersion' => $test['platform']['version'],
+
+                    'resDeviceModel' => $test['device']['deviceName'],
+                    'resDeviceBrand' => $test['device']['brand'],
+                    'resDeviceType' => $test['device']['type'],
+                    'resDeviceIsMobile' => $test['device']['ismobile'],
+                    'resDeviceIsTouch' => $test['device']['display']['touch'],
+
+                    'resBotIsBot' => $test['client']['isbot'],
+                    'resBotName' => $test['client']['isbot'] ? $test['client']['name'] : null,
+                    'resBotType' => $test['client']['isbot'] ? $test['client']['type'] : null,
+                ],
             ];
 
             yield $key => $toInsert;
         }
-    }
-
-    /**
-     * @return iterable<array<string, mixed>>
-     * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
-     */
-    private function hydrateZsxsoft(array $data, array $row): array
-    {
-        $row = $row[1];
-
-        $data['resRawResult'] = serialize($row);
-
-        if (isset($row[2]) && '' !== $row[2]) {
-            $data['resBrowserName'] = $row[2];
-        }
-
-        if (isset($row[3]) && '' !== $row[3]) {
-            $data['resBrowserVersion'] = $row[3];
-        }
-
-        if (isset($row[5]) && '' !== $row[5]) {
-            $data['resOsName'] = $row[5];
-        }
-
-        if (isset($row[6]) && '' !== $row[6]) {
-            $data['resOsVersion'] = $row[6];
-        }
-
-        // 0 => browser image
-        // 1 => os image
-        // 2 => browser name
-        // 3 => browser version
-        // 4 => browser title
-        // 5 => os name
-        // 6 => os version
-        // 7 => os title
-        // 8 => device title
-        // 9 => platform type
-
-        return $data;
     }
 }

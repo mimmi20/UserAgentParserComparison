@@ -4,35 +4,36 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider\Test;
 
+use Exception;
+use Symfony\Component\Yaml\Yaml;
+use Throwable;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 
-use function array_map;
 use function bin2hex;
-use function explode;
-use function implode;
+use function file_get_contents;
+use function is_array;
+use function serialize;
 use function sha1;
-use function simplexml_load_file;
-use function trim;
 
 /** @see https://github.com/browscap/browscap-php */
-final class Sinergi extends AbstractTestProvider
+final class UaParserJs extends AbstractTestProvider
 {
     /**
      * Name of the provider
      */
-    protected string $name = 'SinergiBrowserDetector';
+    protected string $name = 'ua-parser-js';
 
     /**
      * Homepage of the provider
      */
-    protected string $homepage = 'https://github.com/sinergi/php-browser-detector';
+    protected string $homepage = 'https://github.com/faisalman/ua-parser-js';
 
     /**
      * Composer package name
      */
-    protected string $packageName = 'sinergi/browser-detector';
+    protected string $packageName = 'ua-parser-js';
 
-    protected string $language = 'PHP';
+    protected string $language = 'JS';
 
     /**
      * Set this in each Provider implementation
@@ -58,9 +59,9 @@ final class Sinergi extends AbstractTestProvider
 
         'device' => [
             'model' => true,
-            'brand' => false,
+            'brand' => true,
             'type' => false,
-            'isMobile' => true,
+            'isMobile' => false,
             'isTouch' => false,
         ],
 
@@ -79,7 +80,7 @@ final class Sinergi extends AbstractTestProvider
      */
     public function getTests(): iterable
     {
-        $source = new \BrowscapHelper\Source\SinergiSource();
+        $source = new \BrowscapHelper\Source\UaParserJsSource();
         $baseMessage = sprintf('reading from source %s ', $source->getName());
         $messageLength = 0;
 
@@ -92,24 +93,24 @@ final class Sinergi extends AbstractTestProvider
             $toInsert = [
                 'uaString' => $test['headers']['user-agent'],
                 'result' => [
-                    'resFilename' => $test['file'] ?? '',
+                    'resFilename' => '',
 
                     'resRawResult' => serialize($test['raw'] ?? null),
 
                     'resBrowserName' => $test['client']['name'],
                     'resBrowserVersion' => $test['client']['version'],
 
-                    'resEngineName' => null,
-                    'resEngineVersion' => null,
+                    'resEngineName' => $test['engine']['name'],
+                    'resEngineVersion' => $test['engine']['version'],
 
                     'resOsName' => $test['platform']['name'],
                     'resOsVersion' => $test['platform']['version'],
 
                     'resDeviceModel' => $test['device']['deviceName'],
-                    'resDeviceBrand' => null,
-                    'resDeviceType' => null,
-                    'resDeviceIsMobile' => null,
-                    'resDeviceIsTouch' => null,
+                    'resDeviceBrand' => $test['device']['brand'],
+                    'resDeviceType' => $test['device']['type'],
+                    'resDeviceIsMobile' => $test['device']['ismobile'],
+                    'resDeviceIsTouch' => $test['device']['display']['touch'],
 
                     'resBotIsBot' => null,
                     'resBotName' => null,

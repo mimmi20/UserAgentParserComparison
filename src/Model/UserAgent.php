@@ -9,24 +9,12 @@ namespace UserAgentParserComparison\Model;
  */
 final class UserAgent
 {
-    /**
-     * Provider name
-     */
     private string | null $providerName;
-
-    /**
-     * Provider version
-     */
     private string | null $providerVersion;
-
     private Browser $browser;
-
     private RenderingEngine $renderingEngine;
-
     private OperatingSystem $operatingSystem;
-
     private Device $device;
-
     private Bot $bot;
 
     /** @var mixed */

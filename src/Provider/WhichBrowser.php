@@ -78,24 +78,10 @@ final class WhichBrowser extends AbstractParseProvider
         ],
     ];
 
-    /**
-     * Used for unitTests mocking
-     */
-    private WhichBrowserParser | null $parser = null;
-
     /** @throws PackageNotLoadedException */
-    public function __construct(private CacheItemPoolInterface | null $cache = null)
+    public function __construct(private readonly WhichBrowserParser $parser, private readonly CacheItemPoolInterface $cache)
     {
         $this->checkIfInstalled();
-    }
-
-    public function getParser(): WhichBrowserParser
-    {
-        if (null === $this->parser) {
-            $this->parser = new WhichBrowserParser();
-        }
-
-        return $this->parser;
     }
 
     /** @throws NoResultFoundException */
@@ -103,13 +89,12 @@ final class WhichBrowser extends AbstractParseProvider
     {
         $headers['User-Agent'] = $userAgent;
 
-        $parser = $this->getParser();
-        $parser->analyse($headers, ['cache' => $this->cache]);
+        $this->parser->analyse($headers, ['cache' => $this->cache]);
 
         /*
          * No result found?
          */
-        if (true !== $parser->isDetected()) {
+        if (true !== $this->parser->isDetected()) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -117,13 +102,13 @@ final class WhichBrowser extends AbstractParseProvider
          * Hydrate the model
          */
         $result = new Model\UserAgent($this->getName(), $this->getVersion());
-        $result->setProviderResultRaw($parser->toArray());
+        $result->setProviderResultRaw($this->parser->toArray());
 
         /*
          * Bot detection
          */
-        if ('bot' === $parser->getType()) {
-            $this->hydrateBot($result->getBot(), $parser->browser);
+        if ('bot' === $this->parser->getType()) {
+            $this->hydrateBot($result->getBot(), $this->parser->browser);
 
             return $result;
         }
@@ -131,10 +116,10 @@ final class WhichBrowser extends AbstractParseProvider
         /*
          * hydrate the result
          */
-        $this->hydrateBrowser($result->getBrowser(), $parser->browser);
-        $this->hydrateRenderingEngine($result->getRenderingEngine(), $parser->engine);
-        $this->hydrateOperatingSystem($result->getOperatingSystem(), $parser->os);
-        $this->hydrateDevice($result->getDevice(), $parser->device, $parser);
+        $this->hydrateBrowser($result->getBrowser(), $this->parser->browser);
+        $this->hydrateRenderingEngine($result->getRenderingEngine(), $this->parser->engine);
+        $this->hydrateOperatingSystem($result->getOperatingSystem(), $this->parser->os);
+        $this->hydrateDevice($result->getDevice(), $this->parser->device, $this->parser);
 
         return $result;
     }

@@ -111,24 +111,9 @@ final class UAParser extends AbstractParseProvider
     ];
 
     /** @throws PackageNotLoadedException */
-    public function __construct(private Parser | null $parser = null)
+    public function __construct(private readonly Parser $parser)
     {
-        if (null !== $parser) {
-            return;
-        }
-
         $this->checkIfInstalled();
-    }
-
-    public function getParser(): Parser
-    {
-        if (null !== $this->parser) {
-            return $this->parser;
-        }
-
-        $this->parser = Parser::create();
-
-        return $this->parser;
     }
 
     /**
@@ -138,9 +123,7 @@ final class UAParser extends AbstractParseProvider
      */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $parser = $this->getParser();
-
-        $resultRaw = $parser->parse($userAgent);
+        $resultRaw = $this->parser->parse($userAgent);
         assert($resultRaw instanceof Client);
 
         /*

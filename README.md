@@ -3,7 +3,7 @@
 
 We took thousands of user agent string and run them against different parsers...
 
-[Here are the results](http://thadafinser.github.io/UserAgentParserComparison/)
+[Here are the results](http://mimmi20.github.io/UserAgentParserComparison/)
 
 
 ## Installation

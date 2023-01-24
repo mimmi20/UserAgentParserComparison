@@ -10,13 +10,9 @@ namespace UserAgentParserComparison\Model;
 final class Device
 {
     private string | null $model = null;
-
     private string | null $brand = null;
-
     private string | null $type = null;
-
     private bool $isMobile = false;
-
     private bool $isTouch = false;
 
     public function setModel(string | null $model): void

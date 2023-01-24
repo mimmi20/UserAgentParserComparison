@@ -4,7 +4,14 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
-use Sinergi\BrowserDetector;
+use Sinergi\BrowserDetector\BrowserDetector;
+use Sinergi\BrowserDetector\Browser;
+use Sinergi\BrowserDetector\Device;
+use Sinergi\BrowserDetector\DeviceDetector;
+use Sinergi\BrowserDetector\InvalidArgumentException;
+use Sinergi\BrowserDetector\Os;
+use Sinergi\BrowserDetector\OsDetector;
+use Sinergi\BrowserDetector\UserAgent;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -85,37 +92,33 @@ final class SinergiBrowserDetector extends AbstractParseProvider
         $this->checkIfInstalled();
     }
 
-    public function getBrowserParser(string $userAgent): BrowserDetector\Browser
-    {
-        return new BrowserDetector\Browser($userAgent);
-    }
-
-    public function getOperatingSystemParser(string $userAgent): BrowserDetector\Os
-    {
-        return new BrowserDetector\Os($userAgent);
-    }
-
-    public function getDeviceParser(string $userAgent): BrowserDetector\Device
-    {
-        return new BrowserDetector\Device($userAgent);
-    }
-
     /**
      * @throws NoResultFoundException
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    public function parse(string $useragent, array $headers = []): Model\UserAgent
     {
-        $browserRaw = $this->getBrowserParser($userAgent);
-        $osRaw      = $this->getOperatingSystemParser($userAgent);
-        $deviceRaw  = $this->getDeviceParser($userAgent);
+        $userAgent = new UserAgent($useragent);
+
+        try {
+            $browserRaw = new Browser($userAgent);
+            BrowserDetector::detect($browserRaw, $userAgent);
+
+            $osRaw = new Os($userAgent);
+            OsDetector::detect($osRaw, $userAgent);
+
+            $deviceRaw = new Device($userAgent);
+            DeviceDetector::detect($deviceRaw, $userAgent);
+        } catch (InvalidArgumentException $e) {
+            throw new NoResultFoundException('No result found for user agent: ' . $useragent, 0, $e);
+        }
 
         /*
          * No result found?
          */
         if (true !== $this->hasResult($browserRaw, $osRaw, $deviceRaw)) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+            throw new NoResultFoundException('No result found for user agent: ' . $useragent);
         }
 
         /*
@@ -149,7 +152,7 @@ final class SinergiBrowserDetector extends AbstractParseProvider
         return $result;
     }
 
-    private function hasResult(BrowserDetector\Browser $browserRaw, BrowserDetector\Os $osRaw, BrowserDetector\Device $deviceRaw): bool
+    private function hasResult(Browser $browserRaw, Os $osRaw, Device $deviceRaw): bool
     {
         if ($this->isRealResult($browserRaw->getName())) {
             return true;
@@ -166,19 +169,19 @@ final class SinergiBrowserDetector extends AbstractParseProvider
         return true === $browserRaw->isRobot();
     }
 
-    private function hydrateBrowser(Model\Browser $browser, BrowserDetector\Browser $browserRaw): void
+    private function hydrateBrowser(Model\Browser $browser, Browser $browserRaw): void
     {
         $browser->setName($this->getRealResult($browserRaw->getName()));
         $browser->getVersion()->setComplete($this->getRealResult($browserRaw->getVersion()));
     }
 
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, BrowserDetector\Os $osRaw): void
+    private function hydrateOperatingSystem(Model\OperatingSystem $os, Os $osRaw): void
     {
         $os->setName($this->getRealResult($osRaw->getName()));
         $os->getVersion()->setComplete($this->getRealResult($osRaw->getVersion()));
     }
 
-    private function hydrateDevice(Model\Device $device, BrowserDetector\Os $osRaw, BrowserDetector\Device $deviceRaw): void
+    private function hydrateDevice(Model\Device $device, Os $osRaw, Device $deviceRaw): void
     {
         $device->setModel($this->getRealResult($deviceRaw->getName(), 'device', 'model'));
 

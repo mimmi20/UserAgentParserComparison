@@ -69,6 +69,10 @@ final class DonatjUAParser extends AbstractParseProvider
         ],
     ];
 
+    /**
+     * @var string
+     * @phpstan-var callable-string
+     */
     private string $functionName = '\parse_user_agent';
 
     /** @throws PackageNotLoadedException */
@@ -84,9 +88,7 @@ final class DonatjUAParser extends AbstractParseProvider
      */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $functionName = $this->functionName;
-
-        $resultRaw = $functionName($userAgent);
+        $resultRaw = ($this->functionName)($userAgent);
 
         if (true !== $this->hasResult($resultRaw)) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
@@ -107,7 +109,7 @@ final class DonatjUAParser extends AbstractParseProvider
          */
         $this->hydrateBrowser($result->getBrowser(), $resultRaw);
         // renderingEngine not available
-        // os is mixed with device informations
+        // os is mixed with device information
         // device is mixed with os
 
         return $result;

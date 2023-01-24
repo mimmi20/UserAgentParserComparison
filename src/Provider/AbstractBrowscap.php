@@ -54,13 +54,8 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         ],
     ];
 
-    public function __construct(private Browscap $parser)
+    public function __construct(private readonly Browscap $parser)
     {
-    }
-
-    public function getParser(): Browscap
-    {
-        return $this->parser;
     }
 
     /**
@@ -71,9 +66,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
      */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $parser = $this->getParser();
-
-        $resultRaw = $parser->getBrowser($userAgent);
+        $resultRaw = $this->parser->getBrowser($userAgent);
         assert($resultRaw instanceof stdClass);
 
         /*

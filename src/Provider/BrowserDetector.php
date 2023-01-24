@@ -91,13 +91,8 @@ final class BrowserDetector extends AbstractParseProvider
     ];
 
     /** @throws PackageNotLoadedException */
-    public function __construct(private Detector $parser)
+    public function __construct(private readonly Detector $parser)
     {
-    }
-
-    public function getParser(): Detector
-    {
-        return $this->parser;
     }
 
     /**
@@ -108,9 +103,7 @@ final class BrowserDetector extends AbstractParseProvider
      */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $parser = $this->getParser();
-
-        $parserResult = $parser($userAgent);
+        $parserResult = ($this->parser)($userAgent);
 
         /*
          * No result found?

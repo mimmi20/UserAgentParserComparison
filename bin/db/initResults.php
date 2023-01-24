@@ -100,13 +100,13 @@ do {
                 $row2 = $dbResultResult;
 
                 // skip
-                if (null === $row['uaAdditionalHeaders'] && ($dbResultResult['resProviderVersion'] === $provider->getVersion() /* || $provider->getVersion() === null/* */)) {
-                    $message .= 'S';
-
-                    echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
-
-                    continue;
-                }
+//                if (null === $row['uaAdditionalHeaders'] && ($dbResultResult['resProviderVersion'] === $provider->getVersion() /* || $provider->getVersion() === null/* */)) {
+//                    $message .= 'S';
+//
+//                    echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
+//
+//                    continue;
+//                }
             } else {
                 $row2 = [
                     'provider_id' => $dbResultProvider['proId'],
@@ -122,27 +122,37 @@ do {
             /*
              * Get the result with timing
              */
-            $startTime = microtime(true);
-
             try {
+                set_error_handler(static function ($severity, $message, $file, $line) {
+                    if (!(error_reporting() & $severity)) {
+                        return true;
+                    }
+
+                    throw new ErrorException($message, 0, $severity, $file, $line);
+                });
+
+                $startTime = microtime(true);
                 $parseResult = $provider->parse($row['uaString'], $additionalHeaders);
+                $endTime = microtime(true);
             } catch (NoResultFoundException) {
                 $parseResult = null;
-            } catch (RequestException) {
+            } catch (RequestException $e) {
+                var_dump($e);exit;
                 $message .= 'E';
 
                 echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
 
                 continue;
-            } catch (Throwable) {
+            } catch (Throwable $e) {
+                var_dump($e);exit;
                 $message .= 'X';
 
                 echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
 
                 continue;
+            } finally {
+                restore_error_handler();
             }
-
-            $endTime = microtime(true);
 
             $row2['resProviderVersion'] = $provider->getVersion();
             $row2['resParseTime']       = $endTime - $startTime;

@@ -71,7 +71,7 @@ final class Wolfcast extends AbstractParseProvider
     ];
 
     /** @throws PackageNotLoadedException */
-    public function __construct()
+    public function __construct(private readonly BrowserDetection $parser)
     {
         $this->checkIfInstalled();
     }
@@ -83,16 +83,16 @@ final class Wolfcast extends AbstractParseProvider
      */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $result = new BrowserDetection($userAgent);
+        $this->parser->setUserAgent($userAgent);
 
         $resultCache = [
-            'browserName' => $result->getName(),
-            'browserVersion' => $result->getVersion(),
+            'browserName' => $this->parser->getName(),
+            'browserVersion' => $this->parser->getVersion(),
 
-            'osName' => $result->getPlatform(),
-            'osVersion' => $result->getPlatformVersion(true),
+            'osName' => $this->parser->getPlatform(),
+            'osVersion' => $this->parser->getPlatformVersion(true),
 
-            'isMobile' => $result->isMobile(),
+            'isMobile' => $this->parser->isMobile(),
         ];
 
         if (true !== $this->hasResult($resultCache)) {

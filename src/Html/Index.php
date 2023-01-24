@@ -19,7 +19,7 @@ final class Index extends AbstractHtml
 
         ' . $this->getButtons() . '
 
-        by Martin Keckeis (@ThaDafinser)
+        by Thomas Müller (@mimmi20)
     </div>
 </div>
 ';

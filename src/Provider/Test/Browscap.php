@@ -82,161 +82,50 @@ final class Browscap extends AbstractTestProvider
      * @return iterable<array<string, mixed>>
      * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
      *
-     * @throws NoResultFoundException
+     * @throws \LogicException
+     * @throws \RuntimeException
      */
     public function getTests(): iterable
     {
-        $path = 'vendor/browscap/browscap/tests/issues';
+        $source = new \BrowscapHelper\Source\BrowscapSource();
+        $baseMessage = sprintf('reading from source %s ', $source->getName());
+        $messageLength = 0;
 
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
-        $files    = new class ($iterator, 'php') extends FilterIterator {
-            public function __construct(Iterator $iterator, private string $extension)
-            {
-                parent::__construct($iterator);
-            }
-
-            public function accept(): bool
-            {
-                $file = $this->getInnerIterator()->current();
-
-                assert($file instanceof SplFileInfo);
-
-                return $file->isFile() && $file->getExtension() === $this->extension;
-            }
-        };
-
-        foreach ($files as $file) {
-            assert($file instanceof SplFileInfo);
-
-            $file = $file->getPathname();
-
-            $result = include $file;
-
-            if (!is_array($result)) {
-                throw new NoResultFoundException($file . ' did not return an array!');
-            }
-
-            foreach ($result as $row) {
-                $data = [
-                    'resFilename' => $file,
-
-                    'resRawResult' => serialize(null),
-
-                    'resBrowserName' => null,
-                    'resBrowserVersion' => null,
-
-                    'resEngineName' => null,
-                    'resEngineVersion' => null,
-
-                    'resOsName' => null,
-                    'resOsVersion' => null,
-
-                    'resDeviceModel' => null,
-                    'resDeviceBrand' => null,
-                    'resDeviceType' => null,
-                    'resDeviceIsMobile' => null,
-                    'resDeviceIsTouch' => null,
-
-                    'resBotIsBot' => null,
-                    'resBotName' => null,
-                    'resBotType' => null,
-                ];
-
-                try {
-                    $result = $this->hydrateBrowscap($data, $row);
-                } catch (Throwable) {
-                    continue;
-                }
-
-                $key      = bin2hex(sha1($row['ua'], true));
-                $toInsert = [
-                    'uaString' => $row['ua'],
-                    'result' => $result,
-                ];
-
-                yield $key => $toInsert;
-            }
-        }
-    }
-
-    /**
-     * @return iterable<array<string, mixed>>
-     * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
-     *
-     * @throws Exception
-     */
-    private function hydrateBrowscap(array $data, array $row): array
-    {
-        if (!$row['full']) {
-            throw new Exception('skip...');
+        if (!$source->isReady($baseMessage)) {
+            return [];
         }
 
-        $data['resRawResult'] = serialize($row['properties']);
+        foreach ($source->getProperties($baseMessage, $messageLength) as $test) {
+            $key      = bin2hex(sha1($test['headers']['user-agent'], true));
+            $toInsert = [
+                'uaString' => $test['headers']['user-agent'],
+                'result' => [
+                    'resFilename' => $test['file'] ?? '',
 
-        $row = $row['properties'];
+                    'resRawResult' => serialize($test['raw'] ?? null),
 
-        if (array_key_exists('Browser', $row) && false !== mb_stripos($row['Browser'], 'Fake')) {
-            throw new Exception('skip...');
+                    'resBrowserName' => $test['client']['isbot'] ? null : $test['client']['name'],
+                    'resBrowserVersion' => $test['client']['isbot'] ? null : $test['client']['version'],
+
+                    'resEngineName' => $test['engine']['name'],
+                    'resEngineVersion' => $test['engine']['version'],
+
+                    'resOsName' => $test['platform']['name'],
+                    'resOsVersion' => $test['platform']['version'],
+
+                    'resDeviceModel' => $test['device']['deviceName'],
+                    'resDeviceBrand' => $test['device']['brand'],
+                    'resDeviceType' => $test['device']['type'],
+                    'resDeviceIsMobile' => $test['device']['ismobile'],
+                    'resDeviceIsTouch' => $test['device']['display']['touch'],
+
+                    'resBotIsBot' => $test['client']['isbot'],
+                    'resBotName' => $test['client']['isbot'] ? $test['client']['name'] : null,
+                    'resBotType' => $test['client']['isbot'] ? $test['client']['type'] : null,
+                ],
+            ];
+
+            yield $key => $toInsert;
         }
-
-        if (array_key_exists('Crawler', $row) && true === $row['Crawler']) {
-            $data['resBotIsBot'] = 1;
-
-            if (array_key_exists('Browser', $row) && '' !== $row['Browser']) {
-                $data['resBotName'] = $row['Browser'];
-            }
-
-            if (array_key_exists('Browser_Type', $row) && '' !== $row['Browser_Type']) {
-                $data['resBotType'] = $row['Browser_Type'];
-            }
-
-            return $data;
-        }
-
-        if (array_key_exists('Browser', $row) && '' !== $row['Browser']) {
-            $data['resBrowserName'] = $row['Browser'];
-        }
-
-        if (array_key_exists('Version', $row) && '' !== $row['Version']) {
-            $data['resBrowserVersion'] = $row['Version'];
-        }
-
-        if (array_key_exists('RenderingEngine_Name', $row) && '' !== $row['RenderingEngine_Name']) {
-            $data['resEngineName'] = $row['RenderingEngine_Name'];
-        }
-
-        if (array_key_exists('RenderingEngine_Version', $row) && '' !== $row['RenderingEngine_Version']) {
-            $data['resEngineVersion'] = $row['RenderingEngine_Version'];
-        }
-
-        if (array_key_exists('Platform', $row) && '' !== $row['Platform']) {
-            $data['resOsName'] = $row['Platform'];
-        }
-
-        if (array_key_exists('Platform_Version', $row) && '' !== $row['Platform_Version']) {
-            $data['resOsVersion'] = $row['Platform_Version'];
-        }
-
-        if (array_key_exists('Device_Name', $row) && '' !== $row['Device_Name']) {
-            $data['resDeviceModel'] = $row['Device_Name'];
-        }
-
-        if (array_key_exists('Device_Brand_Name', $row) && '' !== $row['Device_Brand_Name']) {
-            $data['resDeviceBrand'] = $row['Device_Brand_Name'];
-        }
-
-        if (array_key_exists('Device_Type', $row) && '' !== $row['Device_Type']) {
-            $data['resDeviceType'] = $row['Device_Type'];
-        }
-
-        if (array_key_exists('isMobileDevice', $row) && true === $row['isMobileDevice']) {
-            $data['resDeviceIsMobile'] = 1;
-        }
-
-        if (array_key_exists('Device_Pointing_Method', $row) && 'touchscreen' === $row['Device_Pointing_Method']) {
-            $data['resDeviceIsTouch'] = 1;
-        }
-
-        return $data;
     }
 }

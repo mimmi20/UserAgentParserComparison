@@ -108,206 +108,54 @@ final class BrowserDetector extends AbstractTestProvider
         ],
     ];
 
-    public function __construct(private LoggerInterface $logger)
-    {
-    }
-
     /**
      * @return iterable<array<string, mixed>>
      * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
      *
-     * @throws NoResultFoundException
+     * @throws \LogicException
+     * @throws \RuntimeException
      */
     public function getTests(): iterable
     {
-        $path = 'vendor/mimmi20/browser-detector/tests/data';
+        $source = new \BrowscapHelper\Source\BrowserDetectorSource();
+        $baseMessage = sprintf('reading from source %s ', $source->getName());
+        $messageLength = 0;
 
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
-        $files    = new class ($iterator, 'json') extends FilterIterator {
-            public function __construct(Iterator $iterator, private string $extension)
-            {
-                parent::__construct($iterator);
-            }
+        if (!$source->isReady($baseMessage)) {
+            return [];
+        }
 
-            public function accept(): bool
-            {
-                $file = $this->getInnerIterator()->current();
+        foreach ($source->getProperties($baseMessage, $messageLength) as $test) {
+            $key      = bin2hex(sha1($test['headers']['user-agent'], true));
+            $toInsert = [
+                'uaString' => $test['headers']['user-agent'],
+                'result' => [
+                    'resFilename' => $test['file'] ?? '',
 
-                assert($file instanceof SplFileInfo);
+                    'resRawResult' => serialize($test['raw'] ?? null),
 
-                return $file->isFile() && $file->getExtension() === $this->extension;
-            }
-        };
+                    'resBrowserName' => $test['client']['isbot'] ? null : $test['client']['name'],
+                    'resBrowserVersion' => $test['client']['isbot'] ? null : $test['client']['version'],
 
-        $companyLoaderFactory = new CompanyLoaderFactory();
+                    'resEngineName' => $test['engine']['name'],
+                    'resEngineVersion' => $test['engine']['version'],
 
-        $companyLoader = $companyLoaderFactory();
-        assert($companyLoader instanceof CompanyLoader, sprintf('$companyLoader should be an instance of %s, but is %s', CompanyLoader::class, $companyLoader::class));
+                    'resOsName' => $test['platform']['name'],
+                    'resOsVersion' => $test['platform']['version'],
 
-        $resultFactory = new class ($companyLoader, $this->logger) {
-            public function __construct(private CompanyLoaderInterface $companyLoader, private LoggerInterface $logger)
-            {
-            }
+                    'resDeviceModel' => $test['device']['deviceName'],
+                    'resDeviceBrand' => $test['device']['brand'],
+                    'resDeviceType' => $test['device']['type'],
+                    'resDeviceIsMobile' => $test['device']['ismobile'],
+                    'resDeviceIsTouch' => $test['device']['display']['touch'],
 
-            /**
-             * @param array<string, array<string, string>> $data
-             * @phpstan-param array{headers?: array<string, string>, device?: (stdClass|array{deviceName?: (string|null), marketingName?: (string|null), manufacturer?: string, brand?: string, type?: (string|null), display?: (null|array{width?: (int|null), height?: (int|null), touch?: (bool|null), size?: (int|float|null)}|stdClass)}), browser?: (stdClass|array{name?: (string|null), manufacturer?: string, version?: (stdClass|string|null), type?: (string|null), bits?: (int|null), modus?: (string|null)}), os?: (stdClass|array{name?: (string|null), marketingName?: (string|null), manufacturer?: string, version?: (stdClass|string|null), bits?: (int|null)}), engine?: (stdClass|array{name?: (string|null), manufacturer?: string, version?: (stdClass|string|null)})} $data
-             *
-             * @throws NotFoundException
-             * @throws UnexpectedValueException
-             * @throws NotNumericException
-             */
-            public function fromArray(LoggerInterface $logger, array $data): Result | null
-            {
-                if (!array_key_exists('headers', $data)) {
-                    return null;
-                }
+                    'resBotIsBot' => $test['client']['isbot'],
+                    'resBotName' => $test['client']['isbot'] ? $test['client']['name'] : null,
+                    'resBotType' => $test['client']['isbot'] ? $test['client']['type'] : null,
+                ],
+            ];
 
-                $headers        = (array) $data['headers'];
-                $request        = (new RequestBuilder())->buildRequest(new NullLogger(), $headers);
-                $versionFactory = new VersionFactory();
-
-                $device = new Device(
-                    null,
-                    null,
-                    new Company('Unknown', null, null),
-                    new Company('Unknown', null, null),
-                    new Unknown(),
-                    new Display(null, null, null, null),
-                );
-
-                if (array_key_exists('device', $data)) {
-                    $deviceFactory = new DeviceFactory(
-                        $this->companyLoader,
-                        new \UaDeviceType\TypeLoader(),
-                        new DisplayFactory(),
-                        $logger,
-                    );
-
-                    $device = $deviceFactory->fromArray((array) $data['device'], $request->getDeviceUserAgent());
-                }
-
-                $browserUa = $request->getBrowserUserAgent();
-
-                $browser = new Browser(
-                    null,
-                    new Company('Unknown', null, null),
-                    new Version('0'),
-                    new \UaBrowserType\Unknown(),
-                    null,
-                    null,
-                );
-
-                if (array_key_exists('browser', $data)) {
-                    $browser = (new BrowserFactory($this->companyLoader, $versionFactory, new TypeLoader(), $this->logger))->fromArray((array) $data['browser'], $browserUa);
-                }
-
-                $os = new Os(
-                    null,
-                    null,
-                    new Company('Unknown', null, null),
-                    new Version('0'),
-                    null,
-                );
-
-                if (array_key_exists('os', $data)) {
-                    $os = (new PlatformFactory($this->companyLoader, $versionFactory, $this->logger))->fromArray((array) $data['os'], $request->getPlatformUserAgent());
-                }
-
-                $engine = new Engine(
-                    null,
-                    new Company('Unknown', null, null),
-                    new Version('0'),
-                );
-
-                if (array_key_exists('engine', $data)) {
-                    $engine = (new EngineFactory($this->companyLoader, $versionFactory, $this->logger))->fromArray((array) $data['engine'], $browserUa);
-                }
-
-                return new Result($headers, $device, $os, $browser, $engine);
-            }
-        };
-
-        foreach ($files as $file) {
-            assert($file instanceof SplFileInfo);
-
-            $file = $file->getPathname();
-
-            $content = file_get_contents($file);
-
-            if ('' === $content || PHP_EOL === $content) {
-                continue;
-            }
-
-            try {
-                $allEncodedData = json_decode(
-                    $content,
-                    true,
-                    512,
-                    JSON_THROW_ON_ERROR,
-                );
-            } catch (JsonException) {
-                continue;
-            }
-
-            if (!is_array($allEncodedData)) {
-                continue;
-            }
-
-            foreach ($allEncodedData as $encodedData) {
-                $ua = $encodedData['headers']['user-agent'] ?? '';
-
-                if ('' === $ua) {
-                    continue;
-                }
-
-                $expectedResult = $resultFactory->fromArray($this->logger, $encodedData);
-
-                $data = [
-                    'resFilename' => $file,
-
-                    'resBrowserName' => $expectedResult->getBrowser()->getName(),
-                    'resBrowserVersion' => $expectedResult->getBrowser()->getVersion()->getVersion(),
-
-                    'resEngineName' => $expectedResult->getEngine()->getName(),
-                    'resEngineVersion' => $expectedResult->getEngine()->getVersion()->getVersion(),
-
-                    'resOsName' => $expectedResult->getOs()->getName(),
-                    'resOsVersion' => $expectedResult->getOs()->getVersion()->getVersion(),
-
-                    'resDeviceModel' => $expectedResult->getDevice()->getMarketingName(),
-                    'resDeviceBrand' => $expectedResult->getDevice()->getBrand()->getBrandName(),
-                    'resDeviceType' => $expectedResult->getDevice()->getType()->getName(),
-                    'resDeviceIsMobile' => $expectedResult->getDevice()->getType()->isMobile(),
-                    'resDeviceIsTouch' => $expectedResult->getDevice()->getDisplay()->hasTouch(),
-
-                    'resBotIsBot' => $expectedResult->getBrowser()->getType()->isBot(),
-                    'resBotName' => null,
-                    'resBotType' => null,
-                ];
-
-                if ($expectedResult->getBrowser()->getType()->isBot()) {
-                    $data['resBotName'] = $expectedResult->getBrowser()->getName();
-                    $data['resBotType'] = $expectedResult->getBrowser()->getType()->getName();
-                }
-
-                $toInsert = [
-                    'uaString' => $ua,
-                    'result' => $data,
-                ];
-
-                if (1 < count($encodedData['headers'])) {
-                    unset($encodedData['headers']['user-agent']);
-
-                    $toInsert['uaAdditionalHeaders'] = $encodedData['headers'];
-
-                    $key = bin2hex(sha1($ua . ' ' . json_encode($encodedData['headers']), true));
-                } else {
-                    $key = bin2hex(sha1($ua, true));
-                }
-
-                yield $key => $toInsert;
-            }
+            yield $key => $toInsert;
         }
     }
 }

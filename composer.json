@@ -1,5 +1,5 @@
 {
-  "name": "thadafinser/user-agent-parser-matrix",
+  "name": "mimmi20/user-agent-parser-comparison",
   "description": "Generate a comparison matrix for different UserAgent parsers",
   "license": "MIT",
   "minimum-stability": "dev",
@@ -8,6 +8,11 @@
     {
       "name": "ThaDafinser",
       "email": "martin.keckeis1@gmail.com"
+    },
+    {
+      "name": "Thomas Müller",
+      "homepage": "https://github.com/mimmi20",
+      "role": "Developer"
     }
   ],
   "autoload": {
@@ -29,18 +34,18 @@
     "cbschuld/browser.php": "^v1.9.6",
     "donatj/phpuseragentparser": "^v1.7.0",
     "endorphin-studio/browser-detector": "^6.0.1",
+    "endorphin-studio/browser-detector-tests": "^2.2.0 || ^3.1.0",
     "jaybizzle/crawler-detect": "^v1.2.112",
-    "jenssegers/agent": "^v2.6.4",
     "league/flysystem": "^3.12.1",
     "matomo/device-detector": "^6.0.6",
     "matthiasmullie/scrapbook": "^1.5.0",
+    "mimmi20/browscap-helper-source": "^3.0.18",
     "mimmi20/browser-detector": "^7.0.2",
-    "mobiledetect/mobiledetectlib": "^2.8.41 || ^3.74.0",
+    "mobiledetect/mobiledetectlib": "^3.74.0",
     "ramsey/uuid": "^4.7.3",
     "ramsey/uuid-doctrine": "^2.0.0",
     "sinergi/browser-detector": "^6.1.4",
     "symfony/yaml": "^v6.2.2",
-    "thadafinser/uap-core": "^v0.5.0.4",
     "ua-parser/uap-php": "^v3.9.14",
     "whichbrowser/parser": "^v2.1.7",
     "wolfcast/browser-detection": "^2.9.7",
@@ -61,8 +66,11 @@
   "config": {
     "preferred-install": {
       "browscap/browscap": "source",
+      "cbschuld/browser.php": "source",
+      "jaybizzle/crawler-detect": "source",
       "mimmi20/browser-detector": "source",
       "matomo/device-detector": "source",
+      "mobiledetect/mobiledetectlib": "source",
       "sinergi/browser-detector": "source",
       "whichbrowser/parser": "source",
       "woothee/woothee-testset": "source",
