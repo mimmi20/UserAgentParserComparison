@@ -104,36 +104,56 @@ abstract class AbstractBrowscap extends AbstractParseProvider
 
     protected function hasResult(stdClass $resultRaw): bool
     {
-        return isset($resultRaw->browser) && true === $this->isRealResult($resultRaw->browser, 'browser', 'name');
+        if (property_exists($resultRaw, 'crawler') && true === $resultRaw->crawler) {
+            return true;
+        }
+
+        if (property_exists($resultRaw, 'browser') && true === $this->isRealResult($resultRaw->browser, 'browser', 'name')) {
+            return true;
+        }
+
+        if (property_exists($resultRaw, 'platform') && true === $this->isRealResult($resultRaw->platform)) {
+            return true;
+        }
+
+        if (property_exists($resultRaw, 'renderingengine_name') && true === $this->isRealResult($resultRaw->renderingengine_name)) {
+            return true;
+        }
+
+        if (property_exists($resultRaw, 'device_name') && true === $this->isRealResult($resultRaw->device_name)) {
+            return true;
+        }
+
+        return false;
     }
 
     protected function isBot(stdClass $resultRaw): bool
     {
-        return isset($resultRaw->crawler) && true === $resultRaw->crawler;
+        return property_exists($resultRaw, 'crawler') && true === $resultRaw->crawler;
     }
 
     protected function hydrateBot(Model\Bot $bot, stdClass $resultRaw): void
     {
         $bot->setIsBot(true);
 
-        if (isset($resultRaw->browser)) {
+        if (property_exists($resultRaw, 'browser')) {
             $bot->setName($this->getRealResult($resultRaw->browser, 'bot', 'name'));
         }
 
-        if (isset($resultRaw->issyndicationreader) && true === $resultRaw->issyndicationreader) {
+        if (property_exists($resultRaw, 'issyndicationreader') && true === $resultRaw->issyndicationreader) {
             $bot->setType('RSS');
-        } elseif (isset($resultRaw->browser_type)) {
+        } elseif (property_exists($resultRaw, 'browser_type')) {
             $bot->setType($this->getRealResult($resultRaw->browser_type));
         }
     }
 
     protected function hydrateBrowser(Model\Browser $browser, stdClass $resultRaw): void
     {
-        if (isset($resultRaw->browser)) {
+        if (property_exists($resultRaw, 'browser')) {
             $browser->setName($this->getRealResult($resultRaw->browser, 'browser', 'name'));
         }
 
-        if (!isset($resultRaw->version)) {
+        if (!property_exists($resultRaw, 'version')) {
             return;
         }
 
@@ -142,11 +162,11 @@ abstract class AbstractBrowscap extends AbstractParseProvider
 
     protected function hydrateRenderingEngine(Model\RenderingEngine $engine, stdClass $resultRaw): void
     {
-        if (isset($resultRaw->renderingengine_name)) {
+        if (property_exists($resultRaw, 'renderingengine_name')) {
             $engine->setName($this->getRealResult($resultRaw->renderingengine_name));
         }
 
-        if (!isset($resultRaw->renderingengine_version)) {
+        if (!property_exists($resultRaw, 'renderingengine_version')) {
             return;
         }
 
@@ -155,11 +175,11 @@ abstract class AbstractBrowscap extends AbstractParseProvider
 
     protected function hydrateOperatingSystem(Model\OperatingSystem $os, stdClass $resultRaw): void
     {
-        if (isset($resultRaw->platform)) {
+        if (property_exists($resultRaw, 'platform')) {
             $os->setName($this->getRealResult($resultRaw->platform));
         }
 
-        if (!isset($resultRaw->platform_version)) {
+        if (!property_exists($resultRaw, 'platform_version')) {
             return;
         }
 
@@ -168,23 +188,23 @@ abstract class AbstractBrowscap extends AbstractParseProvider
 
     protected function hydrateDevice(Model\Device $device, stdClass $resultRaw): void
     {
-        if (isset($resultRaw->device_name)) {
+        if (property_exists($resultRaw, 'device_name')) {
             $device->setModel($this->getRealResult($resultRaw->device_name, 'device', 'model'));
         }
 
-        if (isset($resultRaw->device_brand_name)) {
+        if (property_exists($resultRaw, 'device_brand_name')) {
             $device->setBrand($this->getRealResult($resultRaw->device_brand_name));
         }
 
-        if (isset($resultRaw->device_type)) {
+        if (property_exists($resultRaw, 'device_type')) {
             $device->setType($this->getRealResult($resultRaw->device_type));
         }
 
-        if (isset($resultRaw->ismobiledevice) && true === $this->isRealResult($resultRaw->ismobiledevice) && true === $resultRaw->ismobiledevice) {
+        if (property_exists($resultRaw, 'ismobiledevice') && true === $resultRaw->ismobiledevice) {
             $device->setIsMobile(true);
         }
 
-        if (!isset($resultRaw->device_pointing_method) || 'touchscreen' !== $resultRaw->device_pointing_method) {
+        if (!property_exists($resultRaw, 'device_pointing_method') || 'touchscreen' !== $resultRaw->device_pointing_method) {
             return;
         }
 
