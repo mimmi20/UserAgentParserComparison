@@ -4,15 +4,13 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider\Test;
 
-use UserAgentParserComparison\Exception\NoResultFoundException;
+use BrowscapHelper\Source\SinergiSource;
+use RuntimeException;
 
-use function array_map;
 use function bin2hex;
-use function explode;
-use function implode;
+use function serialize;
 use function sha1;
-use function simplexml_load_file;
-use function trim;
+use function sprintf;
 
 /** @see https://github.com/browscap/browscap-php */
 final class Sinergi extends AbstractTestProvider
@@ -75,12 +73,12 @@ final class Sinergi extends AbstractTestProvider
      * @return iterable<array<string, mixed>>
      * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function getTests(): iterable
     {
-        $source = new \BrowscapHelper\Source\SinergiSource();
-        $baseMessage = sprintf('reading from source %s ', $source->getName());
+        $source        = new SinergiSource();
+        $baseMessage   = sprintf('reading from source %s ', $source->getName());
         $messageLength = 0;
 
         if (!$source->isReady($baseMessage)) {

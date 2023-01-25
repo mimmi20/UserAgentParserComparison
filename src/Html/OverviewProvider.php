@@ -6,8 +6,6 @@ namespace UserAgentParserComparison\Html;
 
 use PDO;
 
-use function var_dump;
-
 final class OverviewProvider extends AbstractHtml
 {
     public function __construct(PDO $pdo, private readonly array $provider, string | null $title = null)

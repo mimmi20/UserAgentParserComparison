@@ -9,7 +9,7 @@ namespace UserAgentParserComparison\Model;
  */
 final class Bot
 {
-    private bool $isBot = false;
+    private bool $isBot         = false;
     private string | null $name = null;
     private string | null $type = null;
 

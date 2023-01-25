@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use Throwable;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -99,7 +100,7 @@ final class Woothee extends AbstractParseProvider
     {
         try {
             $resultRaw = $this->parser->parse($userAgent);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent, 0, $e);
         }
 

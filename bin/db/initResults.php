@@ -99,7 +99,7 @@ do {
             if (false !== $dbResultResult) {
                 $row2 = $dbResultResult;
 
-                // skip
+            // skip
 //                if (null === $row['uaAdditionalHeaders'] && ($dbResultResult['resProviderVersion'] === $provider->getVersion() /* || $provider->getVersion() === null/* */)) {
 //                    $message .= 'S';
 //
@@ -137,14 +137,12 @@ do {
             } catch (NoResultFoundException) {
                 $parseResult = null;
             } catch (RequestException $e) {
-                var_dump($e);exit;
                 $message .= 'E';
 
                 echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
 
                 continue;
             } catch (Throwable $e) {
-                var_dump($e);exit;
                 $message .= 'X';
 
                 echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);

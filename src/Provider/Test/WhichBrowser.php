@@ -4,34 +4,13 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider\Test;
 
-use Exception;
-use FilterIterator;
-use Iterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
-use Symfony\Component\Yaml\Yaml;
-use Throwable;
-use UserAgentParserComparison\Exception\NoResultFoundException;
-use WhichBrowser\Model\Family;
-use WhichBrowser\Model\Main;
-use WhichBrowser\Model\Using;
-use WhichBrowser\Model\Version;
+use BrowscapHelper\Source\WhichBrowserSource;
+use RuntimeException;
 
-use function array_key_exists;
-use function assert;
 use function bin2hex;
-use function count;
-use function file_get_contents;
-use function in_array;
-use function is_array;
-use function is_string;
-use function json_encode;
-use function mb_strpos;
-use function print_r;
 use function serialize;
 use function sha1;
-use function str_replace;
+use function sprintf;
 
 /** @see https://github.com/browscap/browscap-php */
 final class WhichBrowser extends AbstractTestProvider
@@ -94,12 +73,12 @@ final class WhichBrowser extends AbstractTestProvider
      * @return iterable<array<string, mixed>>
      * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function getTests(): iterable
     {
-        $source = new \BrowscapHelper\Source\WhichBrowserSource();
-        $baseMessage = sprintf('reading from source %s ', $source->getName());
+        $source        = new WhichBrowserSource();
+        $baseMessage   = sprintf('reading from source %s ', $source->getName());
         $messageLength = 0;
 
         if (!$source->isReady($baseMessage)) {

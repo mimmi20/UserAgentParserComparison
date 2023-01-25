@@ -4,14 +4,13 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider\Test;
 
-use UserAgentParserComparison\Exception\NoResultFoundException;
+use BrowscapHelper\Source\EndorphinSource;
+use RuntimeException;
 
 use function bin2hex;
-use function file_exists;
-use function file_get_contents;
-use function filesize;
-use function json_decode;
+use function serialize;
 use function sha1;
+use function sprintf;
 
 /** @see https://github.com/browscap/browscap-php */
 final class Endorphin extends AbstractTestProvider
@@ -74,12 +73,12 @@ final class Endorphin extends AbstractTestProvider
      * @return iterable<array<string, mixed>>
      * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function getTests(): iterable
     {
-        $source = new \BrowscapHelper\Source\EndorphinSource();
-        $baseMessage = sprintf('reading from source %s ', $source->getName());
+        $source        = new EndorphinSource();
+        $baseMessage   = sprintf('reading from source %s ', $source->getName());
         $messageLength = 0;
 
         if (!$source->isReady($baseMessage)) {

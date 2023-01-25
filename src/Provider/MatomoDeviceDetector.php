@@ -89,11 +89,7 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         $this->checkIfInstalled();
     }
 
-    /**
-     * @throws NoResultFoundException
-     *
-     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
-     */
+    /** @throws NoResultFoundException */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
         $clientHints = ClientHints::factory($headers);

@@ -6,6 +6,7 @@ namespace UserAgentParserComparison\Provider;
 
 use EndorphinStudio\Detector as EndorphinDetector;
 use EndorphinStudio\Detector\Data\Result;
+use Throwable;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -95,7 +96,7 @@ final class Endorphin extends AbstractParseProvider
     {
         try {
             $resultRaw = $this->parser->analyse($userAgent);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent, 0, $e);
         }
 

@@ -4,7 +4,13 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider\Test;
 
-use UserAgentParserComparison\Exception\NoResultFoundException;
+use BrowscapHelper\Source\MobileDetectSource;
+use RuntimeException;
+
+use function bin2hex;
+use function serialize;
+use function sha1;
+use function sprintf;
 
 /** @see https://github.com/browscap/browscap-php */
 final class MobileDetect extends AbstractTestProvider
@@ -67,12 +73,12 @@ final class MobileDetect extends AbstractTestProvider
      * @return iterable<array<string, mixed>>
      * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function getTests(): iterable
     {
-        $source = new \BrowscapHelper\Source\MobileDetectSource();
-        $baseMessage = sprintf('reading from source %s ', $source->getName());
+        $source        = new MobileDetectSource();
+        $baseMessage   = sprintf('reading from source %s ', $source->getName());
         $messageLength = 0;
 
         if (!$source->isReady($baseMessage)) {

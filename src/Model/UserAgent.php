@@ -9,8 +9,6 @@ namespace UserAgentParserComparison\Model;
  */
 final class UserAgent
 {
-    private string | null $providerName;
-    private string | null $providerVersion;
     private Browser $browser;
     private RenderingEngine $renderingEngine;
     private OperatingSystem $operatingSystem;
@@ -20,11 +18,8 @@ final class UserAgent
     /** @var mixed */
     private $providerResultRaw;
 
-    public function __construct(string | null $providerName = null, string | null $providerVersion = null)
+    public function __construct(private string | null $providerName = null, private string | null $providerVersion = null)
     {
-        $this->providerName    = $providerName;
-        $this->providerVersion = $providerVersion;
-
         $this->browser         = new Browser();
         $this->renderingEngine = new RenderingEngine();
         $this->operatingSystem = new OperatingSystem();

@@ -2,7 +2,6 @@
 
 declare(strict_types = 1);
 
-use Psr\Log\NullLogger;
 use Ramsey\Uuid\Uuid;
 use UserAgentParserComparison\Provider;
 use UserAgentParserComparison\Provider\Test\AbstractTestProvider;
@@ -52,7 +51,7 @@ $chain = new Provider\Chain([
     new Provider\Test\CrawlerDetect(),
     new Provider\Test\Browscap(),
     new Provider\Test\Matomo(),
-    //new Provider\Test\BrowserDetector(),
+    // new Provider\Test\BrowserDetector(),
 ]);
 
 $proType = 'testSuite';
@@ -180,7 +179,7 @@ foreach ($chain->getProviders() as $provider) {
      * Useragents
      */
     foreach ($provider->getTests() as $uaHash => $row) {
-        $summary++;
+        ++$summary;
 
         echo sprintf(
             "\r" . '%s updated, %s inserted, %s skipped',
@@ -190,7 +189,7 @@ foreach ($chain->getProviders() as $provider) {
         );
 
         if (in_array($row['uaString'], $skipUserAgents, true)) {
-            $skipped++;
+            ++$skipped;
 
             continue;
         }
@@ -342,7 +341,7 @@ foreach ($chain->getProviders() as $provider) {
 
             $statementUpdateResult->execute();
 
-            $updated++;
+            ++$updated;
 
             continue;
         }
@@ -440,7 +439,7 @@ foreach ($chain->getProviders() as $provider) {
 
         $statementInsertResult->execute();
 
-        $inserted++;
+        ++$inserted;
     }
 
     echo sprintf(

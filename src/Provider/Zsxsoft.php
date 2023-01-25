@@ -101,9 +101,9 @@ final class Zsxsoft extends AbstractParseProvider
     {
         $this->parser->analyze($userAgent);
 
-        $browser  = $this->parser->browser;
-        $os       = $this->parser->os;
-        $device   = $this->parser->device;
+        $browser = $this->parser->browser;
+        $os      = $this->parser->os;
+        $device  = $this->parser->device;
 
         /*
          * No result found?

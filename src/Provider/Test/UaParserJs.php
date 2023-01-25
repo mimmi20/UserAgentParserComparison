@@ -4,16 +4,13 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider\Test;
 
-use Exception;
-use Symfony\Component\Yaml\Yaml;
-use Throwable;
-use UserAgentParserComparison\Exception\NoResultFoundException;
+use BrowscapHelper\Source\UaParserJsSource;
+use RuntimeException;
 
 use function bin2hex;
-use function file_get_contents;
-use function is_array;
 use function serialize;
 use function sha1;
+use function sprintf;
 
 /** @see https://github.com/browscap/browscap-php */
 final class UaParserJs extends AbstractTestProvider
@@ -76,12 +73,12 @@ final class UaParserJs extends AbstractTestProvider
      * @return iterable<array<string, mixed>>
      * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function getTests(): iterable
     {
-        $source = new \BrowscapHelper\Source\UaParserJsSource();
-        $baseMessage = sprintf('reading from source %s ', $source->getName());
+        $source        = new UaParserJsSource();
+        $baseMessage   = sprintf('reading from source %s ', $source->getName());
         $messageLength = 0;
 
         if (!$source->isReady($baseMessage)) {

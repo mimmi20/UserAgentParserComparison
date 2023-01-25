@@ -11,6 +11,7 @@ use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Model;
 
 use function assert;
+use function property_exists;
 
 /**
  * Abstraction for all browscap types
@@ -120,11 +121,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
             return true;
         }
 
-        if (property_exists($resultRaw, 'device_name') && true === $this->isRealResult($resultRaw->device_name)) {
-            return true;
-        }
-
-        return false;
+        return property_exists($resultRaw, 'device_name') && true === $this->isRealResult($resultRaw->device_name);
     }
 
     protected function isBot(stdClass $resultRaw): bool

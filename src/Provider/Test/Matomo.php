@@ -4,21 +4,14 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider\Test;
 
-use DeviceDetector\Parser\Client\Browser;
-use DeviceDetector\Parser\Device\AbstractDeviceParser;
-use FilterIterator;
-use Iterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
-use Spyc;
+use BrowscapHelper\Source\MatomoSource;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 
 use function array_key_exists;
-use function assert;
 use function bin2hex;
-use function in_array;
+use function serialize;
 use function sha1;
+use function sprintf;
 
 /** @see https://github.com/browscap/browscap-php */
 final class Matomo extends AbstractTestProvider
@@ -85,8 +78,8 @@ final class Matomo extends AbstractTestProvider
      */
     public function getTests(): iterable
     {
-        $source = new \BrowscapHelper\Source\MatomoSource();
-        $baseMessage = sprintf('reading from source %s ', $source->getName());
+        $source        = new MatomoSource();
+        $baseMessage   = sprintf('reading from source %s ', $source->getName());
         $messageLength = 0;
 
         if (!$source->isReady($baseMessage)) {

@@ -4,8 +4,8 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
-use Sinergi\BrowserDetector\BrowserDetector;
 use Sinergi\BrowserDetector\Browser;
+use Sinergi\BrowserDetector\BrowserDetector;
 use Sinergi\BrowserDetector\Device;
 use Sinergi\BrowserDetector\DeviceDetector;
 use Sinergi\BrowserDetector\InvalidArgumentException;

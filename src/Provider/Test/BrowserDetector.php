@@ -4,52 +4,14 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider\Test;
 
-use BrowserDetector\Factory\BrowserFactory;
-use BrowserDetector\Factory\DeviceFactory;
-use BrowserDetector\Factory\DisplayFactory;
-use BrowserDetector\Factory\EngineFactory;
-use BrowserDetector\Factory\PlatformFactory;
-use BrowserDetector\Loader\CompanyLoader;
-use BrowserDetector\Loader\CompanyLoaderFactory;
-use BrowserDetector\Loader\CompanyLoaderInterface;
-use BrowserDetector\Loader\NotFoundException;
-use BrowserDetector\RequestBuilder;
-use BrowserDetector\Version\NotNumericException;
-use BrowserDetector\Version\Version;
-use BrowserDetector\Version\VersionFactory;
-use FilterIterator;
-use Iterator;
-use JsonException;
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
-use UaBrowserType\TypeLoader;
-use UaDeviceType\Unknown;
-use UaResult\Browser\Browser;
-use UaResult\Company\Company;
-use UaResult\Device\Device;
-use UaResult\Device\Display;
-use UaResult\Engine\Engine;
-use UaResult\Os\Os;
-use UaResult\Result\Result;
-use UnexpectedValueException;
-use UserAgentParserComparison\Exception\NoResultFoundException;
+use BrowscapHelper\Source\BrowserDetectorSource;
+use LogicException;
+use RuntimeException;
 
-use function array_key_exists;
-use function assert;
 use function bin2hex;
-use function count;
-use function file_get_contents;
-use function is_array;
-use function json_decode;
-use function json_encode;
+use function serialize;
 use function sha1;
 use function sprintf;
-
-use const JSON_THROW_ON_ERROR;
-use const PHP_EOL;
 
 /** @see https://github.com/browscap/browscap-php */
 final class BrowserDetector extends AbstractTestProvider
@@ -112,13 +74,13 @@ final class BrowserDetector extends AbstractTestProvider
      * @return iterable<array<string, mixed>>
      * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
      *
-     * @throws \LogicException
-     * @throws \RuntimeException
+     * @throws LogicException
+     * @throws RuntimeException
      */
     public function getTests(): iterable
     {
-        $source = new \BrowscapHelper\Source\BrowserDetectorSource();
-        $baseMessage = sprintf('reading from source %s ', $source->getName());
+        $source        = new BrowserDetectorSource();
+        $baseMessage   = sprintf('reading from source %s ', $source->getName());
         $messageLength = 0;
 
         if (!$source->isReady($baseMessage)) {

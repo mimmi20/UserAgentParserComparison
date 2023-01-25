@@ -16,11 +16,11 @@ use function trim;
  */
 final class Version
 {
-    private int|string|null $major = '';
-    private int|string|null $minor = '';
-    private int|string|null $patch = '';
-    private string | null $alias = null;
-    private string | null $complete = null;
+    private int | string | null $major = '';
+    private int | string | null $minor = '';
+    private int | string | null $patch = '';
+    private string | null $alias       = null;
+    private string | null $complete    = null;
 
     /** @var array<int, string> */
     private static array $notAllowedAlias = [
@@ -35,44 +35,38 @@ final class Version
         'rc',
     ];
 
-    /** @param int|string|null $major */
-    public function setMajor(int|string|null $major): void
+    public function setMajor(int | string | null $major): void
     {
         $this->major = $major;
 
         $this->hydrateComplete();
     }
 
-    /** @return int|string|null */
-    public function getMajor(): int|string|null
+    public function getMajor(): int | string | null
     {
         return $this->major;
     }
 
-    /** @param int|string|null $minor */
-    public function setMinor(int|string|null $minor): void
+    public function setMinor(int | string | null $minor): void
     {
         $this->minor = $minor;
 
         $this->hydrateComplete();
     }
 
-    /** @return int|string|null */
-    public function getMinor(): int|string|null
+    public function getMinor(): int | string | null
     {
         return $this->minor;
     }
 
-    /** @param int|string|null $patch */
-    public function setPatch(int|string|null $patch): void
+    public function setPatch(int | string | null $patch): void
     {
         $this->patch = $patch;
 
         $this->hydrateComplete();
     }
 
-    /** @return int|string|null */
-    public function getPatch(): int|string|null
+    public function getPatch(): int | string | null
     {
         return $this->patch;
     }

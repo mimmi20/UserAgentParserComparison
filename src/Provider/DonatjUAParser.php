@@ -69,10 +69,7 @@ final class DonatjUAParser extends AbstractParseProvider
         ],
     ];
 
-    /**
-     * @var string
-     * @phpstan-var callable-string
-     */
+    /** @phpstan-var callable-string */
     private string $functionName = '\parse_user_agent';
 
     /** @throws PackageNotLoadedException */
