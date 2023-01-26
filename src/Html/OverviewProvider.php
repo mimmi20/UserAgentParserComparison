@@ -6,14 +6,11 @@ namespace UserAgentParserComparison\Html;
 
 use PDO;
 
-use function var_dump;
-
 final class OverviewProvider extends AbstractHtml
 {
-    public function __construct(PDO $pdo, private array $provider, string | null $title = null)
+    public function __construct(PDO $pdo, private readonly array $provider, string | null $title = null)
     {
-        $this->pdo   = $pdo;
-        $this->title = $title;
+        parent::__construct($pdo, $title);
     }
 
     public function getHtml(): string
@@ -75,8 +72,6 @@ final class OverviewProvider extends AbstractHtml
         $result = $statement->fetch();
 
         if (false === $result) {
-            var_dump($sql);
-
             $result = [
                 'resultFound' => 0,
                 'browserFound' => 0,
@@ -139,7 +134,7 @@ final class OverviewProvider extends AbstractHtml
                 Results found
             </td>
             <td>
-                ' . $this->getPercentageMarkup($row['resultFound']) . '
+                ' . $this->getPercentageMarkup((int) $row['resultFound']) . '
             </td>
             <td>
                 ' . $row['resultFound'] . '
@@ -157,7 +152,7 @@ final class OverviewProvider extends AbstractHtml
                     Browser names
                 </td>
                 <td>
-                    ' . $this->getPercentageMarkup($row['browserFound']) . '
+                    ' . $this->getPercentageMarkup((int) $row['browserFound']) . '
                 </td>
                 <td>
                     ' . $row['browserFound'] . '
@@ -187,7 +182,7 @@ final class OverviewProvider extends AbstractHtml
                     Rendering engines
                 </td>
                 <td>
-                    ' . $this->getPercentageMarkup($row['engineFound']) . '
+                    ' . $this->getPercentageMarkup((int) $row['engineFound']) . '
                 </td>
                 <td>
                     ' . $row['engineFound'] . '
@@ -217,7 +212,7 @@ final class OverviewProvider extends AbstractHtml
                     Operating systems
                 </td>
                 <td>
-                    ' . $this->getPercentageMarkup($row['osFound']) . '
+                    ' . $this->getPercentageMarkup((int) $row['osFound']) . '
                 </td>
                 <td>
                     ' . $row['osFound'] . '
@@ -247,7 +242,7 @@ final class OverviewProvider extends AbstractHtml
                     Device brands
                 </td>
                 <td>
-                    ' . $this->getPercentageMarkup($row['deviceBrandFound']) . '
+                    ' . $this->getPercentageMarkup((int) $row['deviceBrandFound']) . '
                 </td>
                 <td>
                     ' . $row['deviceBrandFound'] . '
@@ -277,7 +272,7 @@ final class OverviewProvider extends AbstractHtml
                     Device models
                 </td>
                 <td>
-                    ' . $this->getPercentageMarkup($row['deviceModelFound']) . '
+                    ' . $this->getPercentageMarkup((int) $row['deviceModelFound']) . '
                 </td>
                 <td>
                     ' . $row['deviceModelFound'] . '
@@ -307,7 +302,7 @@ final class OverviewProvider extends AbstractHtml
                     Device types
                 </td>
                 <td>
-                    ' . $this->getPercentageMarkup($row['deviceTypeFound']) . '
+                    ' . $this->getPercentageMarkup((int) $row['deviceTypeFound']) . '
                 </td>
                 <td>
                     ' . $row['deviceTypeFound'] . '
@@ -337,7 +332,7 @@ final class OverviewProvider extends AbstractHtml
                     Is mobile
                 </td>
                 <td>
-                    ' . $this->getPercentageMarkup($row['asMobileDetected']) . '
+                    ' . $this->getPercentageMarkup((int) $row['asMobileDetected']) . '
                 </td>
                 <td>
                     ' . $row['asMobileDetected'] . '
@@ -367,7 +362,7 @@ final class OverviewProvider extends AbstractHtml
                     Is bot
                 </td>
                 <td>
-                    ' . $this->getPercentageMarkup($row['asBotDetected']) . '
+                    ' . $this->getPercentageMarkup((int) $row['asBotDetected']) . '
                 </td>
                 <td>
                     ' . $row['asBotDetected'] . '
@@ -397,7 +392,7 @@ final class OverviewProvider extends AbstractHtml
                     Bot names
                 </td>
                 <td>
-                    ' . $this->getPercentageMarkup($row['botNameFound']) . '
+                    ' . $this->getPercentageMarkup((int) $row['botNameFound']) . '
                 </td>
                 <td>
                     ' . $row['botNameFound'] . '
@@ -427,7 +422,7 @@ final class OverviewProvider extends AbstractHtml
                     Bot types
                 </td>
                 <td>
-                    ' . $this->getPercentageMarkup($row['botTypeFound']) . '
+                    ' . $this->getPercentageMarkup((int) $row['botTypeFound']) . '
                 </td>
                 <td>
                     ' . $row['botTypeFound'] . '

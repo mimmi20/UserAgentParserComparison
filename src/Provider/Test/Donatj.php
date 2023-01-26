@@ -4,14 +4,14 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider\Test;
 
-use UserAgentParserComparison\Exception\NoResultFoundException;
+use BrowscapHelper\Source\DonatjSource;
+use LogicException;
+use RuntimeException;
 
 use function bin2hex;
-use function file_exists;
-use function file_get_contents;
-use function filesize;
-use function json_decode;
+use function serialize;
 use function sha1;
+use function sprintf;
 
 /** @see https://github.com/browscap/browscap-php */
 final class Donatj extends AbstractTestProvider
@@ -74,51 +74,47 @@ final class Donatj extends AbstractTestProvider
      * @return iterable<array<string, mixed>>
      * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
      *
-     * @throws NoResultFoundException
+     * @throws LogicException
+     * @throws RuntimeException
      */
     public function getTests(): iterable
     {
-        if (
-            file_exists('vendor/donatj/phpuseragentparser/tests/user_agents.json')
-            && 0 < filesize('vendor/donatj/phpuseragentparser/tests/user_agents.json')
-        ) {
-            $file = 'vendor/donatj/phpuseragentparser/tests/user_agents.json';
-        } else {
-            $file = 'vendor/donatj/phpuseragentparser/tests/user_agents.dist.json';
+        $source        = new DonatjSource();
+        $baseMessage   = sprintf('reading from source %s ', $source->getName());
+        $messageLength = 0;
+
+        if (!$source->isReady($baseMessage)) {
+            return [];
         }
 
-        $content = file_get_contents($file);
-
-        $json = json_decode($content, true);
-
-        foreach ($json as $ua => $row) {
-            $data = [
-                'resFilename' => $file,
-
-                'resBrowserName' => $row['browser'] ?? null,
-                'resBrowserVersion' => $row['version'] ?? null,
-
-                'resEngineName' => null,
-                'resEngineVersion' => null,
-
-                'resOsName' => $row['platform'] ?? null,
-                'resOsVersion' => null,
-
-                'resDeviceModel' => null,
-                'resDeviceBrand' => null,
-                'resDeviceType' => null,
-                'resDeviceIsMobile' => null,
-                'resDeviceIsTouch' => null,
-
-                'resBotIsBot' => null,
-                'resBotName' => null,
-                'resBotType' => null,
-            ];
-
-            $key      = bin2hex(sha1($ua, true));
+        foreach ($source->getProperties($baseMessage, $messageLength) as $test) {
+            $key      = bin2hex(sha1($test['headers']['user-agent'], true));
             $toInsert = [
-                'uaString' => $ua,
-                'result' => $data,
+                'uaString' => $test['headers']['user-agent'],
+                'result' => [
+                    'resFilename' => $test['file'] ?? '',
+
+                    'resRawResult' => serialize($test['raw'] ?? null),
+
+                    'resBrowserName' => $test['client']['name'],
+                    'resBrowserVersion' => $test['client']['version'],
+
+                    'resEngineName' => null,
+                    'resEngineVersion' => null,
+
+                    'resOsName' => $test['platform']['name'],
+                    'resOsVersion' => null,
+
+                    'resDeviceModel' => null,
+                    'resDeviceBrand' => null,
+                    'resDeviceType' => null,
+                    'resDeviceIsMobile' => null,
+                    'resDeviceIsTouch' => null,
+
+                    'resBotIsBot' => null,
+                    'resBotName' => null,
+                    'resBotType' => null,
+                ],
             ];
 
             yield $key => $toInsert;

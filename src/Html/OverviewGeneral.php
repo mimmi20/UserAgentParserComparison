@@ -152,13 +152,13 @@ final class OverviewGeneral extends AbstractHtml
             /*
              * Result found?
              */
-            $html .= '<td>' . $this->getPercentageMarkup($row['resultFound']) . '</td>';
+            $html .= '<td>' . $this->getPercentageMarkup((int) $row['resultFound']) . '</td>';
 
             /*
              * Browser
              */
             if ($row['proCanDetectBrowserName']) {
-                $html .= '<td>' . $this->getPercentageMarkup($row['browserFound']) . '</td>';
+                $html .= '<td>' . $this->getPercentageMarkup((int) $row['browserFound']) . '</td>';
             } else {
                 $html .= '<td>&nbsp;</td>';
             }
@@ -167,7 +167,7 @@ final class OverviewGeneral extends AbstractHtml
              * Engine
              */
             if ($row['proCanDetectEngineName']) {
-                $html .= '<td>' . $this->getPercentageMarkup($row['engineFound']) . '</td>';
+                $html .= '<td>' . $this->getPercentageMarkup((int) $row['engineFound']) . '</td>';
             } else {
                 $html .= '<td>&nbsp;</td>';
             }
@@ -176,7 +176,7 @@ final class OverviewGeneral extends AbstractHtml
              * OS
              */
             if ($row['proCanDetectOsName']) {
-                $html .= '<td>' . $this->getPercentageMarkup($row['osFound']) . '</td>';
+                $html .= '<td>' . $this->getPercentageMarkup((int) $row['osFound']) . '</td>';
             } else {
                 $html .= '<td>&nbsp;</td>';
             }
@@ -185,31 +185,31 @@ final class OverviewGeneral extends AbstractHtml
              * device
              */
             if ($row['proCanDetectDeviceBrand']) {
-                $html .= '<td>' . $this->getPercentageMarkup($row['deviceBrandFound']) . '</td>';
+                $html .= '<td>' . $this->getPercentageMarkup((int) $row['deviceBrandFound']) . '</td>';
             } else {
                 $html .= '<td>&nbsp;</td>';
             }
 
             if ($row['proCanDetectDeviceModel']) {
-                $html .= '<td>' . $this->getPercentageMarkup($row['deviceModelFound']) . '</td>';
+                $html .= '<td>' . $this->getPercentageMarkup((int) $row['deviceModelFound']) . '</td>';
             } else {
                 $html .= '<td>&nbsp;</td>';
             }
 
             if ($row['proCanDetectDeviceType']) {
-                $html .= '<td>' . $this->getPercentageMarkup($row['deviceTypeFound']) . '</td>';
+                $html .= '<td>' . $this->getPercentageMarkup((int) $row['deviceTypeFound']) . '</td>';
             } else {
                 $html .= '<td>&nbsp;</td>';
             }
 
             if ($row['proCanDetectDeviceIsMobile']) {
-                $html .= '<td>' . $this->getPercentageMarkup($row['asMobileDetected']) . '</td>';
+                $html .= '<td>' . $this->getPercentageMarkup((int) $row['asMobileDetected']) . '</td>';
             } else {
                 $html .= '<td>&nbsp;</td>';
             }
 
             if ($row['proCanDetectBotIsBot']) {
-                $html .= '<td>' . $this->getPercentageMarkup($row['asBotDetected']) . '</td>';
+                $html .= '<td>' . $this->getPercentageMarkup((int) $row['asBotDetected']) . '</td>';
             } else {
                 $html .= '<td>&nbsp;</td>';
             }
@@ -226,7 +226,7 @@ final class OverviewGeneral extends AbstractHtml
             $html .= '
                 <td>
                     <a class="tooltipped" data-position="top" data-delay="50" data-tooltip="' . htmlspecialchars($info) . '">
-                        ' . round($row['avgParseTime'], 5) . '
+                        ' . round((float) $row['avgParseTime'], 5) . '
                     </a>
                 </td>
             ';

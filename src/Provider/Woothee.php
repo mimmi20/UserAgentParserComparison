@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use Throwable;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -84,23 +85,10 @@ final class Woothee extends AbstractParseProvider
         ],
     ];
 
-    private Classifier | null $parser = null;
-
     /** @throws PackageNotLoadedException */
-    public function __construct()
+    public function __construct(private readonly Classifier $parser)
     {
         $this->checkIfInstalled();
-    }
-
-    public function getParser(): Classifier
-    {
-        if (null !== $this->parser) {
-            return $this->parser;
-        }
-
-        $this->parser = new Classifier();
-
-        return $this->parser;
     }
 
     /**
@@ -110,9 +98,11 @@ final class Woothee extends AbstractParseProvider
      */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $parser = $this->getParser();
-
-        $resultRaw = $parser->parse($userAgent);
+        try {
+            $resultRaw = $this->parser->parse($userAgent);
+        } catch (Throwable $e) {
+            throw new NoResultFoundException('No result found for user agent: ' . $userAgent, 0, $e);
+        }
 
         /*
          * No result found?

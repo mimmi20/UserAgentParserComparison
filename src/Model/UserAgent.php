@@ -9,34 +9,17 @@ namespace UserAgentParserComparison\Model;
  */
 final class UserAgent
 {
-    /**
-     * Provider name
-     */
-    private string | null $providerName;
-
-    /**
-     * Provider version
-     */
-    private string | null $providerVersion;
-
     private Browser $browser;
-
     private RenderingEngine $renderingEngine;
-
     private OperatingSystem $operatingSystem;
-
     private Device $device;
-
     private Bot $bot;
 
     /** @var mixed */
     private $providerResultRaw;
 
-    public function __construct(string | null $providerName = null, string | null $providerVersion = null)
+    public function __construct(private string | null $providerName = null, private string | null $providerVersion = null)
     {
-        $this->providerName    = $providerName;
-        $this->providerVersion = $providerVersion;
-
         $this->browser         = new Browser();
         $this->renderingEngine = new RenderingEngine();
         $this->operatingSystem = new OperatingSystem();

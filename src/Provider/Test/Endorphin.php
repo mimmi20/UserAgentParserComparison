@@ -4,8 +4,7 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider\Test;
 
-use BrowscapHelper\Source\BrowscapSource;
-use LogicException;
+use BrowscapHelper\Source\EndorphinSource;
 use RuntimeException;
 
 use function bin2hex;
@@ -14,22 +13,22 @@ use function sha1;
 use function sprintf;
 
 /** @see https://github.com/browscap/browscap-php */
-final class Browscap extends AbstractTestProvider
+final class Endorphin extends AbstractTestProvider
 {
     /**
      * Name of the provider
      */
-    protected string $name = 'Browscap';
+    protected string $name = 'Endorphin Browser Detector';
 
     /**
      * Homepage of the provider
      */
-    protected string $homepage = 'https://github.com/browscap/browscap';
+    protected string $homepage = 'https://github.com/endorphin-studio/browser-detector';
 
     /**
      * Composer package name
      */
-    protected string $packageName = 'browscap/browscap';
+    protected string $packageName = 'endorphin-studio/browser-detector';
 
     protected string $language = 'PHP';
 
@@ -46,27 +45,27 @@ final class Browscap extends AbstractTestProvider
         ],
 
         'renderingEngine' => [
-            'name' => true,
-            'version' => true,
+            'name' => false,
+            'version' => false,
         ],
 
         'operatingSystem' => [
-            'name' => true,
-            'version' => true,
+            'name' => false,
+            'version' => false,
         ],
 
         'device' => [
-            'model' => true,
-            'brand' => true,
-            'type' => true,
-            'isMobile' => true,
-            'isTouch' => true,
+            'model' => false,
+            'brand' => false,
+            'type' => false,
+            'isMobile' => false,
+            'isTouch' => false,
         ],
 
         'bot' => [
-            'isBot' => true,
-            'name' => true,
-            'type' => true,
+            'isBot' => false,
+            'name' => false,
+            'type' => false,
         ],
     ];
 
@@ -74,12 +73,11 @@ final class Browscap extends AbstractTestProvider
      * @return iterable<array<string, mixed>>
      * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
      *
-     * @throws LogicException
      * @throws RuntimeException
      */
     public function getTests(): iterable
     {
-        $source        = new BrowscapSource();
+        $source        = new EndorphinSource();
         $baseMessage   = sprintf('reading from source %s ', $source->getName());
         $messageLength = 0;
 
@@ -92,28 +90,28 @@ final class Browscap extends AbstractTestProvider
             $toInsert = [
                 'uaString' => $test['headers']['user-agent'],
                 'result' => [
-                    'resFilename' => $test['file'] ?? '',
+                    'resFilename' => '',
 
                     'resRawResult' => serialize($test['raw'] ?? null),
 
-                    'resBrowserName' => $test['client']['isbot'] ? null : $test['client']['name'],
-                    'resBrowserVersion' => $test['client']['isbot'] ? null : $test['client']['version'],
+                    'resBrowserName' => isset($test['client']['isbot']) ? null : $test['client']['name'],
+                    'resBrowserVersion' => isset($test['client']['isbot']) ? null : ($test['client']['version'] ?? null),
 
                     'resEngineName' => $test['engine']['name'],
                     'resEngineVersion' => $test['engine']['version'],
 
                     'resOsName' => $test['platform']['name'],
-                    'resOsVersion' => $test['platform']['version'],
+                    'resOsVersion' => $test['platform']['version'] ?? null,
 
-                    'resDeviceModel' => $test['device']['deviceName'],
-                    'resDeviceBrand' => $test['device']['brand'],
-                    'resDeviceType' => $test['device']['type'],
-                    'resDeviceIsMobile' => $test['device']['ismobile'],
-                    'resDeviceIsTouch' => $test['device']['display']['touch'],
+                    'resDeviceModel' => $test['device']['deviceName'] ?? null,
+                    'resDeviceBrand' => $test['device']['brand'] ?? null,
+                    'resDeviceType' => $test['device']['type'] ?? null,
+                    'resDeviceIsMobile' => $test['device']['ismobile'] ?? null,
+                    'resDeviceIsTouch' => null,
 
-                    'resBotIsBot' => $test['client']['isbot'],
-                    'resBotName' => $test['client']['isbot'] ? $test['client']['name'] : null,
-                    'resBotType' => $test['client']['isbot'] ? $test['client']['type'] : null,
+                    'resBotIsBot' => $test['client']['isbot'] ?? null,
+                    'resBotName' => isset($test['client']['isbot']) ? $test['client']['name'] : null,
+                    'resBotType' => null,
                 ],
             ];
 

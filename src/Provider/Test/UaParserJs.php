@@ -4,8 +4,7 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider\Test;
 
-use BrowscapHelper\Source\BrowscapSource;
-use LogicException;
+use BrowscapHelper\Source\UaParserJsSource;
 use RuntimeException;
 
 use function bin2hex;
@@ -14,24 +13,24 @@ use function sha1;
 use function sprintf;
 
 /** @see https://github.com/browscap/browscap-php */
-final class Browscap extends AbstractTestProvider
+final class UaParserJs extends AbstractTestProvider
 {
     /**
      * Name of the provider
      */
-    protected string $name = 'Browscap';
+    protected string $name = 'ua-parser-js';
 
     /**
      * Homepage of the provider
      */
-    protected string $homepage = 'https://github.com/browscap/browscap';
+    protected string $homepage = 'https://github.com/faisalman/ua-parser-js';
 
     /**
      * Composer package name
      */
-    protected string $packageName = 'browscap/browscap';
+    protected string $packageName = 'ua-parser-js';
 
-    protected string $language = 'PHP';
+    protected string $language = 'JS';
 
     /**
      * Set this in each Provider implementation
@@ -46,8 +45,8 @@ final class Browscap extends AbstractTestProvider
         ],
 
         'renderingEngine' => [
-            'name' => true,
-            'version' => true,
+            'name' => false,
+            'version' => false,
         ],
 
         'operatingSystem' => [
@@ -58,15 +57,15 @@ final class Browscap extends AbstractTestProvider
         'device' => [
             'model' => true,
             'brand' => true,
-            'type' => true,
-            'isMobile' => true,
-            'isTouch' => true,
+            'type' => false,
+            'isMobile' => false,
+            'isTouch' => false,
         ],
 
         'bot' => [
             'isBot' => true,
-            'name' => true,
-            'type' => true,
+            'name' => false,
+            'type' => false,
         ],
     ];
 
@@ -74,12 +73,11 @@ final class Browscap extends AbstractTestProvider
      * @return iterable<array<string, mixed>>
      * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
      *
-     * @throws LogicException
      * @throws RuntimeException
      */
     public function getTests(): iterable
     {
-        $source        = new BrowscapSource();
+        $source        = new UaParserJsSource();
         $baseMessage   = sprintf('reading from source %s ', $source->getName());
         $messageLength = 0;
 
@@ -92,12 +90,12 @@ final class Browscap extends AbstractTestProvider
             $toInsert = [
                 'uaString' => $test['headers']['user-agent'],
                 'result' => [
-                    'resFilename' => $test['file'] ?? '',
+                    'resFilename' => '',
 
                     'resRawResult' => serialize($test['raw'] ?? null),
 
-                    'resBrowserName' => $test['client']['isbot'] ? null : $test['client']['name'],
-                    'resBrowserVersion' => $test['client']['isbot'] ? null : $test['client']['version'],
+                    'resBrowserName' => $test['client']['name'],
+                    'resBrowserVersion' => $test['client']['version'],
 
                     'resEngineName' => $test['engine']['name'],
                     'resEngineVersion' => $test['engine']['version'],
@@ -111,9 +109,9 @@ final class Browscap extends AbstractTestProvider
                     'resDeviceIsMobile' => $test['device']['ismobile'],
                     'resDeviceIsTouch' => $test['device']['display']['touch'],
 
-                    'resBotIsBot' => $test['client']['isbot'],
-                    'resBotName' => $test['client']['isbot'] ? $test['client']['name'] : null,
-                    'resBotType' => $test['client']['isbot'] ? $test['client']['type'] : null,
+                    'resBotIsBot' => null,
+                    'resBotName' => null,
+                    'resBotType' => null,
                 ],
             ];
 

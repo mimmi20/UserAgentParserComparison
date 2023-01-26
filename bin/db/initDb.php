@@ -8,7 +8,12 @@ include 'bootstrap.php';
 
 echo '~~~ Prepare Database ~~~' . PHP_EOL;
 
+$pdo->prepare('DROP TABLE IF EXISTS `useragentevaluation`')->execute();
+$pdo->prepare('DROP TABLE IF EXISTS `resultevaluation`')->execute();
+$pdo->prepare('DROP TABLE IF EXISTS `result`')->execute();
+$pdo->prepare('DROP TABLE IF EXISTS `useragent`')->execute();
 $pdo->prepare('DROP TABLE IF EXISTS `provider`')->execute();
+
 $pdo->prepare('CREATE TABLE IF NOT EXISTS `provider` (
   `proId` CHAR(36) COLLATE utf8_unicode_ci NOT NULL COMMENT \'(DC2Type:uuid)\',
   `proType` VARCHAR(255) COLLATE utf8_unicode_ci NOT NULL,
@@ -38,7 +43,6 @@ $pdo->prepare('CREATE TABLE IF NOT EXISTS `provider` (
   UNIQUE KEY `unique_provider_name` (`proType`,`proName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=DYNAMIC CHECKSUM=1')->execute();
 
-$pdo->prepare('DROP TABLE IF EXISTS `useragent`')->execute();
 $pdo->prepare('CREATE TABLE IF NOT EXISTS `useragent` (
   `uaId` CHAR(36) COLLATE utf8_unicode_ci NOT NULL COMMENT \'(DC2Type:uuid)\',
   `uaHash` VARBINARY(255) NOT NULL,
@@ -48,7 +52,6 @@ $pdo->prepare('CREATE TABLE IF NOT EXISTS `useragent` (
   UNIQUE KEY `userAgent_hash` (`uaHash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=DYNAMIC CHECKSUM=1')->execute();
 
-$pdo->prepare('DROP TABLE IF EXISTS `result`')->execute();
 $pdo->prepare('CREATE TABLE IF NOT EXISTS `result` (
   `resId` CHAR(36) COLLATE utf8_unicode_ci NOT NULL COMMENT \'(DC2Type:uuid)\',
   `provider_id` CHAR(36) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT \'(DC2Type:uuid)\',
@@ -89,7 +92,6 @@ $pdo->prepare('CREATE TABLE IF NOT EXISTS `result` (
   CONSTRAINT `FK_136AC113E127EC2A` FOREIGN KEY (`userAgent_id`) REFERENCES `useragent` (`uaId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=DYNAMIC CHECKSUM=1')->execute();
 
-$pdo->prepare('DROP TABLE IF EXISTS `resultevaluation`')->execute();
 $pdo->prepare('CREATE TABLE IF NOT EXISTS `resultevaluation` (
   `result_id` CHAR(36) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT \'(DC2Type:uuid)\',
   `revId` CHAR(36) COLLATE utf8_unicode_ci NOT NULL COMMENT \'(DC2Type:uuid)\',
@@ -124,7 +126,6 @@ $pdo->prepare('CREATE TABLE IF NOT EXISTS `resultevaluation` (
   CONSTRAINT `FK_2846B1657A7B643` FOREIGN KEY (`result_id`) REFERENCES `result` (`resId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=DYNAMIC CHECKSUM=1')->execute();
 
-$pdo->prepare('DROP TABLE IF EXISTS `useragentevaluation`')->execute();
 $pdo->prepare('CREATE TABLE IF NOT EXISTS `useragentevaluation` (
   `uevId` CHAR(36) COLLATE utf8_unicode_ci NOT NULL COMMENT \'(DC2Type:uuid)\',
   `lastChangeDate` DATETIME NOT NULL,

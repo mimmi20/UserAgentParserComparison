@@ -4,7 +4,6 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
-use Mobile_Detect;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Model;
 
@@ -67,7 +66,7 @@ final class MobileDetect extends AbstractParseProvider
 
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $parser = new Mobile_Detect();
+        $parser = new \Detection\MobileDetect();
         $parser->setHttpHeaders($headers);
         $parser->setUserAgent($userAgent);
 
@@ -102,7 +101,7 @@ final class MobileDetect extends AbstractParseProvider
 
     private function hasResult(array $resultRaw): bool
     {
-        return true === $resultRaw['isMobile'];
+        return null !== $resultRaw['isMobile'];
     }
 
     private function hydrateDevice(Model\Device $device, array $resultRaw): void

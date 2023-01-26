@@ -71,7 +71,7 @@ final class Cbschuld extends AbstractParseProvider
     ];
 
     /** @throws PackageNotLoadedException */
-    public function __construct()
+    public function __construct(private readonly Browser $parser)
     {
         $this->checkIfInstalled();
     }
@@ -83,15 +83,13 @@ final class Cbschuld extends AbstractParseProvider
      */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $browser = new Browser();
-
-        $browser->setUserAgent($userAgent);
+        $this->parser->setUserAgent($userAgent);
 
         $resultCache = [
-            'browserName' => $browser->getBrowser(),
-            'browserVersion' => $browser->getVersion(),
+            'browserName' => $this->parser->getBrowser(),
+            'browserVersion' => $this->parser->getVersion(),
 
-            'osName' => $browser->getPlatform(),
+            'osName' => $this->parser->getPlatform(),
         ];
 
         if (true !== $this->hasResult($resultCache)) {

@@ -4,15 +4,13 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider\Test;
 
-use UserAgentParserComparison\Exception\NoResultFoundException;
+use BrowscapHelper\Source\SinergiSource;
+use RuntimeException;
 
-use function array_map;
 use function bin2hex;
-use function explode;
-use function implode;
+use function serialize;
 use function sha1;
-use function simplexml_load_file;
-use function trim;
+use function sprintf;
 
 /** @see https://github.com/browscap/browscap-php */
 final class Sinergi extends AbstractTestProvider
@@ -75,33 +73,37 @@ final class Sinergi extends AbstractTestProvider
      * @return iterable<array<string, mixed>>
      * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
      *
-     * @throws NoResultFoundException
+     * @throws RuntimeException
      */
     public function getTests(): iterable
     {
-        $file = 'vendor/sinergi/browser-detector/tests/BrowserDetector/Tests/_files/UserAgentStrings.xml';
+        $source        = new SinergiSource();
+        $baseMessage   = sprintf('reading from source %s ', $source->getName());
+        $messageLength = 0;
 
-        $provider = simplexml_load_file($file);
+        if (!$source->isReady($baseMessage)) {
+            return [];
+        }
 
-        foreach ($provider->strings as $string) {
-            foreach ($string as $field) {
-                $ua = explode("\n", (string) $field->field[6]);
-                $ua = array_map('trim', $ua);
-                $ua = trim(implode(' ', $ua));
+        foreach ($source->getProperties($baseMessage, $messageLength) as $test) {
+            $key      = bin2hex(sha1($test['headers']['user-agent'], true));
+            $toInsert = [
+                'uaString' => $test['headers']['user-agent'],
+                'result' => [
+                    'resFilename' => $test['file'] ?? '',
 
-                $data = [
-                    'resFilename' => $file,
+                    'resRawResult' => serialize($test['raw'] ?? null),
 
-                    'resBrowserName' => (string) $field->field[0],
-                    'resBrowserVersion' => (string) $field->field[1],
+                    'resBrowserName' => $test['client']['name'],
+                    'resBrowserVersion' => $test['client']['version'],
 
                     'resEngineName' => null,
                     'resEngineVersion' => null,
 
-                    'resOsName' => (string) $field->field[2],
-                    'resOsVersion' => (string) $field->field[3],
+                    'resOsName' => $test['platform']['name'],
+                    'resOsVersion' => $test['platform']['version'],
 
-                    'resDeviceModel' => (string) $field->field[4],
+                    'resDeviceModel' => $test['device']['deviceName'],
                     'resDeviceBrand' => null,
                     'resDeviceType' => null,
                     'resDeviceIsMobile' => null,
@@ -110,16 +112,10 @@ final class Sinergi extends AbstractTestProvider
                     'resBotIsBot' => null,
                     'resBotName' => null,
                     'resBotType' => null,
-                ];
+                ],
+            ];
 
-                $key      = bin2hex(sha1($ua, true));
-                $toInsert = [
-                    'uaString' => $ua,
-                    'result' => $data,
-                ];
-
-                yield $key => $toInsert;
-            }
+            yield $key => $toInsert;
         }
     }
 }

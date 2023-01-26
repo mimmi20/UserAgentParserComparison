@@ -6,6 +6,7 @@ namespace UserAgentParserComparison\Provider;
 
 use EndorphinStudio\Detector as EndorphinDetector;
 use EndorphinStudio\Detector\Data\Result;
+use Throwable;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -80,24 +81,10 @@ final class Endorphin extends AbstractParseProvider
         ],
     ];
 
-    /**
-     * Used for unitTests mocking
-     */
-    private EndorphinDetector\Detector | null $parser = null;
-
     /** @throws PackageNotLoadedException */
-    public function __construct()
+    public function __construct(private readonly EndorphinDetector\Detector $parser)
     {
         $this->checkIfInstalled();
-    }
-
-    public function getParser(): EndorphinDetector\Detector
-    {
-        if (null === $this->parser) {
-            $this->parser = new EndorphinDetector\Detector();
-        }
-
-        return $this->parser;
     }
 
     /**
@@ -107,9 +94,11 @@ final class Endorphin extends AbstractParseProvider
      */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $parser = $this->getParser();
-
-        $resultRaw = $parser->analyse($userAgent);
+        try {
+            $resultRaw = $this->parser->analyse($userAgent);
+        } catch (Throwable $e) {
+            throw new NoResultFoundException('No result found for user agent: ' . $userAgent, 0, $e);
+        }
 
         /*
          * No result found?

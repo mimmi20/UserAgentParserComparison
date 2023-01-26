@@ -87,24 +87,9 @@ final class Zsxsoft extends AbstractParseProvider
     ];
 
     /** @throws PackageNotLoadedException */
-    public function __construct(private UserAgent | null $parser = null)
+    public function __construct(private readonly UserAgent $parser)
     {
-        if (null !== $parser) {
-            return;
-        }
-
         $this->checkIfInstalled();
-    }
-
-    public function getParser(): UserAgent
-    {
-        if (null !== $this->parser) {
-            return $this->parser;
-        }
-
-        $this->parser = new UserAgent();
-
-        return $this->parser;
     }
 
     /**
@@ -114,13 +99,11 @@ final class Zsxsoft extends AbstractParseProvider
      */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $parser = $this->getParser();
-        $parser->analyze($userAgent);
+        $this->parser->analyze($userAgent);
 
-        $browser  = $parser->browser;
-        $os       = $parser->os;
-        $device   = $parser->device;
-        $platform = $parser->platform;
+        $browser = $this->parser->browser;
+        $os      = $this->parser->os;
+        $device  = $this->parser->device;
 
         /*
          * No result found?
@@ -137,7 +120,7 @@ final class Zsxsoft extends AbstractParseProvider
             'browser' => $browser,
             'os' => $os,
             'device' => $device,
-            'platform' => $platform,
+            'platform' => $this->parser->platform,
         ]);
 
         /*

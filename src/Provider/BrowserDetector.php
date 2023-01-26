@@ -8,11 +8,10 @@ use BrowserDetector\Detector;
 use Psr\SimpleCache\InvalidArgumentException;
 use UaResult\Browser\BrowserInterface;
 use UaResult\Device\DeviceInterface;
-use UaResult\Engine\Engine;
-use UaResult\Os\Os;
-use UaResult\Result\Result;
+use UaResult\Engine\EngineInterface;
+use UaResult\Os\OsInterface;
+use UaResult\Result\ResultInterface;
 use UserAgentParserComparison\Exception\NoResultFoundException;
-use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
 
 use function mb_stripos;
@@ -27,7 +26,7 @@ final class BrowserDetector extends AbstractParseProvider
     /**
      * Name of the provider
      */
-    protected string $name = 'BrowserDetector';
+    protected string $name = 'BrowserDetector (mimmi20)';
 
     /**
      * Homepage of the provider
@@ -90,14 +89,9 @@ final class BrowserDetector extends AbstractParseProvider
         ],
     ];
 
-    /** @throws PackageNotLoadedException */
-    public function __construct(private Detector $parser)
+    /** @throws void */
+    public function __construct(private readonly Detector $parser)
     {
-    }
-
-    public function getParser(): Detector
-    {
-        return $this->parser;
     }
 
     /**
@@ -108,9 +102,7 @@ final class BrowserDetector extends AbstractParseProvider
      */
     public function parse(string $userAgent, array $headers = []): Model\UserAgent
     {
-        $parser = $this->getParser();
-
-        $parserResult = $parser($userAgent);
+        $parserResult = ($this->parser)($userAgent);
 
         /*
          * No result found?
@@ -149,7 +141,7 @@ final class BrowserDetector extends AbstractParseProvider
      * @return array<string, mixed>
      * @phpstan-return array{client: array<mixed>|string|null, operatingSystem: array<mixed>|string|null, device: array<string, mixed>, bot: array<mixed>|bool|null, extra: array<string, mixed>}
      */
-    private function getResultRaw(Result $result): array
+    private function getResultRaw(ResultInterface $result): array
     {
         return [
             'client' => $result->getBrowser()->getName(),
@@ -173,7 +165,7 @@ final class BrowserDetector extends AbstractParseProvider
         ];
     }
 
-    private function hasResult(Result $result): bool
+    private function hasResult(ResultInterface $result): bool
     {
         if ($result->getBrowser()->getType()->isBot()) {
             return true;
@@ -186,6 +178,11 @@ final class BrowserDetector extends AbstractParseProvider
 
         $os = $result->getOs()->getName();
         if (null !== $os && $this->isRealResult($os)) {
+            return true;
+        }
+
+        $engine = $result->getEngine()->getName();
+        if (null !== $engine && $this->isRealResult($engine)) {
             return true;
         }
 
@@ -223,7 +220,7 @@ final class BrowserDetector extends AbstractParseProvider
         $browser->getVersion()->setComplete($this->getRealResult($clientRaw->getVersion()->getVersion()));
     }
 
-    private function hydrateRenderingEngine(Model\RenderingEngine $engine, Engine $clientRaw): void
+    private function hydrateRenderingEngine(Model\RenderingEngine $engine, EngineInterface $clientRaw): void
     {
         if (!$clientRaw->getName()) {
             return;
@@ -232,7 +229,7 @@ final class BrowserDetector extends AbstractParseProvider
         $engine->setName($this->getRealResult($clientRaw->getName()));
     }
 
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, Os $osRaw): void
+    private function hydrateOperatingSystem(Model\OperatingSystem $os, OsInterface $osRaw): void
     {
         if ($osRaw->getName()) {
             $os->setName($this->getRealResult($osRaw->getName()));

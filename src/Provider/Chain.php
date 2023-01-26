@@ -18,7 +18,7 @@ final class Chain extends AbstractParseProvider
     protected string $name = 'Chain';
 
     /** @param AbstractProvider[] $providers */
-    public function __construct(private array $providers = [])
+    public function __construct(private readonly array $providers = [])
     {
     }
 
