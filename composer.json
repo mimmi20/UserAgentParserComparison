@@ -45,7 +45,7 @@
     "ramsey/uuid": "^4.7.3",
     "ramsey/uuid-doctrine": "^2.0.0",
     "sinergi/browser-detector": "^6.1.4",
-    "symfony/yaml": "^v6.2.2",
+    "symfony/yaml": "^v6.2.5",
     "ua-parser/uap-php": "^v3.9.14",
     "whichbrowser/parser": "^v2.1.7",
     "wolfcast/browser-detection": "^2.9.7",
