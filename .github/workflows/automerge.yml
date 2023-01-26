@@ -24,6 +24,12 @@ jobs:
     secrets:
       envPAT: "${{ secrets.GITHUB_TOKEN }}"
   test:
+    name: "Test"
+
+    runs-on: "${{ matrix.operating-system }}"
+    timeout-minutes: 10
+    continue-on-error: false
+
     steps:
       - name: "print something about github info"
         run: "echo 'env: ${{ github.env }} event: ${{ github.event_name }} repo: {{ github.repository }} workflow-ref: ${{ github.workflow }}-${{ github.ref }}'"
