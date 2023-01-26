@@ -26,7 +26,7 @@ jobs:
   test:
     name: "Test"
 
-    runs-on: "${{ matrix.operating-system }}"
+    runs-on: "ubuntu-22.04"
     timeout-minutes: 10
     continue-on-error: false
 
