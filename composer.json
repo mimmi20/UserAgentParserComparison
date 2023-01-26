@@ -36,7 +36,7 @@
     "endorphin-studio/browser-detector": "^6.0.1",
     "endorphin-studio/browser-detector-tests": "^2.2.0 || ^3.1.0",
     "jaybizzle/crawler-detect": "^v1.2.112",
-    "league/flysystem": "^3.12.1",
+    "league/flysystem": "^3.12.2",
     "matomo/device-detector": "^6.0.6",
     "matthiasmullie/scrapbook": "^1.5.0",
     "mimmi20/browscap-helper-source": "^3.0.18",
