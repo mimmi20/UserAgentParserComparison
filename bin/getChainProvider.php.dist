@@ -121,7 +121,6 @@ return new Provider\Chain([
     $matomoProvider,
     $browserDetectorProvider,
     new Provider\DonatjUAParser(),
-    new Provider\SinergiBrowserDetector(),
     new Provider\UAParser(),
     // new Provider\WhichBrowser($whichbrowserCache),
     // new Provider\Woothee(new \Woothee\Classifier()),

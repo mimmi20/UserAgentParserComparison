@@ -8,11 +8,16 @@ use PDO;
 
 final class OverviewProvider extends AbstractHtml
 {
-    public function __construct(PDO $pdo, private readonly array $provider, string | null $title = null)
-    {
+    /** @throws void */
+    public function __construct(
+        PDO $pdo,
+        private readonly array $provider,
+        string | null $title = null,
+    ) {
         parent::__construct($pdo, $title);
     }
 
+    /** @throws void */
     public function getHtml(): string
     {
         $body = '
@@ -34,7 +39,11 @@ final class OverviewProvider extends AbstractHtml
         return parent::getHtmlCombined($body);
     }
 
-    /** @return array<string, int> */
+    /**
+     * @return array<string, int>
+     *
+     * @throws void
+     */
     private function getResult(): array
     {
         $sql = '
@@ -90,6 +99,7 @@ final class OverviewProvider extends AbstractHtml
         return $result;
     }
 
+    /** @throws void */
     private function getTable(): string
     {
         $provider = $this->provider;
@@ -118,9 +128,6 @@ final class OverviewProvider extends AbstractHtml
         /*
          * body
          */
-        $count                     = $this->getUserAgentCount();
-        $totalUserAgentsOnePercent = $count / 100;
-
         $row = $this->getResult();
 
         $html .= '<tbody>';

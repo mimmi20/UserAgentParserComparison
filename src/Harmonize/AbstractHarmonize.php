@@ -8,6 +8,7 @@ use function str_ireplace;
 
 abstract class AbstractHarmonize
 {
+    /** @throws void */
     public static function getHarmonizedValue(mixed $value): mixed
     {
         if (null === $value) {
@@ -25,6 +26,8 @@ abstract class AbstractHarmonize
      * @param array<int|string, mixed> $values
      *
      * @return array<int|string, mixed>
+     *
+     * @throws void
      */
     public static function getHarmonizedValues(array $values): array
     {

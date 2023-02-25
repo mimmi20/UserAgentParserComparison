@@ -30,8 +30,7 @@ final class ZsxSoft extends AbstractTestProvider
      * Composer package name
      */
     protected string $packageName = 'zsxsoft/php-useragent';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation

@@ -30,8 +30,7 @@ final class BrowserDetector extends AbstractTestProvider
      * Composer package name
      */
     protected string $packageName = 'mimmi20/browser-detector';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation

@@ -29,8 +29,7 @@ final class DonatjUAParser extends AbstractParseProvider
      * Composer package name
      */
     protected string $packageName = 'donatj/phpuseragentparser';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation
@@ -83,8 +82,10 @@ final class DonatjUAParser extends AbstractParseProvider
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
-    {
+    public function parse(
+        string $userAgent,
+        array $headers = [],
+    ): Model\UserAgent {
         $resultRaw = ($this->functionName)($userAgent);
 
         if (true !== $this->hasResult($resultRaw)) {
@@ -112,13 +113,17 @@ final class DonatjUAParser extends AbstractParseProvider
         return $result;
     }
 
+    /** @throws void */
     private function hasResult(array $resultRaw): bool
     {
         return $this->isRealResult($resultRaw['browser']);
     }
 
-    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
-    {
+    /** @throws void */
+    private function hydrateBrowser(
+        Model\Browser $browser,
+        array $resultRaw,
+    ): void {
         $browser->setName($this->getRealResult($resultRaw['browser']));
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw['version']));
     }

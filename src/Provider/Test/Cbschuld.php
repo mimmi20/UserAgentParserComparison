@@ -30,8 +30,7 @@ final class Cbschuld extends AbstractTestProvider
      * Composer package name
      */
     protected string $packageName = 'cbschuld/browser.php';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation

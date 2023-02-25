@@ -30,8 +30,7 @@ final class CrawlerDetect extends AbstractTestProvider
      * Composer package name
      */
     protected string $packageName = 'jaybizzle/crawler-detect';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation

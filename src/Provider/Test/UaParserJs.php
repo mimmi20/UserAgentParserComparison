@@ -29,8 +29,7 @@ final class UaParserJs extends AbstractTestProvider
      * Composer package name
      */
     protected string $packageName = 'ua-parser-js';
-
-    protected string $language = 'JS';
+    protected string $language    = 'JS';
 
     /**
      * Set this in each Provider implementation

@@ -29,8 +29,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
      * Composer package name
      */
     protected string $packageName = 'browscap/browscap-php';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
@@ -55,6 +54,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         ],
     ];
 
+    /** @throws void */
     public function __construct(private readonly Browscap $parser)
     {
     }
@@ -65,8 +65,10 @@ abstract class AbstractBrowscap extends AbstractParseProvider
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
-    {
+    public function parse(
+        string $userAgent,
+        array $headers = [],
+    ): Model\UserAgent {
         $resultRaw = $this->parser->getBrowser($userAgent);
         assert($resultRaw instanceof stdClass);
 
@@ -103,6 +105,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         return $result;
     }
 
+    /** @throws void */
     protected function hasResult(stdClass $resultRaw): bool
     {
         if (property_exists($resultRaw, 'crawler') && true === $resultRaw->crawler) {
@@ -124,11 +127,13 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         return property_exists($resultRaw, 'device_name') && true === $this->isRealResult($resultRaw->device_name);
     }
 
+    /** @throws void */
     protected function isBot(stdClass $resultRaw): bool
     {
         return property_exists($resultRaw, 'crawler') && true === $resultRaw->crawler;
     }
 
+    /** @throws void */
     protected function hydrateBot(Model\Bot $bot, stdClass $resultRaw): void
     {
         $bot->setIsBot(true);
@@ -144,8 +149,11 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         }
     }
 
-    protected function hydrateBrowser(Model\Browser $browser, stdClass $resultRaw): void
-    {
+    /** @throws void */
+    protected function hydrateBrowser(
+        Model\Browser $browser,
+        stdClass $resultRaw,
+    ): void {
         if (property_exists($resultRaw, 'browser')) {
             $browser->setName($this->getRealResult($resultRaw->browser, 'browser', 'name'));
         }
@@ -157,8 +165,11 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw->version));
     }
 
-    protected function hydrateRenderingEngine(Model\RenderingEngine $engine, stdClass $resultRaw): void
-    {
+    /** @throws void */
+    protected function hydrateRenderingEngine(
+        Model\RenderingEngine $engine,
+        stdClass $resultRaw,
+    ): void {
         if (property_exists($resultRaw, 'renderingengine_name')) {
             $engine->setName($this->getRealResult($resultRaw->renderingengine_name));
         }
@@ -170,8 +181,11 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         $engine->getVersion()->setComplete($this->getRealResult($resultRaw->renderingengine_version));
     }
 
-    protected function hydrateOperatingSystem(Model\OperatingSystem $os, stdClass $resultRaw): void
-    {
+    /** @throws void */
+    protected function hydrateOperatingSystem(
+        Model\OperatingSystem $os,
+        stdClass $resultRaw,
+    ): void {
         if (property_exists($resultRaw, 'platform')) {
             $os->setName($this->getRealResult($resultRaw->platform));
         }
@@ -183,8 +197,11 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         $os->getVersion()->setComplete($this->getRealResult($resultRaw->platform_version));
     }
 
-    protected function hydrateDevice(Model\Device $device, stdClass $resultRaw): void
-    {
+    /** @throws void */
+    protected function hydrateDevice(
+        Model\Device $device,
+        stdClass $resultRaw,
+    ): void {
         if (property_exists($resultRaw, 'device_name')) {
             $device->setModel($this->getRealResult($resultRaw->device_name, 'device', 'model'));
         }

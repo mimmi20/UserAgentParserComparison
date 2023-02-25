@@ -44,7 +44,6 @@
     "mobiledetect/mobiledetectlib": "^3.74.0",
     "ramsey/uuid": "^4.7.3",
     "ramsey/uuid-doctrine": "^2.0.0",
-    "sinergi/browser-detector": "^6.1.4",
     "symfony/yaml": "^v6.2.5",
     "ua-parser/uap-php": "^v3.9.14",
     "whichbrowser/parser": "^v2.1.7",
@@ -58,10 +57,10 @@
     "ext-tokenizer": "*",
     "ext-xml": "*",
     "ext-xmlwriter": "*",
-    "mimmi20/coding-standard": "^3.0.26",
+    "mimmi20/coding-standard": "4.0.0-beta.6",
     "phpstan/extension-installer": "^1.2.0",
-    "phpstan/phpstan": "^1.9.14",
-    "phpstan/phpstan-deprecation-rules": "^1.1.1"
+    "phpstan/phpstan": "^1.10.2",
+    "phpstan/phpstan-deprecation-rules": "^1.1.2"
   },
   "config": {
     "preferred-install": {

@@ -17,6 +17,7 @@ use const PHP_VERSION;
 
 final class OverviewGeneral extends AbstractHtml
 {
+    /** @throws void */
     public function getHtml(): string
     {
         $body = '
@@ -59,7 +60,11 @@ final class OverviewGeneral extends AbstractHtml
         return parent::getHtmlCombined($body);
     }
 
-    /** @return iterable<array<string, mixed>> */
+    /**
+     * @return iterable<array<string, mixed>>
+     *
+     * @throws void
+     */
     private function getProviders(): iterable
     {
         $statement = $this->pdo->prepare('SELECT * FROM `providers-general-overview`');
@@ -69,7 +74,11 @@ final class OverviewGeneral extends AbstractHtml
         yield from $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /** @return iterable<array<string, mixed>> */
+    /**
+     * @return iterable<array<string, mixed>>
+     *
+     * @throws void
+     */
     private function getUserAgentPerProviderCount(): iterable
     {
         $statement = $this->pdo->prepare('SELECT * FROM `useragents-general-overview`');
@@ -79,6 +88,7 @@ final class OverviewGeneral extends AbstractHtml
         yield from $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /** @throws void */
     private function getTableSummary(): string
     {
         $html = '<table class="striped">';
@@ -133,6 +143,7 @@ final class OverviewGeneral extends AbstractHtml
          * body
          */
         $html .= '<tbody>';
+
         foreach ($this->getProviders() as $row) {
             $html .= '<tr>';
 
@@ -215,6 +226,7 @@ final class OverviewGeneral extends AbstractHtml
             }
 
             $info = 'PHP v' . PHP_VERSION . ' | Zend v' . zend_version() . ' | On ' . PHP_OS;
+
             if (extension_loaded('xdebug')) {
                 $info .= ' | with xdebug';
             }
@@ -243,6 +255,7 @@ final class OverviewGeneral extends AbstractHtml
         return $html;
     }
 
+    /** @throws void */
     private function getTableTests(): string
     {
         $html = '<table class="striped">';

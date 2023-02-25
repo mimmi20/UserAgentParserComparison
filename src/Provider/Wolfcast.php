@@ -30,8 +30,7 @@ final class Wolfcast extends AbstractParseProvider
      * Composer package name
      */
     protected string $packageName = 'wolfcast/browser-detection';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation
@@ -81,8 +80,10 @@ final class Wolfcast extends AbstractParseProvider
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
-    {
+    public function parse(
+        string $userAgent,
+        array $headers = [],
+    ): Model\UserAgent {
         $this->parser->setUserAgent($userAgent);
 
         $resultCache = [
@@ -119,19 +120,26 @@ final class Wolfcast extends AbstractParseProvider
         return $result;
     }
 
+    /** @throws void */
     private function hasResult(array $resultRaw): bool
     {
         return $this->isRealResult($resultRaw['browserName']) || $this->isRealResult($resultRaw['osName']);
     }
 
-    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
-    {
+    /** @throws void */
+    private function hydrateBrowser(
+        Model\Browser $browser,
+        array $resultRaw,
+    ): void {
         $browser->setName($this->getRealResult($resultRaw['browserName']));
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw['browserVersion']));
     }
 
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, array $resultRaw): void
-    {
+    /** @throws void */
+    private function hydrateOperatingSystem(
+        Model\OperatingSystem $os,
+        array $resultRaw,
+    ): void {
         if (true !== $this->isRealResult($resultRaw['osName'])) {
             return;
         }
@@ -140,8 +148,11 @@ final class Wolfcast extends AbstractParseProvider
         $os->getVersion()->setComplete($this->getRealResult($resultRaw['osVersion']));
     }
 
-    private function hydrateDevice(Model\Device $device, array $resultRaw): void
-    {
+    /** @throws void */
+    private function hydrateDevice(
+        Model\Device $device,
+        array $resultRaw,
+    ): void {
         if (true !== $resultRaw['isMobile']) {
             return;
         }

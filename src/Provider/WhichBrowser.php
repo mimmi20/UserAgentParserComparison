@@ -38,8 +38,7 @@ final class WhichBrowser extends AbstractParseProvider
      * Composer package name
      */
     protected string $packageName = 'whichbrowser/parser';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation
@@ -79,14 +78,18 @@ final class WhichBrowser extends AbstractParseProvider
     ];
 
     /** @throws PackageNotLoadedException */
-    public function __construct(private readonly WhichBrowserParser $parser, private readonly CacheItemPoolInterface $cache)
-    {
+    public function __construct(
+        private readonly WhichBrowserParser $parser,
+        private readonly CacheItemPoolInterface $cache,
+    ) {
         $this->checkIfInstalled();
     }
 
     /** @throws NoResultFoundException */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
-    {
+    public function parse(
+        string $userAgent,
+        array $headers = [],
+    ): Model\UserAgent {
         $headers['User-Agent'] = $userAgent;
 
         $this->parser->analyse($headers, ['cache' => $this->cache]);
@@ -124,14 +127,18 @@ final class WhichBrowser extends AbstractParseProvider
         return $result;
     }
 
+    /** @throws void */
     private function hydrateBot(Model\Bot $bot, Browser $browserRaw): void
     {
         $bot->setIsBot(true);
         $bot->setName($this->getRealResult($browserRaw->getName()));
     }
 
-    private function hydrateBrowser(Model\Browser $browser, Browser $browserRaw): void
-    {
+    /** @throws void */
+    private function hydrateBrowser(
+        Model\Browser $browser,
+        Browser $browserRaw,
+    ): void {
         if (true === $this->isRealResult($browserRaw->getName(), 'browser', 'name')) {
             $browser->setName($browserRaw->getName());
             $browser->getVersion()->setComplete($this->getRealResult($browserRaw->getVersion()));
@@ -155,20 +162,30 @@ final class WhichBrowser extends AbstractParseProvider
         $browser->getVersion()->setComplete($this->getRealResult($usingRaw->getVersion()));
     }
 
-    private function hydrateRenderingEngine(Model\RenderingEngine $engine, Engine $engineRaw): void
-    {
+    /** @throws void */
+    private function hydrateRenderingEngine(
+        Model\RenderingEngine $engine,
+        Engine $engineRaw,
+    ): void {
         $engine->setName($this->getRealResult($engineRaw->getName()));
         $engine->getVersion()->setComplete($this->getRealResult($engineRaw->getVersion()));
     }
 
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, Os $osRaw): void
-    {
+    /** @throws void */
+    private function hydrateOperatingSystem(
+        Model\OperatingSystem $os,
+        Os $osRaw,
+    ): void {
         $os->setName($this->getRealResult($osRaw->getName()));
         $os->getVersion()->setComplete($this->getRealResult($osRaw->getVersion()));
     }
 
-    private function hydrateDevice(Model\Device $device, Device $deviceRaw, WhichBrowserParser $parser): void
-    {
+    /** @throws void */
+    private function hydrateDevice(
+        Model\Device $device,
+        Device $deviceRaw,
+        WhichBrowserParser $parser,
+    ): void {
         $device->setModel($this->getRealResult($deviceRaw->getModel()));
         $device->setBrand($this->getRealResult($deviceRaw->getManufacturer()));
         $device->setType($this->getRealResult($parser->getType()));

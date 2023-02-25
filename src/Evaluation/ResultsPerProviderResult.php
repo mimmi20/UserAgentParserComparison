@@ -17,23 +17,31 @@ final class ResultsPerProviderResult
 
     /** @var array<int|string, mixed> */
     private array $harmonizedValues;
-
     private string $type;
     private int $sameResultCount           = 0;
     private int $harmonizedSameResultCount = 0;
 
-    /** @param array<mixed> $currentValue */
+    /**
+     * @param array<mixed> $currentValue
+     *
+     * @throws void
+     */
     public function setCurrentValue(array $currentValue): void
     {
         $this->currentValue = $currentValue;
     }
 
-    /** @return array<mixed> */
+    /**
+     * @return array<mixed>
+     *
+     * @throws void
+     */
     public function getCurrentValue(): array
     {
         return $this->currentValue;
     }
 
+    /** @throws void */
     public function setValue(string | null $value): void
     {
         if (null === $value) {
@@ -45,22 +53,29 @@ final class ResultsPerProviderResult
         $this->values = $values;
     }
 
-    /** @return array<int, string> */
+    /**
+     * @return array<int, string>
+     *
+     * @throws void
+     */
     public function getValues(): array
     {
         return $this->values;
     }
 
+    /** @throws void */
     public function setType(string $type): void
     {
         $this->type = $type;
     }
 
+    /** @throws void */
     public function getType(): string
     {
         return $this->type;
     }
 
+    /** @throws void */
     public function evaluate(): void
     {
         $this->sameResultCount           = 0;
@@ -86,22 +101,29 @@ final class ResultsPerProviderResult
         }
     }
 
+    /** @throws void */
     public function getSameResultCount(): int
     {
         return $this->sameResultCount;
     }
 
+    /** @throws void */
     public function getHarmonizedSameResultCount(): int
     {
         return $this->harmonizedSameResultCount;
     }
 
+    /** @throws void */
     private function getHarmonizerClass(): string
     {
         return '\UserAgentParserComparison\Harmonize\\' . ucfirst($this->getType());
     }
 
-    /** @return array<int|string, mixed> */
+    /**
+     * @return array<int|string, mixed>
+     *
+     * @throws void
+     */
     private function getHarmonizedValues(): array
     {
         if (null !== $this->harmonizedValues) {

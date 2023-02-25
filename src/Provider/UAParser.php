@@ -36,8 +36,7 @@ final class UAParser extends AbstractParseProvider
      * Composer package name
      */
     protected string $packageName = 'ua-parser/uap-php';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation
@@ -121,8 +120,10 @@ final class UAParser extends AbstractParseProvider
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
-    {
+    public function parse(
+        string $userAgent,
+        array $headers = [],
+    ): Model\UserAgent {
         $resultRaw = $this->parser->parse($userAgent);
         assert($resultRaw instanceof Client);
 
@@ -159,6 +160,7 @@ final class UAParser extends AbstractParseProvider
         return $result;
     }
 
+    /** @throws void */
     private function hasResult(Client $resultRaw): bool
     {
         if (true === $this->isBot($resultRaw)) {
@@ -176,19 +178,24 @@ final class UAParser extends AbstractParseProvider
         return $this->isRealResult($resultRaw->device->model, 'device', 'model');
     }
 
+    /** @throws void */
     private function isBot(Client $resultRaw): bool
     {
         return 'Spider' === $resultRaw->device->family;
     }
 
+    /** @throws void */
     private function hydrateBot(Model\Bot $bot, Client $resultRaw): void
     {
         $bot->setIsBot(true);
         $bot->setName($this->getRealResult($resultRaw->ua->family, 'bot', 'name'));
     }
 
-    private function hydrateBrowser(Model\Browser $browser, UserAgent $uaRaw): void
-    {
+    /** @throws void */
+    private function hydrateBrowser(
+        Model\Browser $browser,
+        UserAgent $uaRaw,
+    ): void {
         $browser->setName($this->getRealResult($uaRaw->family));
 
         $browser->getVersion()->setMajor($this->getRealResult($uaRaw->major));
@@ -196,8 +203,11 @@ final class UAParser extends AbstractParseProvider
         $browser->getVersion()->setPatch($this->getRealResult($uaRaw->patch));
     }
 
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, OperatingSystem $osRaw): void
-    {
+    /** @throws void */
+    private function hydrateOperatingSystem(
+        Model\OperatingSystem $os,
+        OperatingSystem $osRaw,
+    ): void {
         $os->setName($this->getRealResult($osRaw->family));
 
         $os->getVersion()->setMajor($this->getRealResult($osRaw->major));
@@ -205,8 +215,11 @@ final class UAParser extends AbstractParseProvider
         $os->getVersion()->setPatch($this->getRealResult($osRaw->patch));
     }
 
-    private function hydrateDevice(Model\Device $device, Device $deviceRaw): void
-    {
+    /** @throws void */
+    private function hydrateDevice(
+        Model\Device $device,
+        Device $deviceRaw,
+    ): void {
         $device->setModel($this->getRealResult($deviceRaw->model, 'device', 'model'));
         $device->setBrand($this->getRealResult($deviceRaw->brand, 'device', 'brand'));
     }

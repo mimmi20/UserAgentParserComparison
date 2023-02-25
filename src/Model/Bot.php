@@ -13,39 +13,47 @@ final class Bot
     private string | null $name = null;
     private string | null $type = null;
 
+    /** @throws void */
     public function setIsBot(bool $mode): void
     {
         $this->isBot = $mode;
     }
 
+    /** @throws void */
     public function getIsBot(): bool
     {
         return $this->isBot;
     }
 
+    /** @throws void */
     public function setName(string | null $name): void
     {
         $this->name = $name;
     }
 
+    /** @throws void */
     public function getName(): string | null
     {
         return $this->name;
     }
 
+    /** @throws void */
     public function setType(string | null $type): void
     {
         $this->type = $type;
     }
 
+    /** @throws void */
     public function getType(): string | null
     {
         return $this->type;
     }
 
     /**
-     * @return bool[]|null[]|string[]
+     * @return array<bool>|array<null>|array<string>
      * @phpstan-return array{isBot: bool, name: string|null, type: string|null}
+     *
+     * @throws void
      */
     public function toArray(): array
     {

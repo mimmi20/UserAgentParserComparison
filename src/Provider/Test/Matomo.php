@@ -30,8 +30,7 @@ final class Matomo extends AbstractTestProvider
      * Composer package name
      */
     protected string $packageName = 'matomo/device-detector';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation

@@ -13,35 +13,35 @@ echo 'prepare loading..' . PHP_EOL;
 
 $statementCreateTempResults = $pdo->prepare('CREATE TEMPORARY TABLE IF NOT EXISTS `temp_result` AS (SELECT * FROM `result` ORDER BY `userAgent_id` LIMIT :start, :count)');
 
-$sql = "
+$sql = '
         SELECT
-            GROUP_CONCAT(`resBrowserName` SEPARATOR '~~~') AS `browserName`,
-    GROUP_CONCAT(`resBrowserVersion` SEPARATOR '~~~') AS `browserVersion`,
+            GROUP_CONCAT(`resBrowserName` SEPARATOR \'~~~\') AS `browserName`,
+    GROUP_CONCAT(`resBrowserVersion` SEPARATOR \'~~~\') AS `browserVersion`,
 
-    GROUP_CONCAT(`resEngineName` SEPARATOR '~~~') AS `engineName`,
-    GROUP_CONCAT(`resEngineVersion` SEPARATOR '~~~') AS `engineVersion`,
+    GROUP_CONCAT(`resEngineName` SEPARATOR \'~~~\') AS `engineName`,
+    GROUP_CONCAT(`resEngineVersion` SEPARATOR \'~~~\') AS `engineVersion`,
 
-    GROUP_CONCAT(`resOsName` SEPARATOR '~~~') AS `osName`,
-    GROUP_CONCAT(`resOsVersion` SEPARATOR '~~~') AS `osVersion`,
+    GROUP_CONCAT(`resOsName` SEPARATOR \'~~~\') AS `osName`,
+    GROUP_CONCAT(`resOsVersion` SEPARATOR \'~~~\') AS `osVersion`,
 
-    GROUP_CONCAT(`resDeviceModel` SEPARATOR '~~~') AS `deviceModel`,
-    GROUP_CONCAT(`resDeviceBrand` SEPARATOR '~~~') AS `deviceBrand`,
-    GROUP_CONCAT(`resDeviceType` SEPARATOR '~~~') AS `deviceType`,
+    GROUP_CONCAT(`resDeviceModel` SEPARATOR \'~~~\') AS `deviceModel`,
+    GROUP_CONCAT(`resDeviceBrand` SEPARATOR \'~~~\') AS `deviceBrand`,
+    GROUP_CONCAT(`resDeviceType` SEPARATOR \'~~~\') AS `deviceType`,
 
     IFNULL(SUM(`resDeviceIsMobile`), 0) AS `deviceIsMobileCount`,
     IFNULL(SUM(`resDeviceIsTouch`), 0) AS `deviceIsTouchCount`,
 
     IFNULL(SUM(`resBotIsBot`), 0) AS `isBotCount`,
 
-    GROUP_CONCAT(`resBotName` SEPARATOR '~~~') AS `botName`,
-    GROUP_CONCAT(`resBotType` SEPARATOR '~~~') AS `botType`
+    GROUP_CONCAT(`resBotName` SEPARATOR \'~~~\') AS `botName`,
+    GROUP_CONCAT(`resBotType` SEPARATOR \'~~~\') AS `botType`
         FROM `result`
         WHERE
             `userAgent_id` = :uaId
             AND `provider_id` != :proId
         GROUP BY
             `userAgent_id`
-    ";
+    ';
 
 $statementSelectResultsByAgent = $pdo->prepare($sql);
 

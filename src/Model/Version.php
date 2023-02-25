@@ -35,6 +35,7 @@ final class Version
         'rc',
     ];
 
+    /** @throws void */
     public function setMajor(int | string | null $major): void
     {
         $this->major = $major;
@@ -42,11 +43,13 @@ final class Version
         $this->hydrateComplete();
     }
 
+    /** @throws void */
     public function getMajor(): int | string | null
     {
         return $this->major;
     }
 
+    /** @throws void */
     public function setMinor(int | string | null $minor): void
     {
         $this->minor = $minor;
@@ -54,11 +57,13 @@ final class Version
         $this->hydrateComplete();
     }
 
+    /** @throws void */
     public function getMinor(): int | string | null
     {
         return $this->minor;
     }
 
+    /** @throws void */
     public function setPatch(int | string | null $patch): void
     {
         $this->patch = $patch;
@@ -66,11 +71,13 @@ final class Version
         $this->hydrateComplete();
     }
 
+    /** @throws void */
     public function getPatch(): int | string | null
     {
         return $this->patch;
     }
 
+    /** @throws void */
     public function setAlias(string | null $alias): void
     {
         $this->alias = $alias;
@@ -78,6 +85,7 @@ final class Version
         $this->hydrateComplete();
     }
 
+    /** @throws void */
     public function getAlias(): string | null
     {
         return $this->alias;
@@ -85,6 +93,8 @@ final class Version
 
     /**
      * Set from the complete version string.
+     *
+     * @throws void
      */
     public function setComplete(string | null $complete): void
     {
@@ -92,6 +102,7 @@ final class Version
             // check if the version has only 0 -> so no real result
             // maybe move this out to the Providers itself?
             $left = preg_replace('/[0._]/', '', $complete);
+
             if ('' === $left) {
                 $complete = null;
             }
@@ -102,14 +113,17 @@ final class Version
         $this->complete = $complete;
     }
 
+    /** @throws void */
     public function getComplete(): string | null
     {
         return $this->complete;
     }
 
     /**
-     * @return int[]|null[]|string[]
+     * @return array<int>|array<null>|array<string>
      * @phpstan-return array{major: int|string|null, minor: int|string|null, patch: int|string|null, alias: string|null, complete: string|null}
+     *
+     * @throws void
      */
     public function toArray(): array
     {
@@ -124,6 +138,7 @@ final class Version
         ];
     }
 
+    /** @throws void */
     private function hydrateComplete(): void
     {
         if (null === $this->getMajor() && null === $this->getAlias()) {
@@ -147,6 +162,7 @@ final class Version
         $this->complete = $version;
     }
 
+    /** @throws void */
     private function hydrateFromComplete(string | null $complete): void
     {
         $parts = $this->getCompleteParts($complete);
@@ -158,8 +174,10 @@ final class Version
     }
 
     /**
-     * @return int[]|null[]|string[]
+     * @return array<int>|array<null>|array<string>
      * @phpstan-return array{major: int|string|null, minor: int|string|null, patch: int|string|null, alias: string|null, complete: string|null}
+     *
+     * @throws void
      */
     private function getCompleteParts(string | null $complete): array
     {

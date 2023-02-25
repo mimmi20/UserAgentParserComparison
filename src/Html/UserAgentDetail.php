@@ -4,6 +4,8 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Html;
 
+use JsonException;
+
 use function array_key_exists;
 use function count;
 use function htmlspecialchars;
@@ -21,21 +23,31 @@ final class UserAgentDetail extends AbstractHtml
     /** @var array<array<mixed>> */
     private array $results = [];
 
-    /** @param array<mixed> $userAgent */
+    /**
+     * @param array<mixed> $userAgent
+     *
+     * @throws void
+     */
     public function setUserAgent(array $userAgent): void
     {
         $this->userAgent = $userAgent;
     }
 
-    /** @param array<array<mixed>> $results */
+    /**
+     * @param array<array<mixed>> $results
+     *
+     * @throws void
+     */
     public function setResults(array $results): void
     {
         $this->results = $results;
     }
 
+    /** @throws JsonException */
     public function getHtml(): string
     {
         $addStr = '';
+
         if (null !== $this->userAgent['uaAdditionalHeaders']) {
             $addHeaders = json_decode($this->userAgent['uaAdditionalHeaders'], true, 512, JSON_THROW_ON_ERROR);
 
@@ -74,6 +86,7 @@ $(document).ready(function(){
         return parent::getHtmlCombined($body, $script);
     }
 
+    /** @throws void */
     private function getProvidersTable(): string
     {
         $html = '<table class="striped">';
@@ -142,12 +155,14 @@ $(document).ready(function(){
         return $html;
     }
 
+    /** @throws void */
     private function getRow(array $result): string
     {
         $html = '<tr>';
 
         $html .= '<td>' . $result['proName'] . '<br />';
         $html .= '<small>' . $result['proVersion'] . '</small><br /><small>' . $result['proLastReleaseDate'] . '</small>';
+
         if ($result['resFilename']) {
             $html .= '<br /><small>' . $result['resFilename'] . '</small>';
         }

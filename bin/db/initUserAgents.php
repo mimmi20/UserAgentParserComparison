@@ -185,7 +185,7 @@ foreach ($chain->getProviders() as $provider) {
             "\r" . '%s updated, %s inserted, %s skipped',
             str_pad((string) $updated, 7, ' ', STR_PAD_LEFT),
             str_pad((string) $inserted, 7, ' ', STR_PAD_LEFT),
-            str_pad((string) $skipped, 7, ' ', STR_PAD_LEFT)
+            str_pad((string) $skipped, 7, ' ', STR_PAD_LEFT),
         );
 
         if (in_array($row['uaString'], $skipUserAgents, true)) {
@@ -446,7 +446,7 @@ foreach ($chain->getProviders() as $provider) {
         "\r" . '%s updated, %s inserted, %s skipped',
         str_pad((string) $updated, 7, ' ', STR_PAD_LEFT),
         str_pad((string) $inserted, 7, ' ', STR_PAD_LEFT),
-        str_pad((string) $skipped, 7, ' ', STR_PAD_LEFT)
+        str_pad((string) $skipped, 7, ' ', STR_PAD_LEFT),
     );
 
     echo PHP_EOL . PHP_EOL;

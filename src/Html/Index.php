@@ -6,6 +6,7 @@ namespace UserAgentParserComparison\Html;
 
 final class Index extends AbstractHtml
 {
+    /** @throws void */
     public function getHtml(): string
     {
         $body = '
@@ -27,6 +28,7 @@ final class Index extends AbstractHtml
         return parent::getHtmlCombined($body);
     }
 
+    /** @throws void */
     private function getButtons(): string
     {
         $html = '';
