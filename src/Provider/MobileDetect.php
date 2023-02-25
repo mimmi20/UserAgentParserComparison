@@ -24,8 +24,7 @@ final class MobileDetect extends AbstractParseProvider
      * Composer package name
      */
     protected string $packageName = 'mobiledetect/mobiledetectlib';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation
@@ -64,8 +63,11 @@ final class MobileDetect extends AbstractParseProvider
         ],
     ];
 
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
-    {
+    /** @throws NoResultFoundException */
+    public function parse(
+        string $userAgent,
+        array $headers = [],
+    ): Model\UserAgent {
         $parser = new \Detection\MobileDetect();
         $parser->setHttpHeaders($headers);
         $parser->setUserAgent($userAgent);
@@ -99,13 +101,17 @@ final class MobileDetect extends AbstractParseProvider
         return $result;
     }
 
+    /** @throws void */
     private function hasResult(array $resultRaw): bool
     {
         return null !== $resultRaw['isMobile'];
     }
 
-    private function hydrateDevice(Model\Device $device, array $resultRaw): void
-    {
+    /** @throws void */
+    private function hydrateDevice(
+        Model\Device $device,
+        array $resultRaw,
+    ): void {
         if (true !== $resultRaw['isMobile']) {
             return;
         }

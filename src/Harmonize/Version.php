@@ -11,6 +11,8 @@ final class Version extends AbstractHarmonize
 {
     /**
      * Only compare the major and minor version!
+     *
+     * @throws void
      */
     public static function getHarmonizedValue(mixed $value): mixed
     {
@@ -39,6 +41,8 @@ final class Version extends AbstractHarmonize
      * @param array<int|string, mixed> $values
      *
      * @return array<int|string, mixed>
+     *
+     * @throws void
      */
     public static function getHarmonizedValues(array $values): array
     {

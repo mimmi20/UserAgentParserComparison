@@ -30,8 +30,7 @@ final class Browscap extends AbstractTestProvider
      * Composer package name
      */
     protected string $packageName = 'browscap/browscap';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation

@@ -31,8 +31,7 @@ final class MatomoDeviceDetector extends AbstractParseProvider
      * Composer package name
      */
     protected string $packageName = 'matomo/device-detector';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation
@@ -90,8 +89,10 @@ final class MatomoDeviceDetector extends AbstractParseProvider
     }
 
     /** @throws NoResultFoundException */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
-    {
+    public function parse(
+        string $userAgent,
+        array $headers = [],
+    ): Model\UserAgent {
         $clientHints = ClientHints::factory($headers);
 
         $this->parser->setUserAgent($userAgent);
@@ -134,6 +135,8 @@ final class MatomoDeviceDetector extends AbstractParseProvider
     /**
      * @return array<string, mixed>
      * @phpstan-return array{client: array<mixed>|string|null, operatingSystem: array<mixed>|string|null, device: array<string, mixed>, bot: array<mixed>|bool|null, extra: array<string, mixed>}
+     *
+     * @throws void
      */
     private function getResultRaw(DeviceDetector $dd): array
     {
@@ -184,6 +187,7 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         ];
     }
 
+    /** @throws void */
     private function hasResult(DeviceDetector $dd): bool
     {
         if (true === $dd->isBot()) {
@@ -191,11 +195,13 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         }
 
         $client = $dd->getClient();
+
         if (isset($client['name']) && $this->isRealResult($client['name'])) {
             return true;
         }
 
         $os = $dd->getOs();
+
         if (isset($os['name']) && $this->isRealResult($os['name'])) {
             return true;
         }
@@ -203,8 +209,12 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         return null !== $dd->getDevice();
     }
 
-    /** @param array|bool $botRaw */
-    private function hydrateBot(Model\Bot $bot, $botRaw): void
+    /**
+     * @param array<string, string> $botRaw
+     *
+     * @throws void
+     */
+    private function hydrateBot(Model\Bot $bot, array $botRaw): void
     {
         $bot->setIsBot(true);
 
@@ -219,9 +229,15 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         $bot->setType($this->getRealResult($botRaw['category']));
     }
 
-    /** @param array|string $clientRaw */
-    private function hydrateBrowser(Model\Browser $browser, $clientRaw): void
-    {
+    /**
+     * @param array<string, string> $clientRaw
+     *
+     * @throws void
+     */
+    private function hydrateBrowser(
+        Model\Browser $browser,
+        array $clientRaw,
+    ): void {
         if (isset($clientRaw['name'])) {
             $browser->setName($this->getRealResult($clientRaw['name']));
         }
@@ -233,9 +249,15 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         $browser->getVersion()->setComplete($this->getRealResult($clientRaw['version']));
     }
 
-    /** @param array|string $clientRaw */
-    private function hydrateRenderingEngine(Model\RenderingEngine $engine, $clientRaw): void
-    {
+    /**
+     * @param array<string, string> $clientRaw
+     *
+     * @throws void
+     */
+    private function hydrateRenderingEngine(
+        Model\RenderingEngine $engine,
+        array $clientRaw,
+    ): void {
         if (!isset($clientRaw['engine'])) {
             return;
         }
@@ -243,9 +265,15 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         $engine->setName($this->getRealResult($clientRaw['engine']));
     }
 
-    /** @param array|string $osRaw */
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, $osRaw): void
-    {
+    /**
+     * @param array<string, string> $osRaw
+     *
+     * @throws void
+     */
+    private function hydrateOperatingSystem(
+        Model\OperatingSystem $os,
+        array $osRaw,
+    ): void {
         if (isset($osRaw['name'])) {
             $os->setName($this->getRealResult($osRaw['name']));
         }
@@ -257,8 +285,11 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         $os->getVersion()->setComplete($this->getRealResult($osRaw['version']));
     }
 
-    private function hydrateDevice(Model\Device $device, DeviceDetector $dd): void
-    {
+    /** @throws void */
+    private function hydrateDevice(
+        Model\Device $device,
+        DeviceDetector $dd,
+    ): void {
         $device->setModel($this->getRealResult($dd->getModel()));
         $device->setBrand($this->getRealResult($dd->getBrandName()));
         $device->setType($this->getRealResult($dd->getDeviceName()));

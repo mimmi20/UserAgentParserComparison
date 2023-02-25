@@ -15,12 +15,17 @@ abstract class AbstractHtml
 {
     private int | null $userAgentCount = null;
 
-    public function __construct(protected PDO $pdo, protected string | null $title = null)
-    {
+    /** @throws void */
+    public function __construct(
+        protected PDO $pdo,
+        protected string | null $title = null,
+    ) {
     }
 
+    /** @throws void */
     abstract public function getHtml(): string;
 
+    /** @throws void */
     protected function getUserAgentCount(): int
     {
         if (null === $this->userAgentCount) {
@@ -33,6 +38,7 @@ abstract class AbstractHtml
         return $this->userAgentCount;
     }
 
+    /** @throws void */
     protected function getPercentageMarkup(int $resultFound): string
     {
         $count      = $this->getUserAgentCount();
@@ -49,6 +55,7 @@ abstract class AbstractHtml
         ';
     }
 
+    /** @throws void */
     protected function getUserAgentUrl(string $uaId): string
     {
         $url  = '../../user-agent-detail/' . mb_substr($uaId, 0, 2) . '/' . mb_substr($uaId, 2, 2);
@@ -57,8 +64,11 @@ abstract class AbstractHtml
         return $url;
     }
 
-    protected function getHtmlCombined(string $body, string $script = ''): string
-    {
+    /** @throws void */
+    protected function getHtmlCombined(
+        string $body,
+        string $script = '',
+    ): string {
         return '
 <!DOCTYPE html>
 <html lang="en">

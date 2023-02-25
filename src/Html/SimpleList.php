@@ -12,12 +12,17 @@ final class SimpleList extends AbstractHtml
     /** @var array<array<mixed>> */
     private array $elements = [];
 
-    /** @param array<array<mixed>> $elements */
+    /**
+     * @param array<array<mixed>> $elements
+     *
+     * @throws void
+     */
     public function setElements(array $elements): void
     {
         $this->elements = $elements;
     }
 
+    /** @throws void */
     public function getHtml(): string
     {
         $body = '
@@ -61,6 +66,7 @@ var hackerList = new List(\'simple-list\', options);
         return parent::getHtmlCombined($body, $script);
     }
 
+    /** @throws void */
     private function getList(): string
     {
         $html = '<ul class="list collection">';

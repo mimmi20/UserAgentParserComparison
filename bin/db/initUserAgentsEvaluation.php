@@ -13,38 +13,38 @@ $conn = $entityManager->getConnection();
 
 $userAgentEvaluationRepo = $entityManager->getRepository('UserAgentParserComparison\Entity\UserAgentEvaluation');
 
-$sql       = "
+$sql       = '
 SELECT
     `userAgent_id`,
     COUNT(1) AS `resultCount`,
     SUM(`resResultFound`) AS `resultFound`,
 
-    GROUP_CONCAT(`resBrowserName` SEPARATOR '~~~') AS `browserName`,
-    GROUP_CONCAT(`resBrowserVersion` SEPARATOR '~~~') AS `browserVersion`,
+    GROUP_CONCAT(`resBrowserName` SEPARATOR \'~~~\') AS `browserName`,
+    GROUP_CONCAT(`resBrowserVersion` SEPARATOR \'~~~\') AS `browserVersion`,
 
-    GROUP_CONCAT(`resEngineName` SEPARATOR '~~~') AS `engineName`,
-    GROUP_CONCAT(`resEngineVersion` SEPARATOR '~~~') AS `engineVersion`,
+    GROUP_CONCAT(`resEngineName` SEPARATOR \'~~~\') AS `engineName`,
+    GROUP_CONCAT(`resEngineVersion` SEPARATOR \'~~~\') AS `engineVersion`,
 
-    GROUP_CONCAT(`resOsName` SEPARATOR '~~~') AS `osName`,
-    GROUP_CONCAT(`resOsVersion` SEPARATOR '~~~') AS `osVersion`,
+    GROUP_CONCAT(`resOsName` SEPARATOR \'~~~\') AS `osName`,
+    GROUP_CONCAT(`resOsVersion` SEPARATOR \'~~~\') AS `osVersion`,
 
-    GROUP_CONCAT(`resDeviceModel` SEPARATOR '~~~') AS `deviceModel`,
-    GROUP_CONCAT(`resDeviceBrand` SEPARATOR '~~~') AS `deviceBrand`,
-    GROUP_CONCAT(`resDeviceType` SEPARATOR '~~~') AS `deviceType`,
+    GROUP_CONCAT(`resDeviceModel` SEPARATOR \'~~~\') AS `deviceModel`,
+    GROUP_CONCAT(`resDeviceBrand` SEPARATOR \'~~~\') AS `deviceBrand`,
+    GROUP_CONCAT(`resDeviceType` SEPARATOR \'~~~\') AS `deviceType`,
 
     IFNULL(SUM(`resDeviceIsMobile`), 0) AS `deviceIsMobileCount`,
     IFNULL(SUM(`resDeviceIsTouch`), 0) AS `deviceIsTouchCount`,
 
     IFNULL(SUM(`resBotIsBot`), 0) AS `isBotCount`,
 
-    GROUP_CONCAT(`resBotName` SEPARATOR '~~~') AS `botName`,
-    GROUP_CONCAT(`resBotType` SEPARATOR '~~~') AS `botType`,
+    GROUP_CONCAT(`resBotName` SEPARATOR \'~~~\') AS `botName`,
+    GROUP_CONCAT(`resBotType` SEPARATOR \'~~~\') AS `botType`,
 
     `result`.*
 FROM `result`
 GROUP BY `userAgent_id`
 ORDER BY `userAgent_id`
-";
+';
 $statement = $conn->prepare($sql);
 $results   = $statement->executeQuery();
 
@@ -57,13 +57,13 @@ while ($row = $results->fetchAssociative()) {
     /*
      * Check if already inserted
      */
-    $sql = "
+    $sql = '
         SELECT
             *
         FROM `userAgentEvaluation`
         WHERE
-            `userAgent_id` = '" . $row['userAgent_id'] . "'
-    ";
+            `userAgent_id` = \'' . $row['userAgent_id'] . '\'
+    ';
 
     $result = $conn->executeQuery($sql)->fetchAllAssociative();
 

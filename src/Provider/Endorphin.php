@@ -32,8 +32,7 @@ final class Endorphin extends AbstractParseProvider
      * Composer package name
      */
     protected string $packageName = 'endorphin-studio/browser-detector';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation
@@ -82,8 +81,9 @@ final class Endorphin extends AbstractParseProvider
     ];
 
     /** @throws PackageNotLoadedException */
-    public function __construct(private readonly EndorphinDetector\Detector $parser)
-    {
+    public function __construct(
+        private readonly EndorphinDetector\Detector $parser,
+    ) {
         $this->checkIfInstalled();
     }
 
@@ -92,8 +92,10 @@ final class Endorphin extends AbstractParseProvider
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
-    {
+    public function parse(
+        string $userAgent,
+        array $headers = [],
+    ): Model\UserAgent {
         try {
             $resultRaw = $this->parser->analyse($userAgent);
         } catch (Throwable $e) {
@@ -140,6 +142,7 @@ final class Endorphin extends AbstractParseProvider
         return $result;
     }
 
+    /** @throws void */
     private function hasResult(Result $resultRaw): bool
     {
         if (true === $this->isRealResult($resultRaw->getOs()->getName())) {
@@ -157,27 +160,39 @@ final class Endorphin extends AbstractParseProvider
         return true === $this->isRealResult($resultRaw->getRobot()->getType());
     }
 
-    private function hydrateBot(Model\Bot $bot, EndorphinDetector\Data\Robot $resultRaw): void
-    {
+    /** @throws void */
+    private function hydrateBot(
+        Model\Bot $bot,
+        EndorphinDetector\Data\Robot $resultRaw,
+    ): void {
         $bot->setIsBot(true);
         $bot->setName($this->getRealResult($resultRaw->getName()));
         $bot->setType($this->getRealResult($resultRaw->getType()));
     }
 
-    private function hydrateBrowser(Model\Browser $browser, EndorphinDetector\Data\Browser $resultRaw): void
-    {
+    /** @throws void */
+    private function hydrateBrowser(
+        Model\Browser $browser,
+        EndorphinDetector\Data\Browser $resultRaw,
+    ): void {
         $browser->setName($this->getRealResult($resultRaw->getName()));
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw->getVersion()));
     }
 
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, EndorphinDetector\Data\Os $resultRaw): void
-    {
+    /** @throws void */
+    private function hydrateOperatingSystem(
+        Model\OperatingSystem $os,
+        EndorphinDetector\Data\Os $resultRaw,
+    ): void {
         $os->setName($this->getRealResult($resultRaw->getName()));
         $os->getVersion()->setComplete($this->getRealResult($resultRaw->getVersion()));
     }
 
-    private function hydrateDevice(Model\Device $device, EndorphinDetector\Data\Device $resultRaw): void
-    {
+    /** @throws void */
+    private function hydrateDevice(
+        Model\Device $device,
+        EndorphinDetector\Data\Device $resultRaw,
+    ): void {
         $device->setModel($this->getRealResult($resultRaw->getModel() ? $resultRaw->getModel()->getModel() : null));
         $device->setType($this->getRealResult($resultRaw->getType()));
     }

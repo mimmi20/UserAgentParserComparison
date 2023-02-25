@@ -70,6 +70,7 @@ final class GetBrowser extends AbstractBrowscap
         ],
     ];
 
+    /** @throws void */
     public function __construct()
     {
         // nothing to do here
@@ -80,8 +81,10 @@ final class GetBrowser extends AbstractBrowscap
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
-    {
+    public function parse(
+        string $userAgent,
+        array $headers = [],
+    ): Model\UserAgent {
         $resultRaw = get_browser($userAgent, false);
         assert($resultRaw instanceof stdClass);
 

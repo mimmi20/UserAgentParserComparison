@@ -17,19 +17,30 @@ final class Chain extends AbstractParseProvider
      */
     protected string $name = 'Chain';
 
-    /** @param AbstractProvider[] $providers */
+    /**
+     * @param array<AbstractProvider> $providers
+     *
+     * @throws void
+     */
     public function __construct(private readonly array $providers = [])
     {
     }
 
-    /** @return AbstractProvider[] */
+    /**
+     * @return array<AbstractProvider>
+     *
+     * @throws void
+     */
     public function getProviders(): array
     {
         return $this->providers;
     }
 
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
-    {
+    /** @throws Exception\NoResultFoundException */
+    public function parse(
+        string $userAgent,
+        array $headers = [],
+    ): Model\UserAgent {
         foreach ($this->getProviders() as $provider) {
             if (!$provider instanceof AbstractParseProvider) {
                 continue;

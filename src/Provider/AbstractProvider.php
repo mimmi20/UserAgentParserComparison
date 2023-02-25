@@ -6,6 +6,7 @@ namespace UserAgentParserComparison\Provider;
 
 use Composer\InstalledVersions;
 use DateTimeImmutable;
+use Exception;
 use OutOfBoundsException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 
@@ -35,12 +36,9 @@ abstract class AbstractProvider
      * Composer package name
      */
     protected string $packageName = '';
-
-    protected string $language = '';
-
-    protected bool $local = true;
-
-    protected bool $api = false;
+    protected string $language    = '';
+    protected bool $local         = true;
+    protected bool $api           = false;
 
     /**
      * Per default the provider cannot detect anything
@@ -95,6 +93,8 @@ abstract class AbstractProvider
 
     /**
      * Return the name of the provider
+     *
+     * @throws void
      */
     public function getName(): string
     {
@@ -103,6 +103,8 @@ abstract class AbstractProvider
 
     /**
      * Get the homepage
+     *
+     * @throws void
      */
     public function getHomepage(): string
     {
@@ -111,22 +113,27 @@ abstract class AbstractProvider
 
     /**
      * Get the package name
+     *
+     * @throws void
      */
     public function getPackageName(): string | null
     {
         return $this->packageName;
     }
 
+    /** @throws void */
     public function getLanguage(): string
     {
         return $this->language;
     }
 
+    /** @throws void */
     public function isLocal(): bool
     {
         return $this->local;
     }
 
+    /** @throws void */
     public function isApi(): bool
     {
         return $this->api;
@@ -134,6 +141,8 @@ abstract class AbstractProvider
 
     /**
      * Return the version of the provider
+     *
+     * @throws void
      */
     public function getVersion(): string | null
     {
@@ -146,6 +155,8 @@ abstract class AbstractProvider
 
     /**
      * Get the last change date of the provider
+     *
+     * @throws Exception
      */
     public function getUpdateDate(): DateTimeImmutable | null
     {
@@ -175,6 +186,8 @@ abstract class AbstractProvider
      *
      * @return array<string, array<string, bool>>
      * @phpstan-return array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
+     *
+     * @throws void
      */
     public function getDetectionCapabilities(): array
     {

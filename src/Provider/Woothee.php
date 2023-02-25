@@ -32,8 +32,7 @@ final class Woothee extends AbstractParseProvider
      * Composer package name
      */
     protected string $packageName = 'woothee/woothee';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation
@@ -96,8 +95,10 @@ final class Woothee extends AbstractParseProvider
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
-    {
+    public function parse(
+        string $userAgent,
+        array $headers = [],
+    ): Model\UserAgent {
         try {
             $resultRaw = $this->parser->parse($userAgent);
         } catch (Throwable $e) {
@@ -137,6 +138,7 @@ final class Woothee extends AbstractParseProvider
         return $result;
     }
 
+    /** @throws void */
     private function hasResult(array $resultRaw): bool
     {
         if (isset($resultRaw['category']) && $this->isRealResult($resultRaw['category'], 'device', 'type')) {
@@ -146,11 +148,13 @@ final class Woothee extends AbstractParseProvider
         return isset($resultRaw['name']) && $this->isRealResult($resultRaw['name']);
     }
 
+    /** @throws void */
     private function isBot(array $resultRaw): bool
     {
         return isset($resultRaw['category']) && DataSet::DATASET_CATEGORY_CRAWLER === $resultRaw['category'];
     }
 
+    /** @throws void */
     private function hydrateBot(Model\Bot $bot, array $resultRaw): void
     {
         $bot->setIsBot(true);
@@ -162,8 +166,11 @@ final class Woothee extends AbstractParseProvider
         $bot->setName($this->getRealResult($resultRaw['name'], 'bot', 'name'));
     }
 
-    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
-    {
+    /** @throws void */
+    private function hydrateBrowser(
+        Model\Browser $browser,
+        array $resultRaw,
+    ): void {
         if (isset($resultRaw['name'])) {
             $browser->setName($this->getRealResult($resultRaw['name']));
         }
@@ -175,8 +182,11 @@ final class Woothee extends AbstractParseProvider
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw['version']));
     }
 
-    private function hydrateDevice(Model\Device $device, array $resultRaw): void
-    {
+    /** @throws void */
+    private function hydrateDevice(
+        Model\Device $device,
+        array $resultRaw,
+    ): void {
         if (!isset($resultRaw['category'])) {
             return;
         }

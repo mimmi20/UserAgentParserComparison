@@ -21,10 +21,17 @@ abstract class AbstractParseProvider extends AbstractProvider
      *
      * @throws Exception\NoResultFoundException
      */
-    abstract public function parse(string $userAgent, array $headers = []): Model\UserAgent;
+    abstract public function parse(
+        string $userAgent,
+        array $headers = [],
+    ): Model\UserAgent;
 
-    protected function isRealResult(string | null $value, string | null $group = null, string | null $part = null): bool
-    {
+    /** @throws void */
+    protected function isRealResult(
+        string | null $value,
+        string | null $group = null,
+        string | null $part = null,
+    ): bool {
         if (null === $value) {
             return false;
         }
@@ -50,8 +57,12 @@ abstract class AbstractParseProvider extends AbstractProvider
         return true;
     }
 
-    protected function getRealResult(string | null $value, string | null $group = null, string | null $part = null): string | null
-    {
+    /** @throws void */
+    protected function getRealResult(
+        string | null $value,
+        string | null $group = null,
+        string | null $part = null,
+    ): string | null {
         if (true === $this->isRealResult($value, $group, $part)) {
             return $value;
         }

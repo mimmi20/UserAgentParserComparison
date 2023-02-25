@@ -30,8 +30,7 @@ final class Zsxsoft extends AbstractParseProvider
      * Composer package name
      */
     protected string $packageName = 'zsxsoft/php-useragent';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation
@@ -97,8 +96,10 @@ final class Zsxsoft extends AbstractParseProvider
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
-    {
+    public function parse(
+        string $userAgent,
+        array $headers = [],
+    ): Model\UserAgent {
         $this->parser->analyze($userAgent);
 
         $browser = $this->parser->browser;
@@ -133,6 +134,7 @@ final class Zsxsoft extends AbstractParseProvider
         return $result;
     }
 
+    /** @throws void */
     private function hasResult(array $browser, array $os, array $device): bool
     {
         if (isset($browser['name']) && $this->isRealResult($browser['name'], 'browser', 'name')) {
@@ -150,8 +152,11 @@ final class Zsxsoft extends AbstractParseProvider
         return isset($device['model']) && $this->isRealResult($device['model'], 'device', 'model');
     }
 
-    private function hydrateBrowser(Model\Browser $browser, array $browserRaw): void
-    {
+    /** @throws void */
+    private function hydrateBrowser(
+        Model\Browser $browser,
+        array $browserRaw,
+    ): void {
         if (isset($browserRaw['name'])) {
             $browser->setName($this->getRealResult($browserRaw['name'], 'browser', 'name'));
         }
@@ -163,8 +168,11 @@ final class Zsxsoft extends AbstractParseProvider
         $browser->getVersion()->setComplete($this->getRealResult($browserRaw['version']));
     }
 
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, array $osRaw): void
-    {
+    /** @throws void */
+    private function hydrateOperatingSystem(
+        Model\OperatingSystem $os,
+        array $osRaw,
+    ): void {
         if (isset($osRaw['name'])) {
             $os->setName($this->getRealResult($osRaw['name']));
         }
@@ -176,8 +184,11 @@ final class Zsxsoft extends AbstractParseProvider
         $os->getVersion()->setComplete($this->getRealResult($osRaw['version']));
     }
 
-    private function hydrateDevice(Model\Device $device, array $deviceRaw): void
-    {
+    /** @throws void */
+    private function hydrateDevice(
+        Model\Device $device,
+        array $deviceRaw,
+    ): void {
         if (isset($deviceRaw['model'])) {
             $device->setModel($this->getRealResult($deviceRaw['model'], 'device', 'model'));
         }

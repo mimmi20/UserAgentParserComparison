@@ -30,8 +30,7 @@ final class Donatj extends AbstractTestProvider
      * Composer package name
      */
     protected string $packageName = 'donatj/phpuseragentparser';
-
-    protected string $language = 'PHP';
+    protected string $language    = 'PHP';
 
     /**
      * Set this in each Provider implementation
