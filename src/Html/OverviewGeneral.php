@@ -250,9 +250,7 @@ final class OverviewGeneral extends AbstractHtml
 
         $html .= '</tbody>';
 
-        $html .= '</table>';
-
-        return $html;
+        return $html . '</table>';
     }
 
     /** @throws void */
@@ -292,8 +290,6 @@ final class OverviewGeneral extends AbstractHtml
 
         $html .= '</tbody>';
 
-        $html .= '</table>';
-
-        return $html;
+        return $html . '</table>';
     }
 }

@@ -212,7 +212,7 @@ final class Version
             $result = preg_split('/\d+(?:[._]*\d*)*/', $complete);
 
             foreach ($result as $row) {
-                $row = trim($row);
+                $row = trim((string) $row);
 
                 if ('' === $row) {
                     continue;

@@ -9,7 +9,6 @@ use function array_unique;
 use function count;
 use function explode;
 use function max;
-use function ucfirst;
 
 final class ResultsPerUserAgent
 {
@@ -17,13 +16,13 @@ final class ResultsPerUserAgent
     private array $values;
 
     /** @var array<int|string, mixed> */
-    private array $harmonizedValues;
+    private readonly array $harmonizedValues;
     private string $type;
-    private int | null $foundCount;
-    private int | null $foundCountUnique;
-    private int | null $maxSameResultCount;
-    private int | null $harmonizedFoundUnique;
-    private int | null $harmonizedMaxSameResultCount;
+    private int | null $foundCount                   = null;
+    private int | null $foundCountUnique             = null;
+    private int | null $maxSameResultCount           = null;
+    private int | null $harmonizedFoundUnique        = null;
+    private int | null $harmonizedMaxSameResultCount = null;
 
     /** @throws void */
     public function setValue(string | null $value): void
@@ -119,14 +118,6 @@ final class ResultsPerUserAgent
      */
     private function getHarmonizedValues(): array
     {
-        if (null !== $this->harmonizedValues) {
-            return $this->harmonizedValues;
-        }
-
-        $class = '\UserAgentParserComparison\Harmonize\\' . ucfirst($this->getType());
-
-        $this->harmonizedValues =  $class::getHarmonizedValues($this->getValues());
-
         return $this->harmonizedValues;
     }
 

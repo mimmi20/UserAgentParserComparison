@@ -20,7 +20,7 @@ final class Version extends AbstractHarmonize
             return $value;
         }
 
-        preg_match('/\d+(?:\.*\d*)[1,2]*/', $value, $result);
+        preg_match('/\d+(?:\.*\d*)[1,2]*/', (string) $value, $result);
 
         if (!isset($result[0])) {
             return $value;

@@ -58,10 +58,9 @@ abstract class AbstractHtml
     /** @throws void */
     protected function getUserAgentUrl(string $uaId): string
     {
-        $url  = '../../user-agent-detail/' . mb_substr($uaId, 0, 2) . '/' . mb_substr($uaId, 2, 2);
-        $url .= '/' . $uaId . '.html';
+        $url = '../../user-agent-detail/' . mb_substr($uaId, 0, 2) . '/' . mb_substr($uaId, 2, 2);
 
-        return $url;
+        return $url . ('/' . $uaId . '.html');
     }
 
     /** @throws void */
