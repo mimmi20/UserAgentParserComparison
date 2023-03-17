@@ -114,12 +114,8 @@ final class UserAgent
         return $this->getDevice()->getIsMobile();
     }
 
-    /**
-     * @param mixed $providerResultRaw
-     *
-     * @throws void
-     */
-    public function setProviderResultRaw($providerResultRaw): void
+    /** @throws void */
+    public function setProviderResultRaw(mixed $providerResultRaw): void
     {
         $this->providerResultRaw = $providerResultRaw;
     }

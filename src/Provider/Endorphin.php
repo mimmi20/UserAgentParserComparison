@@ -127,17 +127,11 @@ final class Endorphin extends AbstractParseProvider
         /*
          * hydrate the result
          */
-        if ($resultRaw->getBrowser() instanceof EndorphinDetector\Data\Browser) {
-            $this->hydrateBrowser($result->getBrowser(), $resultRaw->getBrowser());
-        }
+        $this->hydrateBrowser($result->getBrowser(), $resultRaw->getBrowser());
 
-        if ($resultRaw->getOs() instanceof EndorphinDetector\Data\OS) {
-            $this->hydrateOperatingSystem($result->getOperatingSystem(), $resultRaw->getOs());
-        }
+        $this->hydrateOperatingSystem($result->getOperatingSystem(), $resultRaw->getOs());
 
-        if ($resultRaw->getDevice() instanceof EndorphinDetector\Data\Device) {
-            $this->hydrateDevice($result->getDevice(), $resultRaw->getDevice());
-        }
+        $this->hydrateDevice($result->getDevice(), $resultRaw->getDevice());
 
         return $result;
     }

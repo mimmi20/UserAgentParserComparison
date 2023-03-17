@@ -16,7 +16,7 @@ abstract class AbstractHarmonize
         }
 
         foreach (static::$replaces as $replace => $searches) {
-            $value = str_ireplace($searches, $replace, $value);
+            $value = str_ireplace((string) $searches, (string) $replace, (string) $value);
         }
 
         return $value;

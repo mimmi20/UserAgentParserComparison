@@ -9,6 +9,7 @@ use JsonException;
 use function array_key_exists;
 use function count;
 use function htmlspecialchars;
+use function is_countable;
 use function json_decode;
 use function print_r;
 use function round;
@@ -49,13 +50,13 @@ final class UserAgentDetail extends AbstractHtml
         $addStr = '';
 
         if (null !== $this->userAgent['uaAdditionalHeaders']) {
-            $addHeaders = json_decode($this->userAgent['uaAdditionalHeaders'], true, 512, JSON_THROW_ON_ERROR);
+            $addHeaders = json_decode((string) $this->userAgent['uaAdditionalHeaders'], true, 512, JSON_THROW_ON_ERROR);
 
-            if (0 < count($addHeaders)) {
+            if (0 < (is_countable($addHeaders) ? count($addHeaders) : 0)) {
                 $addStr = '<br /><strong>Additional headers</strong><br />';
 
                 foreach ($addHeaders as $key => $value) {
-                    $addStr .= '<strong>' . htmlspecialchars($key) . '</strong> ' . htmlspecialchars($value) . '<br />';
+                    $addStr .= '<strong>' . htmlspecialchars((string) $key) . '</strong> ' . htmlspecialchars((string) $value) . '<br />';
                 }
             }
         }
@@ -65,7 +66,7 @@ final class UserAgentDetail extends AbstractHtml
     <h1 class="header center orange-text">User agent detail</h1>
     <div class="row center">
         <h5 class="header light">
-            ' . htmlspecialchars($this->userAgent['uaString']) . '
+            ' . htmlspecialchars((string) $this->userAgent['uaString']) . '
             ' . $addStr . '
         </h5>
     </div>
@@ -150,12 +151,14 @@ $(document).ready(function(){
             $html .= $this->getRow($result);
         }
 
-        $html .= '</table>';
-
-        return $html;
+        return $html . '</table>';
     }
 
-    /** @throws void */
+    /**
+     * @throws void
+     *
+     * @SuppressWarnings(PHPMD.DevelopmentCodeFragment)
+     */
     private function getRow(array $result): string
     {
         $html = '<tr>';
@@ -176,9 +179,7 @@ $(document).ready(function(){
                     </td>
                 ';
 
-            $html .= '</tr>';
-
-            return $html;
+            return $html . '</tr>';
         }
 
         /*
@@ -292,8 +293,6 @@ $(document).ready(function(){
 
                 </td>';
 
-        $html .= '</tr>';
-
-        return $html;
+        return $html . '</tr>';
     }
 }

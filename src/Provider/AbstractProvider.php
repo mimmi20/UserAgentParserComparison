@@ -17,6 +17,8 @@ use function file_get_contents;
 use function json_decode;
 use function reset;
 
+use const JSON_THROW_ON_ERROR;
+
 /**
  * Abstraction for all providers
  */
@@ -160,7 +162,7 @@ abstract class AbstractProvider
      */
     public function getUpdateDate(): DateTimeImmutable | null
     {
-        $installed = json_decode(file_get_contents('vendor/composer/installed.json'), true);
+        $installed = json_decode(file_get_contents('vendor/composer/installed.json'), true, 512, JSON_THROW_ON_ERROR);
         $package   = $this->getPackageName();
 
         $filtered = array_filter(
@@ -197,7 +199,7 @@ abstract class AbstractProvider
     /** @throws PackageNotLoadedException */
     protected function checkIfInstalled(): void
     {
-        $installed = json_decode(file_get_contents('vendor/composer/installed.json'), true);
+        $installed = json_decode(file_get_contents('vendor/composer/installed.json'), true, 512, JSON_THROW_ON_ERROR);
         $package   = $this->getPackageName();
 
         $filtered = array_filter(

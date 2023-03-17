@@ -16,7 +16,7 @@ final class ResultsPerProviderResult
     private array $values;
 
     /** @var array<int|string, mixed> */
-    private array $harmonizedValues;
+    private readonly array $harmonizedValues;
     private string $type;
     private int $sameResultCount           = 0;
     private int $harmonizedSameResultCount = 0;
@@ -81,14 +81,6 @@ final class ResultsPerProviderResult
         $this->sameResultCount           = 0;
         $this->harmonizedSameResultCount = 0;
 
-        foreach ($this->getValues() as $value) {
-            if ($this->getCurrentValue() !== $value) {
-                continue;
-            }
-
-            ++$this->sameResultCount;
-        }
-
         $class                  = $this->getHarmonizerClass();
         $harmonizedCurrentValue = $class::getHarmonizedValue($this->getCurrentValue());
 
@@ -126,14 +118,6 @@ final class ResultsPerProviderResult
      */
     private function getHarmonizedValues(): array
     {
-        if (null !== $this->harmonizedValues) {
-            return $this->harmonizedValues;
-        }
-
-        $class = $this->getHarmonizerClass();
-
-        $this->harmonizedValues = $class::getHarmonizedValues($this->getValues());
-
         return $this->harmonizedValues;
     }
 }
