@@ -98,12 +98,12 @@ final class Version
      */
     public function setComplete(string | null $complete): void
     {
-        if (null !== $complete) {
+        if ($complete !== null) {
             // check if the version has only 0 -> so no real result
             // maybe move this out to the Providers itself?
             $left = preg_replace('/[0._]/', '', $complete);
 
-            if ('' === $left) {
+            if ($left === '') {
                 $complete = null;
             }
         }
@@ -128,34 +128,33 @@ final class Version
     public function toArray(): array
     {
         return [
-            'major' => $this->getMajor(),
-            'minor' => $this->getMinor(),
-            'patch' => $this->getPatch(),
-
             'alias' => $this->getAlias(),
 
             'complete' => $this->getComplete(),
+            'major' => $this->getMajor(),
+            'minor' => $this->getMinor(),
+            'patch' => $this->getPatch(),
         ];
     }
 
     /** @throws void */
     private function hydrateComplete(): void
     {
-        if (null === $this->getMajor() && null === $this->getAlias()) {
+        if ($this->getMajor() === null && $this->getAlias() === null) {
             return;
         }
 
         $version = $this->getMajor();
 
-        if (null !== $this->getMinor()) {
+        if ($this->getMinor() !== null) {
             $version .= '.' . $this->getMinor();
         }
 
-        if (null !== $this->getPatch()) {
+        if ($this->getPatch() !== null) {
             $version .= '.' . $this->getPatch();
         }
 
-        if (null !== $this->getAlias()) {
+        if ($this->getAlias() !== null) {
             $version = $this->getAlias() . ' - ' . $version;
         }
 
@@ -182,28 +181,28 @@ final class Version
     private function getCompleteParts(string | null $complete): array
     {
         $versionParts = [
+            'alias' => null,
             'major' => null,
             'minor' => null,
             'patch' => null,
-            'alias' => null,
         ];
 
-        if (null !== $complete) {
+        if ($complete !== null) {
             // only digits
             preg_match('/\d+(?:[._]*\d*)*/', $complete, $result);
 
             if (0 < count($result)) {
                 $parts = preg_split('/[._]/', $result[0]);
 
-                if (isset($parts[0]) && '' !== $parts[0]) {
+                if (isset($parts[0]) && $parts[0] !== '') {
                     $versionParts['major'] = $parts[0];
                 }
 
-                if (isset($parts[1]) && '' !== $parts[1]) {
+                if (isset($parts[1]) && $parts[1] !== '') {
                     $versionParts['minor'] = $parts[1];
                 }
 
-                if (isset($parts[2]) && '' !== $parts[2]) {
+                if (isset($parts[2]) && $parts[2] !== '') {
                     $versionParts['patch'] = $parts[2];
                 }
             }
@@ -214,7 +213,7 @@ final class Version
             foreach ($result as $row) {
                 $row = trim((string) $row);
 
-                if ('' === $row) {
+                if ($row === '') {
                     continue;
                 }
 

@@ -23,14 +23,22 @@ final class BrowscapLite extends AbstractBrowscap
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [
+        'bot' => [
+            'isBot' => false,
+            'name' => false,
+            'type' => false,
+        ],
         'browser' => [
             'name' => true,
             'version' => true,
         ],
 
-        'renderingEngine' => [
-            'name' => false,
-            'version' => false,
+        'device' => [
+            'brand' => false,
+            'isMobile' => true,
+            'isTouch' => false,
+            'model' => false,
+            'type' => true,
         ],
 
         'operatingSystem' => [
@@ -38,18 +46,9 @@ final class BrowscapLite extends AbstractBrowscap
             'version' => false,
         ],
 
-        'device' => [
-            'model' => false,
-            'brand' => false,
-            'type' => true,
-            'isMobile' => true,
-            'isTouch' => false,
-        ],
-
-        'bot' => [
-            'isBot' => false,
+        'renderingEngine' => [
             'name' => false,
-            'type' => false,
+            'version' => false,
         ],
     ];
 }

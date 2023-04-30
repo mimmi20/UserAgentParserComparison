@@ -33,7 +33,12 @@ abstract class AbstractBrowscap extends AbstractParseProvider
 
     /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
-        'general' => ['/^unknown$/i'],
+        'bot' => [
+            'name' => [
+                '/^General Crawlers/i',
+                '/^Generic/i',
+            ],
+        ],
 
         'browser' => [
             'name' => ['/^Default Browser$/i'],
@@ -45,13 +50,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
                 '/desktop$/i',
             ],
         ],
-
-        'bot' => [
-            'name' => [
-                '/^General Crawlers/i',
-                '/^Generic/i',
-            ],
-        ],
+        'general' => ['/^unknown$/i'],
     ];
 
     /** @throws void */
@@ -65,17 +64,15 @@ abstract class AbstractBrowscap extends AbstractParseProvider
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(
-        string $userAgent,
-        array $headers = [],
-    ): Model\UserAgent {
+    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    {
         $resultRaw = $this->parser->getBrowser($userAgent);
         assert($resultRaw instanceof stdClass);
 
         /*
          * No result found?
          */
-        if (true !== $this->hasResult($resultRaw)) {
+        if ($this->hasResult($resultRaw) !== true) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -88,7 +85,7 @@ abstract class AbstractBrowscap extends AbstractParseProvider
         /*
          * Bot detection (does only work with full_php_browscap.ini)
          */
-        if (true === $this->isBot($resultRaw)) {
+        if ($this->isBot($resultRaw) === true) {
             $this->hydrateBot($result->getBot(), $resultRaw);
 
             return $result;
@@ -108,29 +105,40 @@ abstract class AbstractBrowscap extends AbstractParseProvider
     /** @throws void */
     protected function hasResult(stdClass $resultRaw): bool
     {
-        if (property_exists($resultRaw, 'crawler') && true === $resultRaw->crawler) {
+        if (property_exists($resultRaw, 'crawler') && $resultRaw->crawler === true) {
             return true;
         }
 
-        if (property_exists($resultRaw, 'browser') && true === $this->isRealResult($resultRaw->browser, 'browser', 'name')) {
+        if (
+            property_exists($resultRaw, 'browser')
+            && $this->isRealResult($resultRaw->browser, 'browser', 'name') === true
+        ) {
             return true;
         }
 
-        if (property_exists($resultRaw, 'platform') && true === $this->isRealResult($resultRaw->platform)) {
+        if (
+            property_exists($resultRaw, 'platform')
+            && $this->isRealResult($resultRaw->platform) === true
+        ) {
             return true;
         }
 
-        if (property_exists($resultRaw, 'renderingengine_name') && true === $this->isRealResult($resultRaw->renderingengine_name)) {
+        if (
+            property_exists($resultRaw, 'renderingengine_name')
+            && $this->isRealResult($resultRaw->renderingengine_name) === true
+        ) {
             return true;
         }
 
-        return property_exists($resultRaw, 'device_name') && true === $this->isRealResult($resultRaw->device_name);
+        return property_exists($resultRaw, 'device_name') && $this->isRealResult(
+            $resultRaw->device_name,
+        ) === true;
     }
 
     /** @throws void */
     protected function isBot(stdClass $resultRaw): bool
     {
-        return property_exists($resultRaw, 'crawler') && true === $resultRaw->crawler;
+        return property_exists($resultRaw, 'crawler') && $resultRaw->crawler === true;
     }
 
     /** @throws void */
@@ -142,7 +150,10 @@ abstract class AbstractBrowscap extends AbstractParseProvider
             $bot->setName($this->getRealResult($resultRaw->browser, 'bot', 'name'));
         }
 
-        if (property_exists($resultRaw, 'issyndicationreader') && true === $resultRaw->issyndicationreader) {
+        if (
+            property_exists($resultRaw, 'issyndicationreader')
+            && $resultRaw->issyndicationreader === true
+        ) {
             $bot->setType('RSS');
         } elseif (property_exists($resultRaw, 'browser_type')) {
             $bot->setType($this->getRealResult($resultRaw->browser_type));
@@ -150,10 +161,8 @@ abstract class AbstractBrowscap extends AbstractParseProvider
     }
 
     /** @throws void */
-    protected function hydrateBrowser(
-        Model\Browser $browser,
-        stdClass $resultRaw,
-    ): void {
+    protected function hydrateBrowser(Model\Browser $browser, stdClass $resultRaw): void
+    {
         if (property_exists($resultRaw, 'browser')) {
             $browser->setName($this->getRealResult($resultRaw->browser, 'browser', 'name'));
         }
@@ -166,10 +175,8 @@ abstract class AbstractBrowscap extends AbstractParseProvider
     }
 
     /** @throws void */
-    protected function hydrateRenderingEngine(
-        Model\RenderingEngine $engine,
-        stdClass $resultRaw,
-    ): void {
+    protected function hydrateRenderingEngine(Model\RenderingEngine $engine, stdClass $resultRaw): void
+    {
         if (property_exists($resultRaw, 'renderingengine_name')) {
             $engine->setName($this->getRealResult($resultRaw->renderingengine_name));
         }
@@ -182,10 +189,8 @@ abstract class AbstractBrowscap extends AbstractParseProvider
     }
 
     /** @throws void */
-    protected function hydrateOperatingSystem(
-        Model\OperatingSystem $os,
-        stdClass $resultRaw,
-    ): void {
+    protected function hydrateOperatingSystem(Model\OperatingSystem $os, stdClass $resultRaw): void
+    {
         if (property_exists($resultRaw, 'platform')) {
             $os->setName($this->getRealResult($resultRaw->platform));
         }
@@ -198,10 +203,8 @@ abstract class AbstractBrowscap extends AbstractParseProvider
     }
 
     /** @throws void */
-    protected function hydrateDevice(
-        Model\Device $device,
-        stdClass $resultRaw,
-    ): void {
+    protected function hydrateDevice(Model\Device $device, stdClass $resultRaw): void
+    {
         if (property_exists($resultRaw, 'device_name')) {
             $device->setModel($this->getRealResult($resultRaw->device_name, 'device', 'model'));
         }
@@ -214,11 +217,14 @@ abstract class AbstractBrowscap extends AbstractParseProvider
             $device->setType($this->getRealResult($resultRaw->device_type));
         }
 
-        if (property_exists($resultRaw, 'ismobiledevice') && true === $resultRaw->ismobiledevice) {
+        if (property_exists($resultRaw, 'ismobiledevice') && $resultRaw->ismobiledevice === true) {
             $device->setIsMobile(true);
         }
 
-        if (!property_exists($resultRaw, 'device_pointing_method') || 'touchscreen' !== $resultRaw->device_pointing_method) {
+        if (
+            !property_exists($resultRaw, 'device_pointing_method')
+            || $resultRaw->device_pointing_method !== 'touchscreen'
+        ) {
             return;
         }
 

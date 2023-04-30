@@ -46,7 +46,25 @@ final class BrowserDetector extends AbstractParseProvider
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [
+        'bot' => [
+            'isBot' => true,
+            'name' => true,
+            'type' => true,
+        ],
         'browser' => [
+            'name' => true,
+            'version' => true,
+        ],
+
+        'device' => [
+            'brand' => true,
+            'isMobile' => true,
+            'isTouch' => false,
+            'model' => true,
+            'type' => true,
+        ],
+
+        'operatingSystem' => [
             'name' => true,
             'version' => true,
         ],
@@ -55,37 +73,17 @@ final class BrowserDetector extends AbstractParseProvider
             'name' => true,
             'version' => true,
         ],
-
-        'operatingSystem' => [
-            'name' => true,
-            'version' => true,
-        ],
-
-        'device' => [
-            'model' => true,
-            'brand' => true,
-            'type' => true,
-            'isMobile' => true,
-            'isTouch' => false,
-        ],
-
-        'bot' => [
-            'isBot' => true,
-            'name' => true,
-            'type' => true,
-        ],
     ];
 
     /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
-        'general' => ['/^UNK$/i'],
-
         'bot' => [
             'name' => [
                 '/^Bot$/i',
                 '/^Generic Bot$/i',
             ],
         ],
+        'general' => ['/^UNK$/i'],
     ];
 
     /** @throws void */
@@ -99,16 +97,14 @@ final class BrowserDetector extends AbstractParseProvider
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(
-        string $userAgent,
-        array $headers = [],
-    ): Model\UserAgent {
+    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    {
         $parserResult = ($this->parser)($userAgent);
 
         /*
          * No result found?
          */
-        if (true !== $this->hasResult($parserResult)) {
+        if ($this->hasResult($parserResult) !== true) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -121,7 +117,7 @@ final class BrowserDetector extends AbstractParseProvider
         /*
          * Bot detection
          */
-        if (true === $result->isBot()) {
+        if ($result->isBot() === true) {
             $this->hydrateBot($result->getBot(), $parserResult->getBrowser()->getType()->isBot());
 
             return $result;
@@ -147,24 +143,23 @@ final class BrowserDetector extends AbstractParseProvider
     private function getResultRaw(ResultInterface $result): array
     {
         return [
+            'bot' => null,
             'client' => $result->getBrowser()->getName(),
-            'operatingSystem' => $result->getOs()->getName(),
 
             'device' => [
                 'brand' => $result->getDevice()->getBrand()->getName(),
                 'brandName' => $result->getDevice()->getBrand()->getBrandName(),
 
-                'model' => $result->getDevice()->getMarketingName(),
-
                 'device' => $result->getDevice()->getDeviceName(),
                 'deviceName' => $result->getDevice()->getMarketingName(),
-            ],
 
-            'bot' => null,
+                'model' => $result->getDevice()->getMarketingName(),
+            ],
 
             'extra' => [
                 'isBot' => $result->getBrowser()->getType()->isBot(),
             ],
+            'operatingSystem' => $result->getOs()->getName(),
         ];
     }
 
@@ -177,25 +172,27 @@ final class BrowserDetector extends AbstractParseProvider
 
         $client = $result->getBrowser()->getName();
 
-        if (null !== $client && $this->isRealResult($client)) {
+        if ($client !== null && $this->isRealResult($client)) {
             return true;
         }
 
         $os = $result->getOs()->getName();
 
-        if (null !== $os && $this->isRealResult($os)) {
+        if ($os !== null && $this->isRealResult($os)) {
             return true;
         }
 
         $engine = $result->getEngine()->getName();
 
-        if (null !== $engine && $this->isRealResult($engine)) {
+        if ($engine !== null && $this->isRealResult($engine)) {
             return true;
         }
 
         $device = $result->getDevice()->getDeviceName();
 
-        return null !== $device && false === mb_stripos($device, 'general') && $this->isRealResult($device);
+        return $device !== null && mb_stripos($device, 'general') === false && $this->isRealResult(
+            $device,
+        );
     }
 
     /**
@@ -219,10 +216,8 @@ final class BrowserDetector extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hydrateBrowser(
-        Model\Browser $browser,
-        BrowserInterface $clientRaw,
-    ): void {
+    private function hydrateBrowser(Model\Browser $browser, BrowserInterface $clientRaw): void
+    {
         if ($clientRaw->getName()) {
             $browser->setName($this->getRealResult($clientRaw->getName()));
         }
@@ -231,14 +226,14 @@ final class BrowserDetector extends AbstractParseProvider
             return;
         }
 
-        $browser->getVersion()->setComplete($this->getRealResult($clientRaw->getVersion()->getVersion()));
+        $browser->getVersion()->setComplete(
+            $this->getRealResult($clientRaw->getVersion()->getVersion()),
+        );
     }
 
     /** @throws void */
-    private function hydrateRenderingEngine(
-        Model\RenderingEngine $engine,
-        EngineInterface $clientRaw,
-    ): void {
+    private function hydrateRenderingEngine(Model\RenderingEngine $engine, EngineInterface $clientRaw): void
+    {
         if (!$clientRaw->getName()) {
             return;
         }
@@ -247,10 +242,8 @@ final class BrowserDetector extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hydrateOperatingSystem(
-        Model\OperatingSystem $os,
-        OsInterface $osRaw,
-    ): void {
+    private function hydrateOperatingSystem(Model\OperatingSystem $os, OsInterface $osRaw): void
+    {
         if ($osRaw->getName()) {
             $os->setName($this->getRealResult($osRaw->getName()));
         }
@@ -263,24 +256,22 @@ final class BrowserDetector extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hydrateDevice(
-        Model\Device $device,
-        DeviceInterface $result,
-    ): void {
+    private function hydrateDevice(Model\Device $device, DeviceInterface $result): void
+    {
         $deviceName = $result->getDeviceName();
 
-        if (null !== $deviceName && false !== mb_stripos($deviceName, 'general')) {
+        if ($deviceName !== null && mb_stripos($deviceName, 'general') !== false) {
             $device->setModel($this->getRealResult($deviceName));
         }
 
         $device->setBrand($this->getRealResult($result->getBrand()->getName()));
         $device->setType($this->getRealResult($result->getType()->getName()));
 
-        if (true === $result->getType()->isMobile()) {
+        if ($result->getType()->isMobile() === true) {
             $device->setIsMobile(true);
         }
 
-        if (true !== $result->getDisplay()->hasTouch()) {
+        if ($result->getDisplay()->hasTouch() !== true) {
             return;
         }
 

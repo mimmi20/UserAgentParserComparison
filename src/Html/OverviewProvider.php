@@ -9,11 +9,8 @@ use PDO;
 final class OverviewProvider extends AbstractHtml
 {
     /** @throws void */
-    public function __construct(
-        PDO $pdo,
-        private readonly array $provider,
-        string | null $title = null,
-    ) {
+    public function __construct(PDO $pdo, private readonly array $provider, string | null $title = null)
+    {
         parent::__construct($pdo, $title);
     }
 
@@ -80,19 +77,19 @@ final class OverviewProvider extends AbstractHtml
 
         $result = $statement->fetch();
 
-        if (false === $result) {
+        if ($result === false) {
             $result = [
-                'resultFound' => 0,
+                'asBotDetected' => 0,
+                'asMobileDetected' => 0,
+                'botNameFound' => 0,
+                'botTypeFound' => 0,
                 'browserFound' => 0,
-                'engineFound' => 0,
-                'osFound' => 0,
                 'deviceBrandFound' => 0,
                 'deviceModelFound' => 0,
                 'deviceTypeFound' => 0,
-                'asMobileDetected' => 0,
-                'asBotDetected' => 0,
-                'botNameFound' => 0,
-                'botTypeFound' => 0,
+                'engineFound' => 0,
+                'osFound' => 0,
+                'resultFound' => 0,
             ];
         }
 

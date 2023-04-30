@@ -14,9 +14,7 @@ final class UserAgent
     private OperatingSystem $operatingSystem;
     private Device $device;
     private Bot $bot;
-
-    /** @var mixed */
-    private $providerResultRaw;
+    private mixed $providerResultRaw;
 
     /** @throws void */
     public function __construct(
@@ -120,12 +118,8 @@ final class UserAgent
         $this->providerResultRaw = $providerResultRaw;
     }
 
-    /**
-     * @return mixed
-     *
-     * @throws void
-     */
-    public function getProviderResultRaw()
+    /** @throws void */
+    public function getProviderResultRaw(): mixed
     {
         return $this->providerResultRaw;
     }
@@ -139,15 +133,15 @@ final class UserAgent
     public function toArray(bool $includeResultRaw = false): array
     {
         $data = [
-            'browser' => $this->getBrowser()->toArray(),
-            'renderingEngine' => $this->getRenderingEngine()->toArray(),
-            'operatingSystem' => $this->getOperatingSystem()->toArray(),
-            'device' => $this->getDevice()->toArray(),
             'bot' => $this->getBot()->toArray(),
+            'browser' => $this->getBrowser()->toArray(),
+            'device' => $this->getDevice()->toArray(),
+            'operatingSystem' => $this->getOperatingSystem()->toArray(),
+            'renderingEngine' => $this->getRenderingEngine()->toArray(),
         ];
 
         // should be only used for debug
-        if (true === $includeResultRaw) {
+        if ($includeResultRaw === true) {
             $data['providerResultRaw'] = $this->getProviderResultRaw();
         }
 

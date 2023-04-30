@@ -11,7 +11,7 @@ abstract class AbstractHarmonize
     /** @throws void */
     public static function getHarmonizedValue(mixed $value): mixed
     {
-        if (null === $value) {
+        if ($value === null) {
             return $value;
         }
 

@@ -16,7 +16,7 @@ final class Version extends AbstractHarmonize
      */
     public static function getHarmonizedValue(mixed $value): mixed
     {
-        if (null === $value) {
+        if ($value === null) {
             return $value;
         }
 
@@ -28,7 +28,7 @@ final class Version extends AbstractHarmonize
 
         $useValue = $result[0];
 
-        if (false === mb_stripos($useValue, '.')) {
+        if (mb_stripos($useValue, '.') === false) {
             $useValue .= '.0';
         }
 

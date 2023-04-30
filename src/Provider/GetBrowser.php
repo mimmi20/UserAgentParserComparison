@@ -40,14 +40,22 @@ final class GetBrowser extends AbstractBrowscap
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [
+        'bot' => [
+            'isBot' => true,
+            'name' => true,
+            'type' => true,
+        ],
         'browser' => [
             'name' => true,
             'version' => true,
         ],
 
-        'renderingEngine' => [
-            'name' => true,
-            'version' => true,
+        'device' => [
+            'brand' => true,
+            'isMobile' => true,
+            'isTouch' => true,
+            'model' => true,
+            'type' => true,
         ],
 
         'operatingSystem' => [
@@ -55,18 +63,9 @@ final class GetBrowser extends AbstractBrowscap
             'version' => true,
         ],
 
-        'device' => [
-            'model' => true,
-            'brand' => true,
-            'type' => true,
-            'isMobile' => true,
-            'isTouch' => true,
-        ],
-
-        'bot' => [
-            'isBot' => true,
+        'renderingEngine' => [
             'name' => true,
-            'type' => true,
+            'version' => true,
         ],
     ];
 
@@ -81,17 +80,15 @@ final class GetBrowser extends AbstractBrowscap
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(
-        string $userAgent,
-        array $headers = [],
-    ): Model\UserAgent {
+    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    {
         $resultRaw = get_browser($userAgent, false);
         assert($resultRaw instanceof stdClass);
 
         /*
          * No result found?
          */
-        if (true !== $this->hasResult($resultRaw)) {
+        if ($this->hasResult($resultRaw) !== true) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -104,7 +101,7 @@ final class GetBrowser extends AbstractBrowscap
         /*
          * Bot detection (does only work with full_php_browscap.ini)
          */
-        if (true === $this->isBot($resultRaw)) {
+        if ($this->isBot($resultRaw) === true) {
             $this->hydrateBot($result->getBot(), $resultRaw);
 
             return $result;

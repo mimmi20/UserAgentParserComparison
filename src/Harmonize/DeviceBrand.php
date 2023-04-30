@@ -8,14 +8,13 @@ final class DeviceBrand extends AbstractHarmonize
 {
     /** @var array<string, array<int, string>> */
     protected static array $replaces = [
+        'BlackBerry' => ['RIM'],
+
+        'HCL' => ['HCLme'],
         'Sony' => [
             'Sony Ericsson',
             'SonyEricsson',
         ],
-
-        'BlackBerry' => ['RIM'],
-
-        'HCL' => ['HCLme'],
 
         'TechnoTrend' => ['TechnoTrend Goerler/Kathrein'],
     ];

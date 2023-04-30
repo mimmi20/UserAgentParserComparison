@@ -40,7 +40,25 @@ final class MatomoDeviceDetector extends AbstractParseProvider
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [
+        'bot' => [
+            'isBot' => true,
+            'name' => true,
+            'type' => true,
+        ],
         'browser' => [
+            'name' => true,
+            'version' => true,
+        ],
+
+        'device' => [
+            'brand' => true,
+            'isMobile' => true,
+            'isTouch' => true,
+            'model' => true,
+            'type' => true,
+        ],
+
+        'operatingSystem' => [
             'name' => true,
             'version' => true,
         ],
@@ -49,37 +67,17 @@ final class MatomoDeviceDetector extends AbstractParseProvider
             'name' => true,
             'version' => false,
         ],
-
-        'operatingSystem' => [
-            'name' => true,
-            'version' => true,
-        ],
-
-        'device' => [
-            'model' => true,
-            'brand' => true,
-            'type' => true,
-            'isMobile' => true,
-            'isTouch' => true,
-        ],
-
-        'bot' => [
-            'isBot' => true,
-            'name' => true,
-            'type' => true,
-        ],
     ];
 
     /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
-        'general' => ['/^UNK$/i'],
-
         'bot' => [
             'name' => [
                 '/^Bot$/i',
                 '/^Generic Bot$/i',
             ],
         ],
+        'general' => ['/^UNK$/i'],
     ];
 
     /** @throws PackageNotLoadedException */
@@ -89,10 +87,8 @@ final class MatomoDeviceDetector extends AbstractParseProvider
     }
 
     /** @throws NoResultFoundException */
-    public function parse(
-        string $userAgent,
-        array $headers = [],
-    ): Model\UserAgent {
+    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    {
         $clientHints = ClientHints::factory($headers);
 
         $this->parser->setUserAgent($userAgent);
@@ -102,7 +98,7 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         /*
          * No result found?
          */
-        if (true !== $this->hasResult($this->parser)) {
+        if ($this->hasResult($this->parser) !== true) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -115,7 +111,7 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         /*
          * Bot detection
          */
-        if (true === $this->parser->isBot()) {
+        if ($this->parser->isBot() === true) {
             $this->hydrateBot($result->getBot(), $this->parser->getBot());
 
             return $result;
@@ -141,56 +137,55 @@ final class MatomoDeviceDetector extends AbstractParseProvider
     private function getResultRaw(DeviceDetector $dd): array
     {
         return [
+            'bot' => $dd->getBot(),
             'client' => $dd->getClient(),
-            'operatingSystem' => $dd->getOs(),
 
             'device' => [
                 'brand' => $dd->getBrand(),
                 'brandName' => $dd->getBrandName(),
 
-                'model' => $dd->getModel(),
-
                 'device' => $dd->getDevice(),
                 'deviceName' => $dd->getDeviceName(),
-            ],
 
-            'bot' => $dd->getBot(),
+                'model' => $dd->getModel(),
+            ],
 
             'extra' => [
                 'isBot' => $dd->isBot(),
 
                 // client
                 'isBrowser' => $dd->isBrowser(),
-                'isFeedReader' => $dd->isFeedReader(),
-                'isMobileApp' => $dd->isMobileApp(),
-                'isPIM' => $dd->isPIM(),
-                'isLibrary' => $dd->isLibrary(),
-                'isMediaPlayer' => $dd->isMediaPlayer(),
 
                 // deviceType
                 'isCamera' => $dd->isCamera(),
                 'isCarBrowser' => $dd->isCarBrowser(),
                 'isConsole' => $dd->isConsole(),
+
+                // other special
+                'isDesktop' => $dd->isDesktop(),
                 'isFeaturePhone' => $dd->isFeaturePhone(),
+                'isFeedReader' => $dd->isFeedReader(),
+                'isLibrary' => $dd->isLibrary(),
+                'isMediaPlayer' => $dd->isMediaPlayer(),
+                'isMobile' => $dd->isMobile(),
+                'isMobileApp' => $dd->isMobileApp(),
                 'isPhablet' => $dd->isPhablet(),
+                'isPIM' => $dd->isPIM(),
                 'isPortableMediaPlayer' => $dd->isPortableMediaPlayer(),
                 'isSmartDisplay' => $dd->isSmartDisplay(),
                 'isSmartphone' => $dd->isSmartphone(),
                 'isTablet' => $dd->isTablet(),
-                'isTV' => $dd->isTV(),
-
-                // other special
-                'isDesktop' => $dd->isDesktop(),
-                'isMobile' => $dd->isMobile(),
                 'isTouchEnabled' => $dd->isTouchEnabled(),
+                'isTV' => $dd->isTV(),
             ],
+            'operatingSystem' => $dd->getOs(),
         ];
     }
 
     /** @throws void */
     private function hasResult(DeviceDetector $dd): bool
     {
-        if (true === $dd->isBot()) {
+        if ($dd->isBot() === true) {
             return true;
         }
 
@@ -206,7 +201,7 @@ final class MatomoDeviceDetector extends AbstractParseProvider
             return true;
         }
 
-        return null !== $dd->getDevice();
+        return $dd->getDevice() !== null;
     }
 
     /**
@@ -234,10 +229,8 @@ final class MatomoDeviceDetector extends AbstractParseProvider
      *
      * @throws void
      */
-    private function hydrateBrowser(
-        Model\Browser $browser,
-        array $clientRaw,
-    ): void {
+    private function hydrateBrowser(Model\Browser $browser, array $clientRaw): void
+    {
         if (isset($clientRaw['name'])) {
             $browser->setName($this->getRealResult($clientRaw['name']));
         }
@@ -254,10 +247,8 @@ final class MatomoDeviceDetector extends AbstractParseProvider
      *
      * @throws void
      */
-    private function hydrateRenderingEngine(
-        Model\RenderingEngine $engine,
-        array $clientRaw,
-    ): void {
+    private function hydrateRenderingEngine(Model\RenderingEngine $engine, array $clientRaw): void
+    {
         if (!isset($clientRaw['engine'])) {
             return;
         }
@@ -270,10 +261,8 @@ final class MatomoDeviceDetector extends AbstractParseProvider
      *
      * @throws void
      */
-    private function hydrateOperatingSystem(
-        Model\OperatingSystem $os,
-        array $osRaw,
-    ): void {
+    private function hydrateOperatingSystem(Model\OperatingSystem $os, array $osRaw): void
+    {
         if (isset($osRaw['name'])) {
             $os->setName($this->getRealResult($osRaw['name']));
         }
@@ -286,10 +275,8 @@ final class MatomoDeviceDetector extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hydrateDevice(
-        Model\Device $device,
-        DeviceDetector $dd,
-    ): void {
+    private function hydrateDevice(Model\Device $device, DeviceDetector $dd): void
+    {
         $device->setModel($this->getRealResult($dd->getModel()));
         $device->setBrand($this->getRealResult($dd->getBrandName()));
         $device->setType($this->getRealResult($dd->getDeviceName()));

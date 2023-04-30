@@ -39,14 +39,22 @@ final class Matomo extends AbstractTestProvider
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [
+        'bot' => [
+            'isBot' => true,
+            'name' => true,
+            'type' => true,
+        ],
         'browser' => [
             'name' => true,
             'version' => true,
         ],
 
-        'renderingEngine' => [
-            'name' => true,
-            'version' => false,
+        'device' => [
+            'brand' => true,
+            'isMobile' => true,
+            'isTouch' => true,
+            'model' => true,
+            'type' => true,
         ],
 
         'operatingSystem' => [
@@ -54,18 +62,9 @@ final class Matomo extends AbstractTestProvider
             'version' => true,
         ],
 
-        'device' => [
-            'model' => true,
-            'brand' => true,
-            'type' => true,
-            'isMobile' => true,
-            'isTouch' => true,
-        ],
-
-        'bot' => [
-            'isBot' => true,
+        'renderingEngine' => [
             'name' => true,
-            'type' => true,
+            'version' => false,
         ],
     ];
 
@@ -90,33 +89,32 @@ final class Matomo extends AbstractTestProvider
                 continue;
             }
 
-            $key      = bin2hex(sha1($test['headers']['user-agent'], true));
+            $key      = bin2hex(sha1((string) $test['headers']['user-agent'], true));
             $toInsert = [
-                'uaString' => $test['headers']['user-agent'],
                 'result' => [
-                    'resFilename' => $test['file'] ?? '',
-
-                    'resRawResult' => serialize($test['raw'] ?? null),
+                    'resBotIsBot' => $test['client']['isbot'],
+                    'resBotName' => $test['client']['isbot'] ? $test['client']['name'] : null,
+                    'resBotType' => $test['client']['isbot'] ? $test['client']['type'] : null,
 
                     'resBrowserName' => $test['client']['isbot'] ? null : $test['client']['name'],
                     'resBrowserVersion' => $test['client']['isbot'] ? null : $test['client']['version'],
+                    'resDeviceBrand' => $test['device']['brand'],
+                    'resDeviceIsMobile' => $test['device']['ismobile'],
+                    'resDeviceIsTouch' => $test['device']['display']['touch'],
+
+                    'resDeviceModel' => $test['device']['deviceName'],
+                    'resDeviceType' => $test['device']['type'],
 
                     'resEngineName' => $test['engine']['name'],
                     'resEngineVersion' => $test['engine']['version'],
+                    'resFilename' => $test['file'] ?? '',
 
                     'resOsName' => $test['platform']['name'],
                     'resOsVersion' => $test['platform']['version'],
 
-                    'resDeviceModel' => $test['device']['deviceName'],
-                    'resDeviceBrand' => $test['device']['brand'],
-                    'resDeviceType' => $test['device']['type'],
-                    'resDeviceIsMobile' => $test['device']['ismobile'],
-                    'resDeviceIsTouch' => $test['device']['display']['touch'],
-
-                    'resBotIsBot' => $test['client']['isbot'],
-                    'resBotName' => $test['client']['isbot'] ? $test['client']['name'] : null,
-                    'resBotType' => $test['client']['isbot'] ? $test['client']['type'] : null,
+                    'resRawResult' => serialize($test['raw'] ?? null),
                 ],
+                'uaString' => $test['headers']['user-agent'],
             ];
 
             yield $key => $toInsert;

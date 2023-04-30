@@ -38,14 +38,22 @@ final class DonatjUAParser extends AbstractParseProvider
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [
+        'bot' => [
+            'isBot' => false,
+            'name' => false,
+            'type' => false,
+        ],
         'browser' => [
             'name' => true,
             'version' => true,
         ],
 
-        'renderingEngine' => [
-            'name' => false,
-            'version' => false,
+        'device' => [
+            'brand' => false,
+            'isMobile' => false,
+            'isTouch' => false,
+            'model' => false,
+            'type' => false,
         ],
 
         'operatingSystem' => [
@@ -53,18 +61,9 @@ final class DonatjUAParser extends AbstractParseProvider
             'version' => false,
         ],
 
-        'device' => [
-            'model' => false,
-            'brand' => false,
-            'type' => false,
-            'isMobile' => false,
-            'isTouch' => false,
-        ],
-
-        'bot' => [
-            'isBot' => false,
+        'renderingEngine' => [
             'name' => false,
-            'type' => false,
+            'version' => false,
         ],
     ];
 
@@ -82,13 +81,11 @@ final class DonatjUAParser extends AbstractParseProvider
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(
-        string $userAgent,
-        array $headers = [],
-    ): Model\UserAgent {
+    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    {
         $resultRaw = ($this->functionName)($userAgent);
 
-        if (true !== $this->hasResult($resultRaw)) {
+        if ($this->hasResult($resultRaw) !== true) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -120,10 +117,8 @@ final class DonatjUAParser extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hydrateBrowser(
-        Model\Browser $browser,
-        array $resultRaw,
-    ): void {
+    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
+    {
         $browser->setName($this->getRealResult($resultRaw['browser']));
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw['version']));
     }

@@ -41,14 +41,22 @@ final class Woothee extends AbstractParseProvider
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [
+        'bot' => [
+            'isBot' => true,
+            'name' => true,
+            'type' => false,
+        ],
         'browser' => [
             'name' => true,
             'version' => true,
         ],
 
-        'renderingEngine' => [
-            'name' => false,
-            'version' => false,
+        'device' => [
+            'brand' => false,
+            'isMobile' => false,
+            'isTouch' => false,
+            'model' => false,
+            'type' => true,
         ],
 
         'operatingSystem' => [
@@ -56,32 +64,22 @@ final class Woothee extends AbstractParseProvider
             'version' => false,
         ],
 
-        'device' => [
-            'model' => false,
-            'brand' => false,
-            'type' => true,
-            'isMobile' => false,
-            'isTouch' => false,
-        ],
-
-        'bot' => [
-            'isBot' => true,
-            'name' => true,
-            'type' => false,
+        'renderingEngine' => [
+            'name' => false,
+            'version' => false,
         ],
     ];
 
     /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
-        'general' => ['/^UNKNOWN$/i'],
+        'bot' => [
+            'name' => ['/^misc crawler$/i'],
+        ],
 
         'device' => [
             'type' => ['/^misc$/i'],
         ],
-
-        'bot' => [
-            'name' => ['/^misc crawler$/i'],
-        ],
+        'general' => ['/^UNKNOWN$/i'],
     ];
 
     /** @throws PackageNotLoadedException */
@@ -95,10 +93,8 @@ final class Woothee extends AbstractParseProvider
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(
-        string $userAgent,
-        array $headers = [],
-    ): Model\UserAgent {
+    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    {
         try {
             $resultRaw = $this->parser->parse($userAgent);
         } catch (Throwable $e) {
@@ -108,7 +104,7 @@ final class Woothee extends AbstractParseProvider
         /*
          * No result found?
          */
-        if (true !== $this->hasResult($resultRaw)) {
+        if ($this->hasResult($resultRaw) !== true) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -121,7 +117,7 @@ final class Woothee extends AbstractParseProvider
         /*
          * Bot detection
          */
-        if (true === $this->isBot($resultRaw)) {
+        if ($this->isBot($resultRaw) === true) {
             $this->hydrateBot($result->getBot(), $resultRaw);
 
             return $result;
@@ -141,7 +137,10 @@ final class Woothee extends AbstractParseProvider
     /** @throws void */
     private function hasResult(array $resultRaw): bool
     {
-        if (isset($resultRaw['category']) && $this->isRealResult($resultRaw['category'], 'device', 'type')) {
+        if (
+            isset($resultRaw['category'])
+            && $this->isRealResult($resultRaw['category'], 'device', 'type')
+        ) {
             return true;
         }
 
@@ -151,7 +150,7 @@ final class Woothee extends AbstractParseProvider
     /** @throws void */
     private function isBot(array $resultRaw): bool
     {
-        return isset($resultRaw['category']) && DataSet::DATASET_CATEGORY_CRAWLER === $resultRaw['category'];
+        return isset($resultRaw['category']) && $resultRaw['category'] === DataSet::DATASET_CATEGORY_CRAWLER;
     }
 
     /** @throws void */
@@ -167,10 +166,8 @@ final class Woothee extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hydrateBrowser(
-        Model\Browser $browser,
-        array $resultRaw,
-    ): void {
+    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
+    {
         if (isset($resultRaw['name'])) {
             $browser->setName($this->getRealResult($resultRaw['name']));
         }
@@ -183,10 +180,8 @@ final class Woothee extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hydrateDevice(
-        Model\Device $device,
-        array $resultRaw,
-    ): void {
+    private function hydrateDevice(Model\Device $device, array $resultRaw): void
+    {
         if (!isset($resultRaw['category'])) {
             return;
         }

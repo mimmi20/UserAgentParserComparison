@@ -26,7 +26,9 @@ final class OverviewGeneral extends AbstractHtml
 
     <div class="row center">
         <h5 class="header light">
-            We took <strong>' . number_format($this->getUserAgentCount()) . '</strong> different user agents and analyzed them with all providers below.<br />
+            We took <strong>' . number_format(
+        $this->getUserAgentCount(),
+    ) . '</strong> different user agents and analyzed them with all providers below.<br />
             That way, it\'s possible to get a good overview of each provider
         </h5>
     </div>
@@ -149,7 +151,7 @@ final class OverviewGeneral extends AbstractHtml
 
             $html .= '<th>';
 
-            if ('' !== $row['proPackageName']) {
+            if ($row['proPackageName'] !== '') {
                 $html .= '<a href="https://packagist.org/packages/' . $row['proPackageName'] . '">' . $row['proName'] . '</a>';
                 $html .= '<br /><small>' . $row['proVersion'] . '</small>';
                 $html .= '<br /><small>' . $row['proLastReleaseDate'] . '</small>';
@@ -237,7 +239,9 @@ final class OverviewGeneral extends AbstractHtml
 
             $html .= '
                 <td>
-                    <a class="tooltipped" data-position="top" data-delay="50" data-tooltip="' . htmlspecialchars($info) . '">
+                    <a class="tooltipped" data-position="top" data-delay="50" data-tooltip="' . htmlspecialchars(
+                $info,
+            ) . '">
                         ' . round((float) $row['avgParseTime'], 5) . '
                     </a>
                 </td>

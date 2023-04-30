@@ -27,11 +27,7 @@ final class ResultsPerUserAgent
     /** @throws void */
     public function setValue(string | null $value): void
     {
-        if (null === $value) {
-            $values = [];
-        } else {
-            $values = explode('~~~', $value);
-        }
+        $values = $value === null ? [] : explode('~~~', $value);
 
         $this->values = $values;
     }
@@ -130,7 +126,7 @@ final class ResultsPerUserAgent
     /** @throws void */
     private function getMaxSameCount(array $values): int | null
     {
-        if (0 === count($values)) {
+        if (count($values) === 0) {
             return 0;
         }
 

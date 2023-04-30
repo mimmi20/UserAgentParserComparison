@@ -16,10 +16,8 @@ abstract class AbstractHtml
     private int | null $userAgentCount = null;
 
     /** @throws void */
-    public function __construct(
-        protected PDO $pdo,
-        protected string | null $title = null,
-    ) {
+    public function __construct(protected PDO $pdo, protected string | null $title = null)
+    {
     }
 
     /** @throws void */
@@ -28,8 +26,10 @@ abstract class AbstractHtml
     /** @throws void */
     protected function getUserAgentCount(): int
     {
-        if (null === $this->userAgentCount) {
-            $statementCountAllResults = $this->pdo->prepare('SELECT COUNT(*) AS `count` FROM `userAgent`');
+        if ($this->userAgentCount === null) {
+            $statementCountAllResults = $this->pdo->prepare(
+                'SELECT COUNT(*) AS `count` FROM `userAgent`',
+            );
             $statementCountAllResults->execute();
 
             $this->userAgentCount = $statementCountAllResults->fetch(PDO::FETCH_COLUMN);
@@ -48,10 +48,16 @@ abstract class AbstractHtml
             <span>' . round($resultFound / $onePercent, 2) . '%</span>
             <!--
             <div class="progress">
-                <div class="determinate" style="width: ' . round($resultFound / $onePercent, 0) . '"></div>
+                <div class="determinate" style="width: ' . round(
+                $resultFound / $onePercent,
+                0,
+            ) . '"></div>
             </div>
             -->
-            <progress value="' . $resultFound . '" max="' . $count . '" title="' . $resultFound . '/' . $count . ' [' . round($resultFound / $onePercent, 2) . '%]"></progress>
+            <progress value="' . $resultFound . '" max="' . $count . '" title="' . $resultFound . '/' . $count . ' [' . round(
+                $resultFound / $onePercent,
+                2,
+            ) . '%]"></progress>
         ';
     }
 
@@ -64,10 +70,8 @@ abstract class AbstractHtml
     }
 
     /** @throws void */
-    protected function getHtmlCombined(
-        string $body,
-        string $script = '',
-    ): string {
+    protected function getHtmlCombined(string $body, string $script = ''): string
+    {
         return '
 <!DOCTYPE html>
 <html lang="en">

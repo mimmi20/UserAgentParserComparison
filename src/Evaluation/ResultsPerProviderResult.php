@@ -44,11 +44,7 @@ final class ResultsPerProviderResult
     /** @throws void */
     public function setValue(string | null $value): void
     {
-        if (null === $value) {
-            $values = [];
-        } else {
-            $values = explode('~~~', $value);
-        }
+        $values = $value === null ? [] : explode('~~~', $value);
 
         $this->values = $values;
     }

@@ -12,25 +12,9 @@ final class OsName extends AbstractHarmonize
 
         'Chrome OS' => ['ChromeOS'],
 
-        'Linux' => ['GNU/Linux'],
-
-        'Windows' => [
-            'Win32',
-            'Win2000',
-            'WinVista',
-            'Win7',
-            'Win8',
-
-            'Windows 2000',
-            'Windows XP',
-            'Windows 7',
-            'Windows 8',
-
-            'Windows CE',
-            'Windows Mobile',
-        ],
-
         'iOS' => ['iPhone OS'],
+
+        'Linux' => ['GNU/Linux'],
 
         'OS X' => [
             'Mac',
@@ -49,6 +33,22 @@ final class OsName extends AbstractHarmonize
             'Series60',
 
             'Nokia Series 40',
+        ],
+
+        'Windows' => [
+            'Win32',
+            'Win2000',
+            'WinVista',
+            'Win7',
+            'Win8',
+
+            'Windows 2000',
+            'Windows XP',
+            'Windows 7',
+            'Windows 8',
+
+            'Windows CE',
+            'Windows Mobile',
         ],
     ];
 }
