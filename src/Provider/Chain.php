@@ -37,10 +37,8 @@ final class Chain extends AbstractParseProvider
     }
 
     /** @throws Exception\NoResultFoundException */
-    public function parse(
-        string $userAgent,
-        array $headers = [],
-    ): Model\UserAgent {
+    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    {
         foreach ($this->getProviders() as $provider) {
             if (!$provider instanceof AbstractParseProvider) {
                 continue;

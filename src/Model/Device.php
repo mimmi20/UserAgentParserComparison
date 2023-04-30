@@ -84,11 +84,11 @@ final class Device
     public function toArray(): array
     {
         return [
-            'model' => $this->getModel(),
             'brand' => $this->getBrand(),
-            'type' => $this->getType(),
             'isMobile' => $this->getIsMobile(),
             'isTouch' => $this->getIsTouch(),
+            'model' => $this->getModel(),
+            'type' => $this->getType(),
         ];
     }
 }

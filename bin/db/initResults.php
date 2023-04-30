@@ -100,13 +100,13 @@ do {
                 $row2 = $dbResultResult;
 
             // skip
-//                if (null === $row['uaAdditionalHeaders'] && ($dbResultResult['resProviderVersion'] === $provider->getVersion() /* || $provider->getVersion() === null/* */)) {
-//                    $message .= 'S';
-//
-//                    echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
-//
-//                    continue;
-//                }
+            // if (null === $row['uaAdditionalHeaders'] && ($dbResultResult['resProviderVersion'] === $provider->getVersion() /* || $provider->getVersion() === null/* */)) {
+            //     $message .= 'S';
+            //
+            //     echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
+            //
+            //     continue;
+            // }
             } else {
                 $row2 = [
                     'provider_id' => $dbResultProvider['proId'],

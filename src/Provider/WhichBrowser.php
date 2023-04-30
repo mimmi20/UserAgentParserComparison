@@ -47,14 +47,22 @@ final class WhichBrowser extends AbstractParseProvider
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [
+        'bot' => [
+            'isBot' => true,
+            'name' => true,
+            'type' => false,
+        ],
         'browser' => [
             'name' => true,
             'version' => true,
         ],
 
-        'renderingEngine' => [
-            'name' => true,
-            'version' => true,
+        'device' => [
+            'brand' => true,
+            'isMobile' => true,
+            'isTouch' => false,
+            'model' => true,
+            'type' => true,
         ],
 
         'operatingSystem' => [
@@ -62,18 +70,9 @@ final class WhichBrowser extends AbstractParseProvider
             'version' => true,
         ],
 
-        'device' => [
-            'model' => true,
-            'brand' => true,
-            'type' => true,
-            'isMobile' => true,
-            'isTouch' => false,
-        ],
-
-        'bot' => [
-            'isBot' => true,
+        'renderingEngine' => [
             'name' => true,
-            'type' => false,
+            'version' => true,
         ],
     ];
 
@@ -86,10 +85,8 @@ final class WhichBrowser extends AbstractParseProvider
     }
 
     /** @throws NoResultFoundException */
-    public function parse(
-        string $userAgent,
-        array $headers = [],
-    ): Model\UserAgent {
+    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    {
         $headers['User-Agent'] = $userAgent;
 
         $this->parser->analyse($headers, ['cache' => $this->cache]);
@@ -97,7 +94,7 @@ final class WhichBrowser extends AbstractParseProvider
         /*
          * No result found?
          */
-        if (true !== $this->parser->isDetected()) {
+        if ($this->parser->isDetected() !== true) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -110,7 +107,7 @@ final class WhichBrowser extends AbstractParseProvider
         /*
          * Bot detection
          */
-        if ('bot' === $this->parser->getType()) {
+        if ($this->parser->getType() === 'bot') {
             $this->hydrateBot($result->getBot(), $this->parser->browser);
 
             return $result;
@@ -135,11 +132,9 @@ final class WhichBrowser extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hydrateBrowser(
-        Model\Browser $browser,
-        Browser $browserRaw,
-    ): void {
-        if (true === $this->isRealResult($browserRaw->getName(), 'browser', 'name')) {
+    private function hydrateBrowser(Model\Browser $browser, Browser $browserRaw): void
+    {
+        if ($this->isRealResult($browserRaw->getName(), 'browser', 'name') === true) {
             $browser->setName($browserRaw->getName());
             $browser->getVersion()->setComplete($this->getRealResult($browserRaw->getVersion()));
 
@@ -153,7 +148,7 @@ final class WhichBrowser extends AbstractParseProvider
         $usingRaw = $browserRaw->using;
         assert($usingRaw instanceof Using);
 
-        if (true !== $this->isRealResult($usingRaw->getName())) {
+        if ($this->isRealResult($usingRaw->getName()) !== true) {
             return;
         }
 
@@ -163,34 +158,27 @@ final class WhichBrowser extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hydrateRenderingEngine(
-        Model\RenderingEngine $engine,
-        Engine $engineRaw,
-    ): void {
+    private function hydrateRenderingEngine(Model\RenderingEngine $engine, Engine $engineRaw): void
+    {
         $engine->setName($this->getRealResult($engineRaw->getName()));
         $engine->getVersion()->setComplete($this->getRealResult($engineRaw->getVersion()));
     }
 
     /** @throws void */
-    private function hydrateOperatingSystem(
-        Model\OperatingSystem $os,
-        Os $osRaw,
-    ): void {
+    private function hydrateOperatingSystem(Model\OperatingSystem $os, Os $osRaw): void
+    {
         $os->setName($this->getRealResult($osRaw->getName()));
         $os->getVersion()->setComplete($this->getRealResult($osRaw->getVersion()));
     }
 
     /** @throws void */
-    private function hydrateDevice(
-        Model\Device $device,
-        Device $deviceRaw,
-        WhichBrowserParser $parser,
-    ): void {
+    private function hydrateDevice(Model\Device $device, Device $deviceRaw, WhichBrowserParser $parser): void
+    {
         $device->setModel($this->getRealResult($deviceRaw->getModel()));
         $device->setBrand($this->getRealResult($deviceRaw->getManufacturer()));
         $device->setType($this->getRealResult($parser->getType()));
 
-        if (true !== $parser->isMobile()) {
+        if ($parser->isMobile() !== true) {
             return;
         }
 

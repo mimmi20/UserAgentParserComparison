@@ -39,14 +39,22 @@ final class Wolfcast extends AbstractParseProvider
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [
+        'bot' => [
+            'isBot' => false,
+            'name' => false,
+            'type' => false,
+        ],
         'browser' => [
             'name' => true,
             'version' => true,
         ],
 
-        'renderingEngine' => [
-            'name' => false,
-            'version' => false,
+        'device' => [
+            'brand' => false,
+            'isMobile' => true,
+            'isTouch' => false,
+            'model' => false,
+            'type' => false,
         ],
 
         'operatingSystem' => [
@@ -54,18 +62,9 @@ final class Wolfcast extends AbstractParseProvider
             'version' => true,
         ],
 
-        'device' => [
-            'model' => false,
-            'brand' => false,
-            'type' => false,
-            'isMobile' => true,
-            'isTouch' => false,
-        ],
-
-        'bot' => [
-            'isBot' => false,
+        'renderingEngine' => [
             'name' => false,
-            'type' => false,
+            'version' => false,
         ],
     ];
 
@@ -80,23 +79,21 @@ final class Wolfcast extends AbstractParseProvider
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(
-        string $userAgent,
-        array $headers = [],
-    ): Model\UserAgent {
+    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    {
         $this->parser->setUserAgent($userAgent);
 
         $resultCache = [
             'browserName' => $this->parser->getName(),
             'browserVersion' => $this->parser->getVersion(),
 
+            'isMobile' => $this->parser->isMobile(),
+
             'osName' => $this->parser->getPlatform(),
             'osVersion' => $this->parser->getPlatformVersion(true),
-
-            'isMobile' => $this->parser->isMobile(),
         ];
 
-        if (true !== $this->hasResult($resultCache)) {
+        if ($this->hasResult($resultCache) !== true) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -123,24 +120,22 @@ final class Wolfcast extends AbstractParseProvider
     /** @throws void */
     private function hasResult(array $resultRaw): bool
     {
-        return $this->isRealResult($resultRaw['browserName']) || $this->isRealResult($resultRaw['osName']);
+        return $this->isRealResult($resultRaw['browserName']) || $this->isRealResult(
+            $resultRaw['osName'],
+        );
     }
 
     /** @throws void */
-    private function hydrateBrowser(
-        Model\Browser $browser,
-        array $resultRaw,
-    ): void {
+    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
+    {
         $browser->setName($this->getRealResult($resultRaw['browserName']));
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw['browserVersion']));
     }
 
     /** @throws void */
-    private function hydrateOperatingSystem(
-        Model\OperatingSystem $os,
-        array $resultRaw,
-    ): void {
-        if (true !== $this->isRealResult($resultRaw['osName'])) {
+    private function hydrateOperatingSystem(Model\OperatingSystem $os, array $resultRaw): void
+    {
+        if ($this->isRealResult($resultRaw['osName']) !== true) {
             return;
         }
 
@@ -149,11 +144,9 @@ final class Wolfcast extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hydrateDevice(
-        Model\Device $device,
-        array $resultRaw,
-    ): void {
-        if (true !== $resultRaw['isMobile']) {
+    private function hydrateDevice(Model\Device $device, array $resultRaw): void
+    {
+        if ($resultRaw['isMobile'] !== true) {
             return;
         }
 

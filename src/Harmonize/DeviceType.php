@@ -8,12 +8,11 @@ final class DeviceType extends AbstractHarmonize
 {
     /** @var array<string, array<int, string>> */
     protected static array $replaces = [
+        'camera' => ['Digital Camera'],
         'car' => [
             'car browser',
             'Car Entertainment System',
         ],
-
-        'camera' => ['Digital Camera'],
 
         'console' => ['gaming:console'],
 
@@ -21,16 +20,16 @@ final class DeviceType extends AbstractHarmonize
 
         'ereader' => ['Ebook Reader'],
 
+        'smartphone' => [
+            'smartphone',
+            'mobile:smart',
+        ],
+
         'tv' => [
             'Smart-TV',
             'television',
             'tv',
             'TV Device',
-        ],
-
-        'smartphone' => [
-            'smartphone',
-            'mobile:smart',
         ],
     ];
 }

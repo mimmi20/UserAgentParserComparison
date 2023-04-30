@@ -38,14 +38,22 @@ final class UaParserJs extends AbstractTestProvider
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [
+        'bot' => [
+            'isBot' => true,
+            'name' => false,
+            'type' => false,
+        ],
         'browser' => [
             'name' => true,
             'version' => true,
         ],
 
-        'renderingEngine' => [
-            'name' => false,
-            'version' => false,
+        'device' => [
+            'brand' => true,
+            'isMobile' => false,
+            'isTouch' => false,
+            'model' => true,
+            'type' => false,
         ],
 
         'operatingSystem' => [
@@ -53,18 +61,9 @@ final class UaParserJs extends AbstractTestProvider
             'version' => true,
         ],
 
-        'device' => [
-            'model' => true,
-            'brand' => true,
-            'type' => false,
-            'isMobile' => false,
-            'isTouch' => false,
-        ],
-
-        'bot' => [
-            'isBot' => true,
+        'renderingEngine' => [
             'name' => false,
-            'type' => false,
+            'version' => false,
         ],
     ];
 
@@ -85,33 +84,32 @@ final class UaParserJs extends AbstractTestProvider
         }
 
         foreach ($source->getProperties($baseMessage, $messageLength) as $test) {
-            $key      = bin2hex(sha1($test['headers']['user-agent'], true));
+            $key      = bin2hex(sha1((string) $test['headers']['user-agent'], true));
             $toInsert = [
-                'uaString' => $test['headers']['user-agent'],
                 'result' => [
-                    'resFilename' => '',
-
-                    'resRawResult' => serialize($test['raw'] ?? null),
+                    'resBotIsBot' => null,
+                    'resBotName' => null,
+                    'resBotType' => null,
 
                     'resBrowserName' => $test['client']['name'],
                     'resBrowserVersion' => $test['client']['version'],
+                    'resDeviceBrand' => $test['device']['brand'],
+                    'resDeviceIsMobile' => $test['device']['ismobile'],
+                    'resDeviceIsTouch' => $test['device']['display']['touch'],
+
+                    'resDeviceModel' => $test['device']['deviceName'],
+                    'resDeviceType' => $test['device']['type'],
 
                     'resEngineName' => $test['engine']['name'],
                     'resEngineVersion' => $test['engine']['version'],
+                    'resFilename' => '',
 
                     'resOsName' => $test['platform']['name'],
                     'resOsVersion' => $test['platform']['version'],
 
-                    'resDeviceModel' => $test['device']['deviceName'],
-                    'resDeviceBrand' => $test['device']['brand'],
-                    'resDeviceType' => $test['device']['type'],
-                    'resDeviceIsMobile' => $test['device']['ismobile'],
-                    'resDeviceIsTouch' => $test['device']['display']['touch'],
-
-                    'resBotIsBot' => null,
-                    'resBotName' => null,
-                    'resBotType' => null,
+                    'resRawResult' => serialize($test['raw'] ?? null),
                 ],
+                'uaString' => $test['headers']['user-agent'],
             ];
 
             yield $key => $toInsert;

@@ -21,10 +21,7 @@ abstract class AbstractParseProvider extends AbstractProvider
      *
      * @throws Exception\NoResultFoundException
      */
-    abstract public function parse(
-        string $userAgent,
-        array $headers = [],
-    ): Model\UserAgent;
+    abstract public function parse(string $userAgent, array $headers = []): Model\UserAgent;
 
     /** @throws void */
     protected function isRealResult(
@@ -32,24 +29,24 @@ abstract class AbstractParseProvider extends AbstractProvider
         string | null $group = null,
         string | null $part = null,
     ): bool {
-        if (null === $value) {
+        if ($value === null) {
             return false;
         }
 
         $value = trim($value);
 
-        if ('' === $value) {
+        if ($value === '') {
             return false;
         }
 
         $regexes = $this->defaultValues['general'];
 
-        if (null !== $group && null !== $part && isset($this->defaultValues[$group][$part])) {
+        if ($group !== null && $part !== null && isset($this->defaultValues[$group][$part])) {
             $regexes = array_merge($regexes, $this->defaultValues[$group][$part]);
         }
 
         foreach ($regexes as $regex) {
-            if (1 === preg_match($regex, $value)) {
+            if (preg_match($regex, $value) === 1) {
                 return false;
             }
         }
@@ -63,7 +60,7 @@ abstract class AbstractParseProvider extends AbstractProvider
         string | null $group = null,
         string | null $part = null,
     ): string | null {
-        if (true === $this->isRealResult($value, $group, $part)) {
+        if ($this->isRealResult($value, $group, $part) === true) {
             return $value;
         }
 

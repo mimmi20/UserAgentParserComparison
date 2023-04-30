@@ -49,14 +49,21 @@ final class UserAgentDetail extends AbstractHtml
     {
         $addStr = '';
 
-        if (null !== $this->userAgent['uaAdditionalHeaders']) {
-            $addHeaders = json_decode((string) $this->userAgent['uaAdditionalHeaders'], true, 512, JSON_THROW_ON_ERROR);
+        if ($this->userAgent['uaAdditionalHeaders'] !== null) {
+            $addHeaders = json_decode(
+                (string) $this->userAgent['uaAdditionalHeaders'],
+                true,
+                512,
+                JSON_THROW_ON_ERROR,
+            );
 
             if (0 < (is_countable($addHeaders) ? count($addHeaders) : 0)) {
                 $addStr = '<br /><strong>Additional headers</strong><br />';
 
                 foreach ($addHeaders as $key => $value) {
-                    $addStr .= '<strong>' . htmlspecialchars((string) $key) . '</strong> ' . htmlspecialchars((string) $value) . '<br />';
+                    $addStr .= '<strong>' . htmlspecialchars(
+                        (string) $key,
+                    ) . '</strong> ' . htmlspecialchars((string) $value) . '<br />';
                 }
             }
         }
@@ -129,7 +136,7 @@ $(document).ready(function(){
         $html .= '</th></tr>';
 
         foreach ($this->results as $result) {
-            if (!array_key_exists('proType', $result) || 'testSuite' !== $result['proType']) {
+            if (!array_key_exists('proType', $result) || $result['proType'] !== 'testSuite') {
                 continue;
             }
 
@@ -144,7 +151,7 @@ $(document).ready(function(){
         $html .= '</th></tr>';
 
         foreach ($this->results as $result) {
-            if (!array_key_exists('proType', $result) || 'real' !== $result['proType']) {
+            if (!array_key_exists('proType', $result) || $result['proType'] !== 'real') {
                 continue;
             }
 
@@ -269,7 +276,7 @@ $(document).ready(function(){
             $html .= '<td><i class="material-icons">close</i></td>';
         }
 
-        if (null === $result['resParseTime']) {
+        if ($result['resParseTime'] === null) {
             $html .= '<td></td>';
         } else {
             $html .= '<td>' . round($result['resParseTime'], 5) . '</td>';

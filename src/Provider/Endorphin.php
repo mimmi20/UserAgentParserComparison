@@ -41,7 +41,25 @@ final class Endorphin extends AbstractParseProvider
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [
+        'bot' => [
+            'isBot' => true,
+            'name' => true,
+            'type' => true,
+        ],
         'browser' => [
+            'name' => true,
+            'version' => true,
+        ],
+
+        'device' => [
+            'brand' => false,
+            'isMobile' => false,
+            'isTouch' => false,
+            'model' => false,
+            'type' => true,
+        ],
+
+        'operatingSystem' => [
             'name' => true,
             'version' => true,
         ],
@@ -50,40 +68,19 @@ final class Endorphin extends AbstractParseProvider
             'name' => false,
             'version' => false,
         ],
-
-        'operatingSystem' => [
-            'name' => true,
-            'version' => true,
-        ],
-
-        'device' => [
-            'model' => false,
-            'brand' => false,
-            'type' => true,
-            'isMobile' => false,
-            'isTouch' => false,
-        ],
-
-        'bot' => [
-            'isBot' => true,
-            'name' => true,
-            'type' => true,
-        ],
     ];
 
     /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
-        'general' => ['/^N\\\\A$/i'],
-
         'device' => [
             'model' => ['/^Desktop/i'],
         ],
+        'general' => ['/^N\\\\A$/i'],
     ];
 
     /** @throws PackageNotLoadedException */
-    public function __construct(
-        private readonly EndorphinDetector\Detector $parser,
-    ) {
+    public function __construct(private readonly EndorphinDetector\Detector $parser)
+    {
         $this->checkIfInstalled();
     }
 
@@ -92,10 +89,8 @@ final class Endorphin extends AbstractParseProvider
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(
-        string $userAgent,
-        array $headers = [],
-    ): Model\UserAgent {
+    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    {
         try {
             $resultRaw = $this->parser->analyse($userAgent);
         } catch (Throwable $e) {
@@ -105,7 +100,7 @@ final class Endorphin extends AbstractParseProvider
         /*
          * No result found?
          */
-        if (true !== $this->hasResult($resultRaw)) {
+        if ($this->hasResult($resultRaw) !== true) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -118,7 +113,7 @@ final class Endorphin extends AbstractParseProvider
         /*
          * Bot detection
          */
-        if (true === $this->isRealResult($resultRaw->getRobot()->getType())) {
+        if ($this->isRealResult($resultRaw->getRobot()->getType()) === true) {
             $this->hydrateBot($result->getBot(), $resultRaw->getRobot());
 
             return $result;
@@ -139,55 +134,49 @@ final class Endorphin extends AbstractParseProvider
     /** @throws void */
     private function hasResult(Result $resultRaw): bool
     {
-        if (true === $this->isRealResult($resultRaw->getOs()->getName())) {
+        if ($this->isRealResult($resultRaw->getOs()->getName()) === true) {
             return true;
         }
 
-        if (true === $this->isRealResult($resultRaw->getBrowser()->getName())) {
+        if ($this->isRealResult($resultRaw->getBrowser()->getName()) === true) {
             return true;
         }
 
-        if (true === $this->isRealResult($resultRaw->getDevice()->getName(), 'device', 'model')) {
+        if ($this->isRealResult($resultRaw->getDevice()->getName(), 'device', 'model') === true) {
             return true;
         }
 
-        return true === $this->isRealResult($resultRaw->getRobot()->getType());
+        return $this->isRealResult($resultRaw->getRobot()->getType()) === true;
     }
 
     /** @throws void */
-    private function hydrateBot(
-        Model\Bot $bot,
-        EndorphinDetector\Data\Robot $resultRaw,
-    ): void {
+    private function hydrateBot(Model\Bot $bot, EndorphinDetector\Data\Robot $resultRaw): void
+    {
         $bot->setIsBot(true);
         $bot->setName($this->getRealResult($resultRaw->getName()));
         $bot->setType($this->getRealResult($resultRaw->getType()));
     }
 
     /** @throws void */
-    private function hydrateBrowser(
-        Model\Browser $browser,
-        EndorphinDetector\Data\Browser $resultRaw,
-    ): void {
+    private function hydrateBrowser(Model\Browser $browser, EndorphinDetector\Data\Browser $resultRaw): void
+    {
         $browser->setName($this->getRealResult($resultRaw->getName()));
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw->getVersion()));
     }
 
     /** @throws void */
-    private function hydrateOperatingSystem(
-        Model\OperatingSystem $os,
-        EndorphinDetector\Data\Os $resultRaw,
-    ): void {
+    private function hydrateOperatingSystem(Model\OperatingSystem $os, EndorphinDetector\Data\Os $resultRaw): void
+    {
         $os->setName($this->getRealResult($resultRaw->getName()));
         $os->getVersion()->setComplete($this->getRealResult($resultRaw->getVersion()));
     }
 
     /** @throws void */
-    private function hydrateDevice(
-        Model\Device $device,
-        EndorphinDetector\Data\Device $resultRaw,
-    ): void {
-        $device->setModel($this->getRealResult($resultRaw->getModel() ? $resultRaw->getModel()->getModel() : null));
+    private function hydrateDevice(Model\Device $device, EndorphinDetector\Data\Device $resultRaw): void
+    {
+        $device->setModel(
+            $this->getRealResult($resultRaw->getModel() ? $resultRaw->getModel()->getModel() : null),
+        );
         $device->setType($this->getRealResult($resultRaw->getType()));
     }
 }

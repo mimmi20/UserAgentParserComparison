@@ -33,7 +33,25 @@ final class MobileDetect extends AbstractParseProvider
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [
+        'bot' => [
+            'isBot' => false,
+            'name' => false,
+            'type' => false,
+        ],
         'browser' => [
+            'name' => false,
+            'version' => false,
+        ],
+
+        'device' => [
+            'brand' => false,
+            'isMobile' => true,
+            'isTouch' => false,
+            'model' => false,
+            'type' => false,
+        ],
+
+        'operatingSystem' => [
             'name' => false,
             'version' => false,
         ],
@@ -42,32 +60,11 @@ final class MobileDetect extends AbstractParseProvider
             'name' => false,
             'version' => false,
         ],
-
-        'operatingSystem' => [
-            'name' => false,
-            'version' => false,
-        ],
-
-        'device' => [
-            'model' => false,
-            'brand' => false,
-            'type' => false,
-            'isMobile' => true,
-            'isTouch' => false,
-        ],
-
-        'bot' => [
-            'isBot' => false,
-            'name' => false,
-            'type' => false,
-        ],
     ];
 
     /** @throws NoResultFoundException */
-    public function parse(
-        string $userAgent,
-        array $headers = [],
-    ): Model\UserAgent {
+    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    {
         $parser = new \Detection\MobileDetect();
         $parser->setHttpHeaders($headers);
         $parser->setUserAgent($userAgent);
@@ -83,7 +80,7 @@ final class MobileDetect extends AbstractParseProvider
         /*
          * No result found?
          */
-        if (true !== $this->hasResult($resultCache)) {
+        if ($this->hasResult($resultCache) !== true) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -104,15 +101,13 @@ final class MobileDetect extends AbstractParseProvider
     /** @throws void */
     private function hasResult(array $resultRaw): bool
     {
-        return null !== $resultRaw['isMobile'];
+        return $resultRaw['isMobile'] !== null;
     }
 
     /** @throws void */
-    private function hydrateDevice(
-        Model\Device $device,
-        array $resultRaw,
-    ): void {
-        if (true !== $resultRaw['isMobile']) {
+    private function hydrateDevice(Model\Device $device, array $resultRaw): void
+    {
+        if ($resultRaw['isMobile'] !== true) {
             return;
         }
 

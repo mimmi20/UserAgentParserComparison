@@ -39,7 +39,25 @@ final class Zsxsoft extends AbstractParseProvider
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [
+        'bot' => [
+            'isBot' => false,
+            'name' => false,
+            'type' => false,
+        ],
         'browser' => [
+            'name' => true,
+            'version' => true,
+        ],
+
+        'device' => [
+            'brand' => true,
+            'isMobile' => false,
+            'isTouch' => false,
+            'model' => true,
+            'type' => false,
+        ],
+
+        'operatingSystem' => [
             'name' => true,
             'version' => true,
         ],
@@ -48,31 +66,10 @@ final class Zsxsoft extends AbstractParseProvider
             'name' => false,
             'version' => false,
         ],
-
-        'operatingSystem' => [
-            'name' => true,
-            'version' => true,
-        ],
-
-        'device' => [
-            'model' => true,
-            'brand' => true,
-            'type' => false,
-            'isMobile' => false,
-            'isTouch' => false,
-        ],
-
-        'bot' => [
-            'isBot' => false,
-            'name' => false,
-            'type' => false,
-        ],
     ];
 
     /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
-        'general' => ['/^Unknown$/i'],
-
         'browser' => [
             'name' => ['/^Mozilla Compatible$/i'],
         ],
@@ -83,6 +80,7 @@ final class Zsxsoft extends AbstractParseProvider
                 '/^Android$/i',
             ],
         ],
+        'general' => ['/^Unknown$/i'],
     ];
 
     /** @throws PackageNotLoadedException */
@@ -96,10 +94,8 @@ final class Zsxsoft extends AbstractParseProvider
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(
-        string $userAgent,
-        array $headers = [],
-    ): Model\UserAgent {
+    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    {
         $this->parser->analyze($userAgent);
 
         $browser = $this->parser->browser;
@@ -109,7 +105,7 @@ final class Zsxsoft extends AbstractParseProvider
         /*
          * No result found?
          */
-        if (true !== $this->hasResult($browser, $os, $device)) {
+        if ($this->hasResult($browser, $os, $device) !== true) {
             throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
         }
 
@@ -119,8 +115,8 @@ final class Zsxsoft extends AbstractParseProvider
         $result = new Model\UserAgent($this->getName(), $this->getVersion());
         $result->setProviderResultRaw([
             'browser' => $browser,
-            'os' => $os,
             'device' => $device,
+            'os' => $os,
             'platform' => $this->parser->platform,
         ]);
 
@@ -153,10 +149,8 @@ final class Zsxsoft extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hydrateBrowser(
-        Model\Browser $browser,
-        array $browserRaw,
-    ): void {
+    private function hydrateBrowser(Model\Browser $browser, array $browserRaw): void
+    {
         if (isset($browserRaw['name'])) {
             $browser->setName($this->getRealResult($browserRaw['name'], 'browser', 'name'));
         }
@@ -169,10 +163,8 @@ final class Zsxsoft extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hydrateOperatingSystem(
-        Model\OperatingSystem $os,
-        array $osRaw,
-    ): void {
+    private function hydrateOperatingSystem(Model\OperatingSystem $os, array $osRaw): void
+    {
         if (isset($osRaw['name'])) {
             $os->setName($this->getRealResult($osRaw['name']));
         }
@@ -185,10 +177,8 @@ final class Zsxsoft extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hydrateDevice(
-        Model\Device $device,
-        array $deviceRaw,
-    ): void {
+    private function hydrateDevice(Model\Device $device, array $deviceRaw): void
+    {
         if (isset($deviceRaw['model'])) {
             $device->setModel($this->getRealResult($deviceRaw['model'], 'device', 'model'));
         }

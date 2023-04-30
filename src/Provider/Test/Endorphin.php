@@ -38,14 +38,22 @@ final class Endorphin extends AbstractTestProvider
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $detectionCapabilities = [
+        'bot' => [
+            'isBot' => false,
+            'name' => false,
+            'type' => false,
+        ],
         'browser' => [
             'name' => true,
             'version' => true,
         ],
 
-        'renderingEngine' => [
-            'name' => false,
-            'version' => false,
+        'device' => [
+            'brand' => false,
+            'isMobile' => false,
+            'isTouch' => false,
+            'model' => false,
+            'type' => false,
         ],
 
         'operatingSystem' => [
@@ -53,18 +61,9 @@ final class Endorphin extends AbstractTestProvider
             'version' => false,
         ],
 
-        'device' => [
-            'model' => false,
-            'brand' => false,
-            'type' => false,
-            'isMobile' => false,
-            'isTouch' => false,
-        ],
-
-        'bot' => [
-            'isBot' => false,
+        'renderingEngine' => [
             'name' => false,
-            'type' => false,
+            'version' => false,
         ],
     ];
 
@@ -85,33 +84,32 @@ final class Endorphin extends AbstractTestProvider
         }
 
         foreach ($source->getProperties($baseMessage, $messageLength) as $test) {
-            $key      = bin2hex(sha1($test['headers']['user-agent'], true));
+            $key      = bin2hex(sha1((string) $test['headers']['user-agent'], true));
             $toInsert = [
-                'uaString' => $test['headers']['user-agent'],
                 'result' => [
-                    'resFilename' => '',
-
-                    'resRawResult' => serialize($test['raw'] ?? null),
+                    'resBotIsBot' => $test['client']['isbot'] ?? null,
+                    'resBotName' => isset($test['client']['isbot']) ? $test['client']['name'] : null,
+                    'resBotType' => null,
 
                     'resBrowserName' => isset($test['client']['isbot']) ? null : $test['client']['name'],
                     'resBrowserVersion' => isset($test['client']['isbot']) ? null : ($test['client']['version'] ?? null),
+                    'resDeviceBrand' => $test['device']['brand'] ?? null,
+                    'resDeviceIsMobile' => $test['device']['ismobile'] ?? null,
+                    'resDeviceIsTouch' => null,
+
+                    'resDeviceModel' => $test['device']['deviceName'] ?? null,
+                    'resDeviceType' => $test['device']['type'] ?? null,
 
                     'resEngineName' => $test['engine']['name'],
                     'resEngineVersion' => $test['engine']['version'],
+                    'resFilename' => '',
 
                     'resOsName' => $test['platform']['name'],
                     'resOsVersion' => $test['platform']['version'] ?? null,
 
-                    'resDeviceModel' => $test['device']['deviceName'] ?? null,
-                    'resDeviceBrand' => $test['device']['brand'] ?? null,
-                    'resDeviceType' => $test['device']['type'] ?? null,
-                    'resDeviceIsMobile' => $test['device']['ismobile'] ?? null,
-                    'resDeviceIsTouch' => null,
-
-                    'resBotIsBot' => $test['client']['isbot'] ?? null,
-                    'resBotName' => isset($test['client']['isbot']) ? $test['client']['name'] : null,
-                    'resBotType' => null,
+                    'resRawResult' => serialize($test['raw'] ?? null),
                 ],
+                'uaString' => $test['headers']['user-agent'],
             ];
 
             yield $key => $toInsert;

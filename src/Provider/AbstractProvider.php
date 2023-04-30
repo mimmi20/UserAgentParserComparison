@@ -12,7 +12,6 @@ use UserAgentParserComparison\Exception\PackageNotLoadedException;
 
 use function array_filter;
 use function array_key_exists;
-use function array_merge;
 use function file_get_contents;
 use function json_decode;
 use function reset;
@@ -50,14 +49,22 @@ abstract class AbstractProvider
      * @phpstan-var array{browser: array{name: bool, version: bool}, renderingEngine: array{name: bool, version: bool}, operatingSystem: array{name: bool, version: bool}, device: array{model: bool, brand: bool, type: bool, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: bool, type: bool}}
      */
     protected array $allDetectionCapabilities = [
+        'bot' => [
+            'isBot' => false,
+            'name' => false,
+            'type' => false,
+        ],
         'browser' => [
             'name' => false,
             'version' => false,
         ],
 
-        'renderingEngine' => [
-            'name' => false,
-            'version' => false,
+        'device' => [
+            'brand' => false,
+            'isMobile' => false,
+            'isTouch' => false,
+            'model' => false,
+            'type' => false,
         ],
 
         'operatingSystem' => [
@@ -65,18 +72,9 @@ abstract class AbstractProvider
             'version' => false,
         ],
 
-        'device' => [
-            'model' => false,
-            'brand' => false,
-            'type' => false,
-            'isMobile' => false,
-            'isTouch' => false,
-        ],
-
-        'bot' => [
-            'isBot' => false,
+        'renderingEngine' => [
             'name' => false,
-            'type' => false,
+            'version' => false,
         ],
     ];
 
@@ -162,21 +160,29 @@ abstract class AbstractProvider
      */
     public function getUpdateDate(): DateTimeImmutable | null
     {
-        $installed = json_decode(file_get_contents('vendor/composer/installed.json'), true, 512, JSON_THROW_ON_ERROR);
+        $installed = json_decode(
+            file_get_contents('vendor/composer/installed.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
         $package   = $this->getPackageName();
 
         $filtered = array_filter(
             $installed['packages'],
-            static fn (array $value): bool => array_key_exists('name', $value) && $package === $value['name'],
+            static fn (array $value): bool => array_key_exists(
+                'name',
+                $value,
+            ) && $package === $value['name'],
         );
 
-        if ([] === $filtered) {
+        if ($filtered === []) {
             return null;
         }
 
         $filtered = reset($filtered);
 
-        if ([] === $filtered || !array_key_exists('time', $filtered)) {
+        if ($filtered === [] || !array_key_exists('time', $filtered)) {
             return null;
         }
 
@@ -193,13 +199,18 @@ abstract class AbstractProvider
      */
     public function getDetectionCapabilities(): array
     {
-        return array_merge($this->allDetectionCapabilities, $this->detectionCapabilities);
+        return [...$this->allDetectionCapabilities, ...$this->detectionCapabilities];
     }
 
     /** @throws PackageNotLoadedException */
     protected function checkIfInstalled(): void
     {
-        $installed = json_decode(file_get_contents('vendor/composer/installed.json'), true, 512, JSON_THROW_ON_ERROR);
+        $installed = json_decode(
+            file_get_contents('vendor/composer/installed.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
         $package   = $this->getPackageName();
 
         $filtered = array_filter(
@@ -207,8 +218,10 @@ abstract class AbstractProvider
             static fn ($value): bool => array_key_exists('name', $value) && $package === $value['name'],
         );
 
-        if ([] === $filtered) {
-            throw new PackageNotLoadedException('You need to install the package ' . $package . ' to use this provider');
+        if ($filtered === []) {
+            throw new PackageNotLoadedException(
+                'You need to install the package ' . $package . ' to use this provider',
+            );
         }
     }
 }
