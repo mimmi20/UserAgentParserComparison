@@ -86,7 +86,7 @@ final class Donatj extends AbstractTestProvider
         }
 
         foreach ($source->getProperties($baseMessage, $messageLength) as $test) {
-            $key      = bin2hex(sha1((string) $test['headers']['user-agent'], true));
+            $key      = bin2hex(sha1($test['headers']['user-agent'], true));
             $toInsert = [
                 'result' => [
                     'resBotIsBot' => null,
