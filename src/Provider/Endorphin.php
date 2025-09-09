@@ -78,30 +78,50 @@ final class Endorphin extends AbstractParseProvider
         'general' => ['/^N\\\\A$/i'],
     ];
 
-    /** @throws PackageNotLoadedException */
+    /** @throws void */
     public function __construct(private readonly EndorphinDetector\Detector $parser)
     {
-        $this->checkIfInstalled();
+        // nothing to do here
     }
 
     /**
+     * @throws void
+     */
+    public function isActive(): bool
+    {
+        try {
+            $this->checkIfInstalled();
+        } catch (PackageNotLoadedException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array<string, string> $headers
+     *
      * @throws NoResultFoundException
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    public function parse(array $headers = []): Model\UserAgent
     {
+        if (!array_key_exists('user-agent', $headers) || !is_string($headers['user-agent'])) {
+            throw new NoResultFoundException('Can only use the user-agent Header');
+        }
+
         try {
-            $resultRaw = $this->parser->analyse($userAgent);
+            $resultRaw = $this->parser->analyse($headers['user-agent']);
         } catch (Throwable $e) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent, 0, $e);
+            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent'], 0, $e);
         }
 
         /*
          * No result found?
          */
         if ($this->hasResult($resultRaw) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent']);
         }
 
         /*

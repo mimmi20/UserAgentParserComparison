@@ -107,27 +107,47 @@ final class UAParser extends AbstractParseProvider
         'general' => ['/^Other$/i'],
     ];
 
-    /** @throws PackageNotLoadedException */
+    /** @throws void */
     public function __construct(private readonly Parser $parser)
     {
-        $this->checkIfInstalled();
+        // nothing to do here
     }
 
     /**
+     * @throws void
+     */
+    public function isActive(): bool
+    {
+        try {
+            $this->checkIfInstalled();
+        } catch (PackageNotLoadedException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array<string, string> $headers
+     *
      * @throws NoResultFoundException
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    public function parse(array $headers = []): Model\UserAgent
     {
-        $resultRaw = $this->parser->parse($userAgent);
+        if (!array_key_exists('user-agent', $headers) || !is_string($headers['user-agent'])) {
+            throw new NoResultFoundException('Can only use the user-agent Header');
+        }
+
+        $resultRaw = $this->parser->parse($headers['user-agent']);
         assert($resultRaw instanceof Client);
 
         /*
          * No result found?
          */
         if ($this->hasResult($resultRaw) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent']);
         }
 
         /*

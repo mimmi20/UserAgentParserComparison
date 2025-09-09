@@ -8,6 +8,7 @@ use BrowscapPHP\Browscap;
 use BrowscapPHP\Exception;
 use stdClass;
 use UserAgentParserComparison\Exception\NoResultFoundException;
+use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
 
 use function assert;
@@ -59,21 +60,41 @@ abstract class AbstractBrowscap extends AbstractParseProvider
     }
 
     /**
+     * @throws void
+     */
+    public function isActive(): bool
+    {
+        try {
+            $this->checkIfInstalled();
+        } catch (PackageNotLoadedException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array<string, string> $headers
+     *
      * @throws NoResultFoundException
      * @throws Exception
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    public function parse(array $headers = []): Model\UserAgent
     {
-        $resultRaw = $this->parser->getBrowser($userAgent);
+        if (!array_key_exists('user-agent', $headers) || !is_string($headers['user-agent'])) {
+            throw new NoResultFoundException('Can only use the user-agent Header');
+        }
+
+        $resultRaw = $this->parser->getBrowser($headers['user-agent']);
         assert($resultRaw instanceof stdClass);
 
         /*
          * No result found?
          */
         if ($this->hasResult($resultRaw) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent']);
         }
 
         /*

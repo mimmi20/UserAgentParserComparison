@@ -27,6 +27,14 @@ final class Chain extends AbstractParseProvider
     }
 
     /**
+     * @throws void
+     */
+    public function isActive(): bool
+    {
+        return true;
+    }
+
+    /**
      * @return array<AbstractProvider>
      *
      * @throws void
@@ -36,21 +44,24 @@ final class Chain extends AbstractParseProvider
         return $this->providers;
     }
 
-    /** @throws Exception\NoResultFoundException */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    /**
+     * @param array<string, string> $headers
+     * @throws Exception\NoResultFoundException
+     */
+    public function parse(array $headers = []): Model\UserAgent
     {
         foreach ($this->getProviders() as $provider) {
-            if (!$provider instanceof AbstractParseProvider) {
+            if (!$provider instanceof AbstractParseProvider || !$provider->isActive()) {
                 continue;
             }
 
             try {
-                return $provider->parse($userAgent, $headers);
+                return $provider->parse($headers);
             } catch (Exception\NoResultFoundException) {
                 // just catch this and continue to the next provider
             }
         }
 
-        throw new Exception\NoResultFoundException('No result found for user agent: ' . $userAgent);
+        throw new Exception\NoResultFoundException('No result found for user agent: ' . $headers['user-agent'] ?? '');
     }
 }

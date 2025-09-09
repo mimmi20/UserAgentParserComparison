@@ -19,9 +19,16 @@ abstract class AbstractParseProvider extends AbstractProvider
     /**
      * Parse the given user agent and return a result if possible
      *
+     * @param array<string, string> $headers
+     *
      * @throws Exception\NoResultFoundException
      */
-    abstract public function parse(string $userAgent, array $headers = []): Model\UserAgent;
+    abstract public function parse(array $headers = []): Model\UserAgent;
+
+    /**
+     * @throws void
+     */
+    abstract public function isActive(): bool;
 
     /** @throws void */
     protected function isRealResult(

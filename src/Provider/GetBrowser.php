@@ -76,20 +76,34 @@ final class GetBrowser extends AbstractBrowscap
     }
 
     /**
+     * @throws void
+     */
+    public function isActive(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @param array<string, string> $headers
+     *
      * @throws NoResultFoundException
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    public function parse(array $headers = []): Model\UserAgent
     {
-        $resultRaw = get_browser($userAgent, false);
+        if (!array_key_exists('user-agent', $headers) || !is_string($headers['user-agent'])) {
+            throw new NoResultFoundException('Can only use the user-agent Header');
+        }
+
+        $resultRaw = get_browser($headers['user-agent'], false);
         assert($resultRaw instanceof stdClass);
 
         /*
          * No result found?
          */
         if ($this->hasResult($resultRaw) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent']);
         }
 
         /*

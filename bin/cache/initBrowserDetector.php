@@ -35,6 +35,6 @@ $logger = new NullLogger();
 
 $browserDetectorFactory = new DetectorFactory($detectorCache, $logger);
 $browserDetector        = $browserDetectorFactory();
-$browserDetector('test');
+$browserDetector->getBrowser('test');
 
 echo PHP_EOL;

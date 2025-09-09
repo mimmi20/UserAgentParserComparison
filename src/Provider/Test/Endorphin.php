@@ -18,7 +18,7 @@ final class Endorphin extends AbstractTestProvider
     /**
      * Name of the provider
      */
-    protected string $name = 'Endorphin Browser Detector';
+    protected string $name = 'Endorphin';
 
     /**
      * Homepage of the provider
@@ -84,7 +84,7 @@ final class Endorphin extends AbstractTestProvider
         }
 
         foreach ($source->getProperties($baseMessage, $messageLength) as $test) {
-            $key      = bin2hex(sha1($test['headers']['user-agent'], true));
+            $key      = bin2hex(sha1(var_export($test['headers'], true), true));
             $toInsert = [
                 'result' => [
                     'resBotIsBot' => $test['client']['isbot'] ?? null,
@@ -109,7 +109,7 @@ final class Endorphin extends AbstractTestProvider
 
                     'resRawResult' => serialize($test['raw'] ?? null),
                 ],
-                'uaString' => $test['headers']['user-agent'],
+                'headers' => $test['headers'],
             ];
 
             yield $key => $toInsert;

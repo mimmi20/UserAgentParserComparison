@@ -126,7 +126,6 @@ return new Provider\Chain([
     // new Provider\Woothee(new \Woothee\Classifier()),
     new Provider\Cbschuld(),
     new Provider\Wolfcast(),
-    new Provider\Zsxsoft(),
     // new Provider\Endorphin(),
     new Provider\MobileDetect(),
 

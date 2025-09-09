@@ -46,8 +46,7 @@ $pdo->prepare('CREATE TABLE IF NOT EXISTS `provider` (
 $pdo->prepare('CREATE TABLE IF NOT EXISTS `useragent` (
   `uaId` CHAR(36) COLLATE utf8_unicode_ci NOT NULL COMMENT \'(DC2Type:uuid)\',
   `uaHash` VARBINARY(255) NOT NULL,
-  `uaString` LONGTEXT COLLATE utf8_unicode_ci NOT NULL,
-  `uaAdditionalHeaders` LONGTEXT COLLATE utf8_unicode_ci DEFAULT NULL COMMENT \'(DC2Type:array)\',
+  `uaHeaders` LONGTEXT COLLATE utf8_unicode_ci DEFAULT NULL COMMENT \'(DC2Type:array)\',
   PRIMARY KEY (`uaId`),
   UNIQUE KEY `userAgent_hash` (`uaHash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=DYNAMIC CHECKSUM=1')->execute();
@@ -268,7 +267,7 @@ $pdo->prepare('CREATE OR REPLACE VIEW `list-found-general-browser-names` AS SELE
 $pdo->prepare('CREATE OR REPLACE VIEW `found-general-browser-names` AS SELECT
         `resBrowserName` AS `name`,
         `uaId`,
-        `uaString`,
+        `uaHeaders`,
         COUNT(`resBrowserName`) AS `detectionCount`
     FROM `list-found-general-browser-names`
     INNER JOIN `userAgent`
@@ -278,7 +277,7 @@ $pdo->prepare('CREATE OR REPLACE VIEW `list-found-general-engine-names` AS SELEC
 $pdo->prepare('CREATE OR REPLACE VIEW `found-general-engine-names` AS SELECT
         `resEngineName` AS `name`,
         `uaId`,
-        `uaString`,
+        `uaHeaders`,
         COUNT(`resEngineName`) AS `detectionCount`
     FROM `list-found-general-engine-names`
     INNER JOIN `userAgent`
@@ -288,7 +287,7 @@ $pdo->prepare('CREATE OR REPLACE VIEW `list-found-general-os-names` AS SELECT * 
 $pdo->prepare('CREATE OR REPLACE VIEW `found-general-os-names` AS SELECT
         `resOsName` AS `name`,
         `uaId`,
-        `uaString`,
+        `uaHeaders`,
         COUNT(`resOsName`) AS `detectionCount`
     FROM `list-found-general-os-names`
     INNER JOIN `userAgent`
@@ -298,7 +297,7 @@ $pdo->prepare('CREATE OR REPLACE VIEW `list-found-general-device-models` AS SELE
 $pdo->prepare('CREATE OR REPLACE VIEW `found-general-device-models` AS SELECT
         `resDeviceModel` AS `name`,
         `uaId`,
-        `uaString`,
+        `uaHeaders`,
         COUNT(`resDeviceModel`) AS `detectionCount`
     FROM `list-found-general-device-models`
     INNER JOIN `userAgent`
@@ -308,7 +307,7 @@ $pdo->prepare('CREATE OR REPLACE VIEW `list-found-general-device-brands` AS SELE
 $pdo->prepare('CREATE OR REPLACE VIEW `found-general-device-brands` AS SELECT
         `resDeviceBrand` AS `name`,
         `uaId`,
-        `uaString`,
+        `uaHeaders`,
         COUNT(`resDeviceBrand`) AS `detectionCount`
     FROM `list-found-general-device-brands`
     INNER JOIN `userAgent`
@@ -318,7 +317,7 @@ $pdo->prepare('CREATE OR REPLACE VIEW `list-found-general-device-types` AS SELEC
 $pdo->prepare('CREATE OR REPLACE VIEW `found-general-device-types` AS SELECT
         `resDeviceType` AS `name`,
         `uaId`,
-        `uaString`,
+        `uaHeaders`,
         COUNT(`resDeviceType`) AS `detectionCount`
     FROM `list-found-general-device-types`
     INNER JOIN `userAgent`
@@ -330,7 +329,7 @@ $pdo->prepare('CREATE OR REPLACE VIEW `list-found-general-bot-names` AS SELECT *
 $pdo->prepare('CREATE OR REPLACE VIEW `found-general-bot-names` AS SELECT
         `resBotName` AS `name`,
         `uaId`,
-        `uaString`,
+        `uaHeaders`,
         COUNT(`resBotName`) AS `detectionCount`
     FROM `list-found-general-bot-names`
     INNER JOIN `userAgent`
@@ -340,7 +339,7 @@ $pdo->prepare('CREATE OR REPLACE VIEW `list-found-general-bot-types` AS SELECT *
 $pdo->prepare('CREATE OR REPLACE VIEW `found-general-bot-types` AS SELECT
         `resBotType` AS `name`,
         `uaId`,
-        `uaString`,
+        `uaHeaders`,
         COUNT(`resBotType`) AS `detectionCount`
     FROM `list-found-general-bot-types`
     INNER JOIN `userAgent`

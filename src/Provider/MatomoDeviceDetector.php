@@ -80,18 +80,35 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         'general' => ['/^UNK$/i'],
     ];
 
-    /** @throws PackageNotLoadedException */
+    /** @throws void */
     public function __construct(private readonly DeviceDetector $parser)
     {
-        $this->checkIfInstalled();
+        // nothing to do here
     }
 
-    /** @throws NoResultFoundException */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    /**
+     * @throws void
+     */
+    public function isActive(): bool
+    {
+        try {
+            $this->checkIfInstalled();
+        } catch (PackageNotLoadedException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array<string, string> $headers
+     * @throws NoResultFoundException
+     */
+    public function parse(array $headers = []): Model\UserAgent
     {
         $clientHints = ClientHints::factory($headers);
 
-        $this->parser->setUserAgent($userAgent);
+        $this->parser->setUserAgent($headers['user-agent'] ?? '');
         $this->parser->setClientHints($clientHints);
         $this->parser->parse();
 
@@ -99,7 +116,7 @@ final class MatomoDeviceDetector extends AbstractParseProvider
          * No result found?
          */
         if ($this->hasResult($this->parser) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent'] ?? '');
         }
 
         /*
@@ -120,9 +137,9 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         /*
          * hydrate the result
          */
-        $this->hydrateBrowser($result->getBrowser(), $this->parser->getClient());
-        $this->hydrateRenderingEngine($result->getRenderingEngine(), $this->parser->getClient());
-        $this->hydrateOperatingSystem($result->getOperatingSystem(), $this->parser->getOs());
+        $this->hydrateBrowser($result->getBrowser(), $this->parser->getClient() ?? []);
+        $this->hydrateRenderingEngine($result->getRenderingEngine(), $this->parser->getClient() ?? []);
+        $this->hydrateOperatingSystem($result->getOperatingSystem(), $this->parser->getOs() ?? []);
         $this->hydrateDevice($result->getDevice(), $this->parser);
 
         return $result;

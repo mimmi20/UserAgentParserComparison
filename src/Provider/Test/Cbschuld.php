@@ -86,7 +86,7 @@ final class Cbschuld extends AbstractTestProvider
         }
 
         foreach ($source->getProperties($baseMessage, $messageLength) as $test) {
-            $key      = bin2hex(sha1($test['headers']['user-agent'], true));
+            $key      = bin2hex(sha1(var_export($test['headers'], true), true));
             $toInsert = [
                 'result' => [
                     'resBotIsBot' => null,
@@ -111,7 +111,7 @@ final class Cbschuld extends AbstractTestProvider
 
                     'resRawResult' => serialize($test['raw'] ?? null),
                 ],
-                'uaString' => $test['headers']['user-agent'],
+                'headers' => $test['headers'],
             ];
 
             yield $key => $toInsert;

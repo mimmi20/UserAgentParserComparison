@@ -42,6 +42,11 @@ abstract class AbstractHtml
     protected function getPercentageMarkup(int $resultFound): string
     {
         $count      = $this->getUserAgentCount();
+
+        if (!$count) {
+            return '';
+        }
+
         $onePercent = $count / 100;
 
         return '

@@ -76,26 +76,42 @@ final class WhichBrowser extends AbstractParseProvider
         ],
     ];
 
-    /** @throws PackageNotLoadedException */
+    /** @throws void */
     public function __construct(
         private readonly WhichBrowserParser $parser,
         private readonly CacheItemPoolInterface $cache,
     ) {
-        $this->checkIfInstalled();
+        // nothing to do here
     }
 
-    /** @throws NoResultFoundException */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    /**
+     * @throws void
+     */
+    public function isActive(): bool
     {
-        $headers['User-Agent'] = $userAgent;
+        try {
+            $this->checkIfInstalled();
+        } catch (PackageNotLoadedException) {
+            return false;
+        }
 
+        return true;
+    }
+
+    /**
+     * @param array<string, string> $headers
+     *
+     * @throws NoResultFoundException
+     */
+    public function parse(array $headers = []): Model\UserAgent
+    {
         $this->parser->analyse($headers, ['cache' => $this->cache]);
 
         /*
          * No result found?
          */
         if ($this->parser->isDetected() !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent'] ?? '');
         }
 
         /*

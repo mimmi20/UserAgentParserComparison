@@ -138,7 +138,7 @@ final class OverviewProvider extends AbstractHtml
                 Results found
             </td>
             <td>
-                ' . $this->getPercentageMarkup($row['resultFound']) . '
+                ' . $this->getPercentageMarkup((int) $row['resultFound']) . '
             </td>
             <td>
                 ' . $row['resultFound'] . '

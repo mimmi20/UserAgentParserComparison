@@ -84,8 +84,26 @@ do {
     while ($row = $statementSelectAllUa->fetch(PDO::FETCH_ASSOC, PDO::FETCH_ORI_NEXT)) {
         $message = $baseMessage;
 
+        $headers = json_decode($row['uaHeaders'], true);
+
+        foreach ($headers as $value) {
+            if (is_array($value)) {
+                ++$skipped;
+
+                continue 2;
+            }
+        }
+
         foreach ($chain->getProviders() as $provider) {
             assert($provider instanceof AbstractParseProvider);
+
+            if (!$provider->isActive()) {
+                $message .= 'S';
+
+                echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
+
+                continue;
+            }
 
             $dbResultProvider = $providers[$provider->getName()];
 
@@ -98,15 +116,6 @@ do {
 
             if (false !== $dbResultResult) {
                 $row2 = $dbResultResult;
-
-            // skip
-            // if (null === $row['uaAdditionalHeaders'] && ($dbResultResult['resProviderVersion'] === $provider->getVersion() /* || $provider->getVersion() === null/* */)) {
-            //     $message .= 'S';
-            //
-            //     echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
-            //
-            //     continue;
-            // }
             } else {
                 $row2 = [
                     'provider_id' => $dbResultProvider['proId'],
@@ -114,10 +123,7 @@ do {
                 ];
             }
 
-            $additionalHeaders = [];
-            if (null !== $row['uaAdditionalHeaders']) {
-                $additionalHeaders = json_decode($row['uaAdditionalHeaders'], true);
-            }
+            $parseTime = null;
 
             /*
              * Get the result with timing
@@ -132,8 +138,8 @@ do {
                 });
 
                 $startTime = microtime(true);
-                $parseResult = $provider->parse($row['uaString'], $additionalHeaders);
-                $endTime = microtime(true);
+                $parseResult = $provider->parse($headers);
+                $parseTime = microtime(true) - $startTime;
             } catch (NoResultFoundException) {
                 $parseResult = null;
             } catch (RequestException $e) {
@@ -153,7 +159,7 @@ do {
             }
 
             $row2['resProviderVersion'] = $provider->getVersion();
-            $row2['resParseTime']       = $endTime - $startTime;
+            $row2['resParseTime']       = $parseTime;
             $date                       = new DateTimeImmutable('now', new DateTimeZone('UTC'));
             $row2['resLastChangeDate']  = $date->format('Y-m-d H:i:s');
 
@@ -243,9 +249,9 @@ do {
                     $statementInsertResult->bindValue(':resDeviceType', null);
                 }
 
-                $statementInsertResult->bindValue(':resDeviceIsMobile', $row2['resDeviceIsMobile'] ?? null);
-                $statementInsertResult->bindValue(':resDeviceIsTouch', $row2['resDeviceIsTouch'] ?? null);
-                $statementInsertResult->bindValue(':resBotIsBot', $row2['resBotIsBot'] ?? null);
+                $statementInsertResult->bindValue(':resDeviceIsMobile', (int) ($row2['resDeviceIsMobile'] ?? 0));
+                $statementInsertResult->bindValue(':resDeviceIsTouch', (int) ($row2['resDeviceIsTouch'] ?? 0));
+                $statementInsertResult->bindValue(':resBotIsBot', (int) ($row2['resBotIsBot'] ?? 0));
 
                 if (array_key_exists('resBotName', $row2) && !in_array($row2['resBotName'], ['UNKNOWN', 'unknown', ''], true)) {
                     $statementInsertResult->bindValue(':resBotName', $row2['resBotName']);
@@ -338,9 +344,9 @@ do {
                     $statementUpdateResult->bindValue(':resDeviceType', null);
                 }
 
-                $statementUpdateResult->bindValue(':resDeviceIsMobile', $row2['resDeviceIsMobile'] ?? null);
-                $statementUpdateResult->bindValue(':resDeviceIsTouch', $row2['resDeviceIsTouch'] ?? null);
-                $statementUpdateResult->bindValue(':resBotIsBot', $row2['resBotIsBot'] ?? null);
+                $statementUpdateResult->bindValue(':resDeviceIsMobile', (int) ($row2['resDeviceIsMobile'] ?? 0));
+                $statementUpdateResult->bindValue(':resDeviceIsTouch', (int) ($row2['resDeviceIsTouch'] ?? 0));
+                $statementUpdateResult->bindValue(':resBotIsBot', (int) ($row2['resBotIsBot'] ?? 0));
 
                 if (array_key_exists('resBotName', $row2) && !in_array($row2['resBotName'], ['UNKNOWN', 'unknown', ''], true)) {
                     $statementUpdateResult->bindValue(':resBotName', $row2['resBotName']);

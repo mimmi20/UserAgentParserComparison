@@ -70,23 +70,43 @@ final class DonatjUAParser extends AbstractParseProvider
     /** @phpstan-var callable-string */
     private string $functionName = '\parse_user_agent';
 
-    /** @throws PackageNotLoadedException */
+    /** @throws void */
     public function __construct()
     {
-        $this->checkIfInstalled();
+        // nothing to do here
     }
 
     /**
+     * @throws void
+     */
+    public function isActive(): bool
+    {
+        try {
+            $this->checkIfInstalled();
+        } catch (PackageNotLoadedException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array<string, string> $headers
+     *
      * @throws NoResultFoundException
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    public function parse(array $headers = []): Model\UserAgent
     {
-        $resultRaw = ($this->functionName)($userAgent);
+        if (!array_key_exists('user-agent', $headers) || !is_string($headers['user-agent'])) {
+            throw new NoResultFoundException('Can only use the user-agent Header');
+        }
+
+        $resultRaw = ($this->functionName)($headers['user-agent']);
 
         if ($this->hasResult($resultRaw) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent']);
         }
 
         /*
