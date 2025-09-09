@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the mimmi20/useragent-parser-comparison package.
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
  *
  * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
  *
@@ -35,6 +35,8 @@ $config
     ->ignoreErrorsOnPackage('mimmi20/coding-standard', [ErrorType::UNUSED_DEPENDENCY])
     ->ignoreErrorsOnPackage('phpstan/extension-installer', [ErrorType::UNUSED_DEPENDENCY])
     ->ignoreErrorsOnPackage('phpstan/phpstan-deprecation-rules', [ErrorType::UNUSED_DEPENDENCY])
+    ->ignoreErrorsOnPackage('endorphin-studio/browser-detector-tests', [ErrorType::UNUSED_DEPENDENCY])
+    ->ignoreErrorsOnPackage('woothee/woothee-testset', [ErrorType::UNUSED_DEPENDENCY])
 
     // Adjust analysis
     // dev packages are often used only in CI, so this is not enabled by default

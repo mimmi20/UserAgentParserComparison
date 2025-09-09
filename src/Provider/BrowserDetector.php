@@ -1,10 +1,20 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
 use BrowserDetector\Detector;
+use Override;
 use Psr\SimpleCache\InvalidArgumentException;
 use UaResult\Browser\BrowserInterface;
 use UaResult\Device\DeviceInterface;
@@ -12,7 +22,6 @@ use UaResult\Engine\EngineInterface;
 use UaResult\Os\OsInterface;
 use UaResult\Result\ResultInterface;
 use UserAgentParserComparison\Exception\NoResultFoundException;
-use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
 
 use function mb_stripos;
@@ -92,9 +101,8 @@ final class BrowserDetector extends AbstractParseProvider
     {
     }
 
-    /**
-     * @throws void
-     */
+    /** @throws void */
+    #[Override]
     public function isActive(): bool
     {
         return false;
@@ -113,9 +121,8 @@ final class BrowserDetector extends AbstractParseProvider
      *
      * @throws NoResultFoundException
      * @throws InvalidArgumentException
-     *
-     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
+    #[Override]
     public function parse(array $headers = []): Model\UserAgent
     {
         $parserResult = $this->parser->getBrowser($headers);
@@ -124,7 +131,9 @@ final class BrowserDetector extends AbstractParseProvider
          * No result found?
          */
         if ($this->hasResult($parserResult) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent'] ?? '');
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . ($headers['user-agent'] ?? ''),
+            );
         }
 
         /*

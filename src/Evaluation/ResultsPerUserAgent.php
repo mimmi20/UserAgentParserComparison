@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Evaluation;
@@ -117,14 +126,22 @@ final class ResultsPerUserAgent
         return $this->harmonizedValues;
     }
 
-    /** @throws void */
-    private function getUniqueCount(array $values): int | null
+    /**
+     * @param array<mixed> $values
+     *
+     * @throws void
+     */
+    private function getUniqueCount(array $values): int
     {
         return count(array_unique($values));
     }
 
-    /** @throws void */
-    private function getMaxSameCount(array $values): int | null
+    /**
+     * @param array<mixed> $values
+     *
+     * @throws void
+     */
+    private function getMaxSameCount(array $values): int
     {
         if (count($values) === 0) {
             return 0;

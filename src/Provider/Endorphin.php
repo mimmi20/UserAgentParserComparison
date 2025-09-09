@@ -1,15 +1,28 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
 use EndorphinStudio\Detector as EndorphinDetector;
 use EndorphinStudio\Detector\Data\Result;
+use Override;
 use Throwable;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
+
+use function array_key_exists;
+use function is_string;
 
 /**
  * Abstraction for endorphin-studio/browser-detector
@@ -75,7 +88,7 @@ final class Endorphin extends AbstractParseProvider
         'device' => [
             'model' => ['/^Desktop/i'],
         ],
-        'general' => ['/^N\\\\A$/i'],
+        'general' => ['/^N\\\A$/i'],
     ];
 
     /** @throws void */
@@ -84,9 +97,8 @@ final class Endorphin extends AbstractParseProvider
         // nothing to do here
     }
 
-    /**
-     * @throws void
-     */
+    /** @throws void */
+    #[Override]
     public function isActive(): bool
     {
         try {
@@ -102,9 +114,8 @@ final class Endorphin extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
-     *
-     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
+    #[Override]
     public function parse(array $headers = []): Model\UserAgent
     {
         if (!array_key_exists('user-agent', $headers) || !is_string($headers['user-agent'])) {
@@ -114,14 +125,20 @@ final class Endorphin extends AbstractParseProvider
         try {
             $resultRaw = $this->parser->analyse($headers['user-agent']);
         } catch (Throwable $e) {
-            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent'], 0, $e);
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
         }
 
         /*
          * No result found?
          */
         if ($this->hasResult($resultRaw) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent']);
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . $headers['user-agent'],
+            );
         }
 
         /*
@@ -195,7 +212,7 @@ final class Endorphin extends AbstractParseProvider
     private function hydrateDevice(Model\Device $device, EndorphinDetector\Data\Device $resultRaw): void
     {
         $device->setModel(
-            $this->getRealResult($resultRaw->getModel() ? $resultRaw->getModel()->getModel() : null),
+            $this->getRealResult($resultRaw->getModel()->getModel()),
         );
         $device->setType($this->getRealResult($resultRaw->getType()));
     }

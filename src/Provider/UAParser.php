@@ -1,9 +1,19 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use Override;
 use UAParser\Parser;
 use UAParser\Result\Client;
 use UAParser\Result\Device;
@@ -13,7 +23,8 @@ use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
 
-use function assert;
+use function array_key_exists;
+use function is_string;
 
 /**
  * Abstraction for ua-parser/uap-php
@@ -113,9 +124,8 @@ final class UAParser extends AbstractParseProvider
         // nothing to do here
     }
 
-    /**
-     * @throws void
-     */
+    /** @throws void */
+    #[Override]
     public function isActive(): bool
     {
         try {
@@ -131,9 +141,8 @@ final class UAParser extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
-     *
-     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
+    #[Override]
     public function parse(array $headers = []): Model\UserAgent
     {
         if (!array_key_exists('user-agent', $headers) || !is_string($headers['user-agent'])) {
@@ -141,13 +150,14 @@ final class UAParser extends AbstractParseProvider
         }
 
         $resultRaw = $this->parser->parse($headers['user-agent']);
-        assert($resultRaw instanceof Client);
 
         /*
          * No result found?
          */
         if ($this->hasResult($resultRaw) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent']);
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . $headers['user-agent'],
+            );
         }
 
         /*

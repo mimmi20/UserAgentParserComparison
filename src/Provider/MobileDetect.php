@@ -1,12 +1,26 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use Detection\Exception\MobileDetectException;
+use Override;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
+
+use function array_key_exists;
+use function is_string;
 
 /** @see https://github.com/browscap/browscap-php */
 final class MobileDetect extends AbstractParseProvider
@@ -63,9 +77,8 @@ final class MobileDetect extends AbstractParseProvider
         ],
     ];
 
-    /**
-     * @throws void
-     */
+    /** @throws void */
+    #[Override]
     public function isActive(): bool
     {
         try {
@@ -79,8 +92,11 @@ final class MobileDetect extends AbstractParseProvider
 
     /**
      * @param array<string, string> $headers
+     *
      * @throws NoResultFoundException
+     * @throws MobileDetectException
      */
+    #[Override]
     public function parse(array $headers = []): Model\UserAgent
     {
         if (!array_key_exists('user-agent', $headers) || !is_string($headers['user-agent'])) {
@@ -103,7 +119,9 @@ final class MobileDetect extends AbstractParseProvider
          * No result found?
          */
         if ($this->hasResult($resultCache) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent']);
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . $headers['user-agent'],
+            );
         }
 
         /*
@@ -120,13 +138,21 @@ final class MobileDetect extends AbstractParseProvider
         return $result;
     }
 
-    /** @throws void */
+    /**
+     * @param array{isMobile: bool} $resultRaw
+     *
+     * @throws void
+     */
     private function hasResult(array $resultRaw): bool
     {
         return $resultRaw['isMobile'] !== null;
     }
 
-    /** @throws void */
+    /**
+     * @param array{isMobile: bool} $resultRaw
+     *
+     * @throws void
+     */
     private function hydrateDevice(Model\Device $device, array $resultRaw): void
     {
         if ($resultRaw['isMobile'] !== true) {

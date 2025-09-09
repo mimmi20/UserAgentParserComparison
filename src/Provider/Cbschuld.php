@@ -1,13 +1,26 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
 use Browser;
+use Override;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
+
+use function array_key_exists;
+use function is_string;
 
 /**
  * Abstraction for donatj/PhpUserAgent
@@ -74,9 +87,8 @@ final class Cbschuld extends AbstractParseProvider
         // nothing to do here
     }
 
-    /**
-     * @throws void
-     */
+    /** @throws void */
+    #[Override]
     public function isActive(): bool
     {
         try {
@@ -92,9 +104,8 @@ final class Cbschuld extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
-     *
-     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
+    #[Override]
     public function parse(array $headers = []): Model\UserAgent
     {
         if (!array_key_exists('user-agent', $headers) || !is_string($headers['user-agent'])) {
@@ -111,7 +122,9 @@ final class Cbschuld extends AbstractParseProvider
         ];
 
         if ($this->hasResult($resultCache) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent']);
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . $headers['user-agent'],
+            );
         }
 
         /*
@@ -133,22 +146,33 @@ final class Cbschuld extends AbstractParseProvider
         return $result;
     }
 
-    /** @throws void */
+    /**
+     * @param array{browserName: string, browserVersion: string, osName: string} $resultRaw
+     *
+     * @throws void
+     */
     private function hasResult(array $resultRaw): bool
     {
-        return $this->isRealResult($resultRaw['browserName']) || $this->isRealResult(
-            $resultRaw['osName'],
-        );
+        return $this->isRealResult($resultRaw['browserName'])
+            || $this->isRealResult($resultRaw['osName']);
     }
 
-    /** @throws void */
+    /**
+     * @param array{browserName: string, browserVersion: string, osName: string} $resultRaw
+     *
+     * @throws void
+     */
     private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
     {
         $browser->setName($this->getRealResult($resultRaw['browserName']));
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw['browserVersion']));
     }
 
-    /** @throws void */
+    /**
+     * @param array{browserName: string, browserVersion: string, osName: string} $resultRaw
+     *
+     * @throws void
+     */
     private function hydrateOperatingSystem(Model\OperatingSystem $os, array $resultRaw): void
     {
         if ($this->isRealResult($resultRaw['osName']) !== true) {

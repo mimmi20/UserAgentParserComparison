@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the mimmi20/useragent-parser-comparison package.
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
  *
  * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
  *
@@ -17,7 +17,6 @@ use Rector\DeadCode\Rector\If_\RemoveDeadInstanceOfRector;
 use Rector\DeadCode\Rector\StaticCall\RemoveParentCallWithoutParentRector;
 use Rector\Php81\Rector\Array_\FirstClassCallableRector;
 use Rector\Php81\Rector\FuncCall\NullToStrictStringFuncCallArgRector;
-use Rector\Php81\Rector\Property\ReadOnlyPropertyRector;
 use Rector\Php84\Rector\MethodCall\NewMethodCallWithoutParenthesesRector;
 use Rector\PHPUnit\Set\PHPUnitSetList;
 use Rector\Set\ValueObject\LevelSetList;

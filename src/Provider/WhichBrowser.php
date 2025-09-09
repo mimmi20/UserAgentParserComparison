@@ -1,9 +1,19 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use Override;
 use Psr\Cache\CacheItemPoolInterface;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
@@ -14,8 +24,6 @@ use WhichBrowser\Model\Engine;
 use WhichBrowser\Model\Os;
 use WhichBrowser\Model\Using;
 use WhichBrowser\Parser as WhichBrowserParser;
-
-use function assert;
 
 /**
  * Abstraction for whichbrowser/parser
@@ -84,9 +92,8 @@ final class WhichBrowser extends AbstractParseProvider
         // nothing to do here
     }
 
-    /**
-     * @throws void
-     */
+    /** @throws void */
+    #[Override]
     public function isActive(): bool
     {
         try {
@@ -103,6 +110,7 @@ final class WhichBrowser extends AbstractParseProvider
      *
      * @throws NoResultFoundException
      */
+    #[Override]
     public function parse(array $headers = []): Model\UserAgent
     {
         $this->parser->analyse($headers, ['cache' => $this->cache]);
@@ -111,7 +119,9 @@ final class WhichBrowser extends AbstractParseProvider
          * No result found?
          */
         if ($this->parser->isDetected() !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $headers['user-agent'] ?? '');
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . ($headers['user-agent'] ?? ''),
+            );
         }
 
         /*
@@ -157,12 +167,11 @@ final class WhichBrowser extends AbstractParseProvider
             return;
         }
 
-        if (!isset($browserRaw->using) || !($browserRaw->using instanceof Using)) {
+        if (!$browserRaw->using instanceof Using) {
             return;
         }
 
         $usingRaw = $browserRaw->using;
-        assert($usingRaw instanceof Using);
 
         if ($this->isRealResult($usingRaw->getName()) !== true) {
             return;

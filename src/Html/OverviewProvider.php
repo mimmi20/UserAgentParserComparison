@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Html;
@@ -8,7 +17,11 @@ use PDO;
 
 final class OverviewProvider extends AbstractHtml
 {
-    /** @throws void */
+    /**
+     * @param array<string, int|string> $provider
+     *
+     * @throws void
+     */
     public function __construct(PDO $pdo, private readonly array $provider, string | null $title = null)
     {
         parent::__construct($pdo, $title);
