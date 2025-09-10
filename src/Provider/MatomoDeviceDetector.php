@@ -1,11 +1,21 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
 use DeviceDetector\ClientHints;
 use DeviceDetector\DeviceDetector;
+use Override;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -80,18 +90,36 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         'general' => ['/^UNK$/i'],
     ];
 
-    /** @throws PackageNotLoadedException */
+    /** @throws void */
     public function __construct(private readonly DeviceDetector $parser)
     {
-        $this->checkIfInstalled();
+        // nothing to do here
     }
 
-    /** @throws NoResultFoundException */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    /** @throws void */
+    #[Override]
+    public function isActive(): bool
+    {
+        try {
+            $this->checkIfInstalled();
+        } catch (PackageNotLoadedException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array<string, string> $headers
+     *
+     * @throws NoResultFoundException
+     */
+    #[Override]
+    public function parse(array $headers = []): Model\UserAgent
     {
         $clientHints = ClientHints::factory($headers);
 
-        $this->parser->setUserAgent($userAgent);
+        $this->parser->setUserAgent($headers['user-agent'] ?? '');
         $this->parser->setClientHints($clientHints);
         $this->parser->parse();
 
@@ -99,7 +127,9 @@ final class MatomoDeviceDetector extends AbstractParseProvider
          * No result found?
          */
         if ($this->hasResult($this->parser) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . ($headers['user-agent'] ?? ''),
+            );
         }
 
         /*
@@ -112,7 +142,7 @@ final class MatomoDeviceDetector extends AbstractParseProvider
          * Bot detection
          */
         if ($this->parser->isBot() === true) {
-            $this->hydrateBot($result->getBot(), $this->parser->getBot());
+            $this->hydrateBot($result->getBot(), (array) $this->parser->getBot());
 
             return $result;
         }
@@ -120,9 +150,12 @@ final class MatomoDeviceDetector extends AbstractParseProvider
         /*
          * hydrate the result
          */
-        $this->hydrateBrowser($result->getBrowser(), $this->parser->getClient());
-        $this->hydrateRenderingEngine($result->getRenderingEngine(), $this->parser->getClient());
-        $this->hydrateOperatingSystem($result->getOperatingSystem(), $this->parser->getOs());
+        $this->hydrateBrowser($result->getBrowser(), (array) $this->parser->getClient());
+        $this->hydrateRenderingEngine(
+            $result->getRenderingEngine(),
+            (array) $this->parser->getClient(),
+        );
+        $this->hydrateOperatingSystem($result->getOperatingSystem(), (array) $this->parser->getOs());
         $this->hydrateDevice($result->getDevice(), $this->parser);
 
         return $result;
@@ -141,7 +174,7 @@ final class MatomoDeviceDetector extends AbstractParseProvider
             'client' => $dd->getClient(),
 
             'device' => [
-                'brand' => $dd->getBrand(),
+                'brand' => $dd->getBrandName(),
                 'brandName' => $dd->getBrandName(),
 
                 'device' => $dd->getDevice(),

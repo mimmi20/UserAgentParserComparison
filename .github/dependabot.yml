@@ -8,11 +8,14 @@ updates:
     schedule:
       interval: "weekly"
       day: "wednesday"
-      time: "03:00"
-      timezone: "UTC"
+      time: "04:00"
+      timezone: "Europe/Berlin"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
     open-pull-requests-limit: 10
-    reviewers:
-      - "mimmi20"
     assignees:
       - "mimmi20"
     labels:
@@ -22,26 +25,29 @@ updates:
     commit-message:
       include: "scope"
       prefix: "composer"
-#    ignore:
-#      - dependency-name: symfony/yaml
-#        versions:
-#          - ">= 0"
+    target-branch: "master"
 
+  # actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "wednesday"
-      time: "03:00"
-      timezone: "UTC"
+      day: "sunday"
+      time: "04:00"
+      timezone: "Europe/Berlin"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
     open-pull-requests-limit: 10
-    reviewers:
-      - "mimmi20"
     assignees:
       - "mimmi20"
     labels:
       - "dependencies"
-    target-branch: "master"
     commit-message:
-      include: "scope"
       prefix: "github-actions"
+    target-branch: "master"
+    ignore:
+      - dependency-name: "mimmi20/ci"
+      - dependency-name: "release-drafter/release-drafter"

@@ -1,15 +1,24 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Model;
 
 use function count;
 use function in_array;
+use function mb_trim;
 use function preg_match;
 use function preg_replace;
 use function preg_split;
-use function trim;
 
 /**
  * Version model
@@ -211,7 +220,7 @@ final class Version
             $result = preg_split('/\d+(?:[._]*\d*)*/', $complete);
 
             foreach ($result as $row) {
-                $row = trim((string) $row);
+                $row = mb_trim((string) $row);
 
                 if ($row === '') {
                     continue;

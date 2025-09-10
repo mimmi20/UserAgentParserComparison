@@ -1,12 +1,25 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use Override;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
+
+use function array_key_exists;
+use function is_string;
 
 /**
  * Abstraction for donatj/PhpUserAgent
@@ -68,25 +81,45 @@ final class DonatjUAParser extends AbstractParseProvider
     ];
 
     /** @phpstan-var callable-string */
-    private string $functionName = '\parse_user_agent';
+    private string $functionName = '\donatj\UserAgent\parse_user_agent';
 
-    /** @throws PackageNotLoadedException */
+    /** @throws void */
     public function __construct()
     {
-        $this->checkIfInstalled();
+        // nothing to do here
+    }
+
+    /** @throws void */
+    #[Override]
+    public function isActive(): bool
+    {
+        try {
+            $this->checkIfInstalled();
+        } catch (PackageNotLoadedException) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
-     * @throws NoResultFoundException
+     * @param array<string, string> $headers
      *
-     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
+     * @throws NoResultFoundException
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    #[Override]
+    public function parse(array $headers = []): Model\UserAgent
     {
-        $resultRaw = ($this->functionName)($userAgent);
+        if (!array_key_exists('user-agent', $headers) || !is_string($headers['user-agent'])) {
+            throw new NoResultFoundException('Can only use the user-agent Header');
+        }
+
+        $resultRaw = ($this->functionName)($headers['user-agent']);
 
         if ($this->hasResult($resultRaw) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . $headers['user-agent'],
+            );
         }
 
         /*
@@ -110,13 +143,21 @@ final class DonatjUAParser extends AbstractParseProvider
         return $result;
     }
 
-    /** @throws void */
+    /**
+     * @param array{browser: string, version: string, platform: string} $resultRaw
+     *
+     * @throws void
+     */
     private function hasResult(array $resultRaw): bool
     {
         return $this->isRealResult($resultRaw['browser']);
     }
 
-    /** @throws void */
+    /**
+     * @param array{browser: string, version: string, platform: string} $resultRaw
+     *
+     * @throws void
+     */
     private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
     {
         $browser->setName($this->getRealResult($resultRaw['browser']));

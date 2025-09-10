@@ -1,10 +1,20 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
 use BrowserDetector\Detector;
+use Override;
 use Psr\SimpleCache\InvalidArgumentException;
 use UaResult\Browser\BrowserInterface;
 use UaResult\Device\DeviceInterface;
@@ -91,21 +101,39 @@ final class BrowserDetector extends AbstractParseProvider
     {
     }
 
+    /** @throws void */
+    #[Override]
+    public function isActive(): bool
+    {
+        return false;
+
+//        try {
+//            $this->checkIfInstalled();
+//        } catch (PackageNotLoadedException) {
+//            return false;
+//        }
+//
+//        return true;
+    }
+
     /**
+     * @param array<string, string> $headers
+     *
      * @throws NoResultFoundException
      * @throws InvalidArgumentException
-     *
-     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    #[Override]
+    public function parse(array $headers = []): Model\UserAgent
     {
-        $parserResult = ($this->parser)($userAgent);
+        $parserResult = $this->parser->getBrowser($headers);
 
         /*
          * No result found?
          */
         if ($this->hasResult($parserResult) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . ($headers['user-agent'] ?? ''),
+            );
         }
 
         /*

@@ -1,8 +1,19 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Harmonize;
+
+use Override;
 
 use function mb_stripos;
 use function preg_match;
@@ -14,6 +25,7 @@ final class Version extends AbstractHarmonize
      *
      * @throws void
      */
+    #[Override]
     public static function getHarmonizedValue(mixed $value): mixed
     {
         if ($value === null) {
@@ -44,6 +56,7 @@ final class Version extends AbstractHarmonize
      *
      * @throws void
      */
+    #[Override]
     public static function getHarmonizedValues(array $values): array
     {
         foreach ($values as $key => $value) {

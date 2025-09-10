@@ -1,5 +1,5 @@
 cd ..
-php bin\cache\initBrowscap.php
+php -d memory_limit=1024M bin\cache\initBrowscap.php
 php bin\cache\initMatomo.php
 php bin\cache\initWhichBrowser.php
 php bin\cache\initBrowserDetector.php

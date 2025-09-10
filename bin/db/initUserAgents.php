@@ -26,8 +26,8 @@ $statementInsertProvider = $pdo->prepare('INSERT INTO `provider` (`proId`, `proT
 $statementUpdateProvider = $pdo->prepare('UPDATE `provider` SET `proType` = :proType, `proName` = :proName, `proHomepage` = :proHomepage, `proVersion` = :proVersion, `proLastReleaseDate` = :proLastReleaseDate, `proPackageName` = :proPackageName, `proLanguage` = :proLanguage, `proLocal` = :proLocal, `proApi` = :proApi, `proCanDetectBrowserName` = :proCanDetectBrowserName, `proCanDetectBrowserVersion` = :proCanDetectBrowserVersion, `proCanDetectEngineName` = :proCanDetectEngineName, `proCanDetectEngineVersion` = :proCanDetectEngineVersion, `proCanDetectOsName` = :proCanDetectOsName, `proCanDetectOsVersion` = :proCanDetectOsVersion, `proCanDetectDeviceModel` = :proCanDetectDeviceModel, `proCanDetectDeviceBrand` = :proCanDetectDeviceBrand, `proCanDetectDeviceType` = :proCanDetectDeviceType, `proCanDetectDeviceIsMobile` = :proCanDetectDeviceIsMobile, `proCanDetectDeviceIsTouch` = :proCanDetectDeviceIsTouch, `proCanDetectBotIsBot` = :proCanDetectBotIsBot, `proCanDetectBotName` = :proCanDetectBotName, `proCanDetectBotType` = :proCanDetectBotType WHERE `proId` = :proId');
 
 $statementSelectUa = $pdo->prepare('SELECT * FROM `userAgent` WHERE `uaHash` = :uaHash');
-$statementInsertUa = $pdo->prepare('INSERT INTO `useragent` (`uaId`, `uaHash`, `uaString`, `uaAdditionalHeaders`) VALUES (:uaId, :uaHash, :uaString, :uaAdditionalHeaders)');
-$statementUpdateUa = $pdo->prepare('UPDATE `useragent` SET `uaHash` = :uaHash, `uaString` = :uaString, `uaAdditionalHeaders` = :uaAdditionalHeaders WHERE `uaId` = :uaId');
+$statementInsertUa = $pdo->prepare('INSERT INTO `useragent` (`uaId`, `uaHash`, `uaHeaders`) VALUES (:uaId, :uaHash, :uaHeaders)');
+$statementUpdateUa = $pdo->prepare('UPDATE `useragent` SET `uaHash` = :uaHash, `uaHeaders` = :uaHeaders WHERE `uaId` = :uaId');
 
 $statementSelectResult = $pdo->prepare('SELECT * FROM `result` WHERE `provider_id` = :proId AND `userAgent_id` = :uaId');
 $statementInsertResult = $pdo->prepare('INSERT INTO `result` (`provider_id`, `userAgent_id`, `resId`, `resProviderVersion`, `resFilename`, `resParseTime`, `resLastChangeDate`, `resResultFound`, `resBrowserName`, `resBrowserVersion`, `resEngineName`, `resEngineVersion`, `resOsName`, `resOsVersion`, `resDeviceModel`, `resDeviceBrand`, `resDeviceType`, `resDeviceIsMobile`, `resDeviceIsTouch`, `resBotIsBot`, `resBotName`, `resBotType`, `resRawResult`) VALUES (:proId, :uaId, :resId, :resProviderVersion, :resFilename, :resParseTime, :resLastChangeDate, :resResultFound, :resBrowserName, :resBrowserVersion, :resEngineName, :resEngineVersion, :resOsName, :resOsVersion, :resDeviceModel, :resDeviceBrand, :resDeviceType, :resDeviceIsMobile, :resDeviceIsTouch, :resBotIsBot, :resBotName, :resBotType, :resRawResult)');
@@ -42,16 +42,14 @@ $chain = new Provider\Chain([
     new Provider\Test\Cbschuld(),
     new Provider\Test\Donatj(),
     new Provider\Test\MobileDetect(),
-    new Provider\Test\Sinergi(),
     new Provider\Test\Endorphin(),
-    new Provider\Test\UaParserJs(),
+    // new Provider\Test\UaParserJs(), <-- no tests
     new Provider\Test\WhichBrowser(),
     new Provider\Test\Woothee(),
-    new Provider\Test\ZsxSoft(),
-    new Provider\Test\CrawlerDetect(),
-    new Provider\Test\Browscap(),
+    // new Provider\Test\CrawlerDetect(), <-- too many tests
+    // new Provider\Test\Browscap(), <-- no tests
     new Provider\Test\Matomo(),
-    // new Provider\Test\BrowserDetector(),
+    // new Provider\Test\BrowserDetector(), <-- too many tests
 ]);
 
 $proType = 'testSuite';
@@ -188,10 +186,18 @@ foreach ($chain->getProviders() as $provider) {
             str_pad((string) $skipped, 7, ' ', STR_PAD_LEFT),
         );
 
-        if (in_array($row['uaString'], $skipUserAgents, true)) {
+        if (array_key_exists('user-agent', $row['headers']) && in_array($row['headers']['user-agent'], $skipUserAgents, true)) {
             ++$skipped;
 
             continue;
+        }
+
+        foreach ($row['headers'] as $value) {
+            if (is_array($value)) {
+                ++$skipped;
+
+                continue 2;
+            }
         }
 
         /*
@@ -207,27 +213,17 @@ foreach ($chain->getProviders() as $provider) {
             // update!
             $uaId = $dbResultUa['uaId'];
 
-            if (isset($row['uaAdditionalHeaders'])) {
-                $statementUpdateUa->bindValue(':uaId', $uaId, PDO::PARAM_STR);
-                $statementUpdateUa->bindValue(':uaHash', $uaHash, PDO::PARAM_STR);
-                $statementUpdateUa->bindValue(':uaString', $row['uaString'], PDO::PARAM_STR);
-                $statementUpdateUa->bindValue(':uaAdditionalHeaders', json_encode($row['uaAdditionalHeaders']));
+            $statementUpdateUa->bindValue(':uaId', $uaId, PDO::PARAM_STR);
+            $statementUpdateUa->bindValue(':uaHash', $uaHash, PDO::PARAM_STR);
+            $statementUpdateUa->bindValue(':uaHeaders', json_encode($row['headers']));
 
-                $statementUpdateUa->execute();
-            }
+            $statementUpdateUa->execute();
         } else {
             $uaId = Uuid::uuid4()->toString();
 
-            $additionalHeaders = null;
-
-            if (isset($row['uaAdditionalHeaders'])) {
-                $additionalHeaders = json_encode($row['uaAdditionalHeaders']);
-            }
-
             $statementInsertUa->bindValue(':uaId', $uaId, PDO::PARAM_STR);
             $statementInsertUa->bindValue(':uaHash', $uaHash, PDO::PARAM_STR);
-            $statementInsertUa->bindValue(':uaString', $row['uaString'], PDO::PARAM_STR);
-            $statementInsertUa->bindValue(':uaAdditionalHeaders', $additionalHeaders);
+            $statementInsertUa->bindValue(':uaHeaders', json_encode($row['headers']));
 
             $statementInsertUa->execute();
         }
@@ -317,9 +313,9 @@ foreach ($chain->getProviders() as $provider) {
                 $statementUpdateResult->bindValue(':resDeviceType', null);
             }
 
-            $statementUpdateResult->bindValue(':resDeviceIsMobile', $res['resDeviceIsMobile'] ?? null);
-            $statementUpdateResult->bindValue(':resDeviceIsTouch', $res['resDeviceIsTouch'] ?? null);
-            $statementUpdateResult->bindValue(':resBotIsBot', $res['resBotIsBot'] ?? null);
+            $statementUpdateResult->bindValue(':resDeviceIsMobile', (int) ($res['resDeviceIsMobile'] ?? 0));
+            $statementUpdateResult->bindValue(':resDeviceIsTouch', (int) ($res['resDeviceIsTouch'] ?? 0));
+            $statementUpdateResult->bindValue(':resBotIsBot', (int) ($res['resBotIsBot'] ?? 0));
 
             if (array_key_exists('resBotName', $res) && !in_array($res['resBotName'], ['UNKNOWN', 'unknown', ''], true)) {
                 $statementUpdateResult->bindValue(':resBotName', $res['resBotName']);
@@ -415,9 +411,9 @@ foreach ($chain->getProviders() as $provider) {
             $statementInsertResult->bindValue(':resDeviceType', null);
         }
 
-        $statementInsertResult->bindValue(':resDeviceIsMobile', $res['resDeviceIsMobile'] ?? null);
-        $statementInsertResult->bindValue(':resDeviceIsTouch', $res['resDeviceIsTouch'] ?? null);
-        $statementInsertResult->bindValue(':resBotIsBot', $res['resBotIsBot'] ?? null);
+        $statementInsertResult->bindValue(':resDeviceIsMobile', (int) ($res['resDeviceIsMobile'] ?? 0));
+        $statementInsertResult->bindValue(':resDeviceIsTouch', (int) ($res['resDeviceIsTouch'] ?? 0));
+        $statementInsertResult->bindValue(':resBotIsBot', (int) ($res['resBotIsBot'] ?? 0));
 
         if (array_key_exists('resBotName', $res) && !in_array($res['resBotName'], ['UNKNOWN', 'unknown', ''], true)) {
             $statementInsertResult->bindValue(':resBotName', $res['resBotName']);

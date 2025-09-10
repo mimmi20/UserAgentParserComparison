@@ -1,10 +1,20 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider\Test;
 
 use BrowscapHelper\Source\CbschuldSource;
+use Override;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -12,6 +22,7 @@ use function bin2hex;
 use function serialize;
 use function sha1;
 use function sprintf;
+use function var_export;
 
 /** @see https://github.com/browscap/browscap-php */
 final class Cbschuld extends AbstractTestProvider
@@ -70,11 +81,12 @@ final class Cbschuld extends AbstractTestProvider
 
     /**
      * @return iterable<array<string, mixed>>
-     * @phpstan-return iterable<string, array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}>
+     * @phpstan-return iterable<string, array{result: array{resFilename: string, resRawResult: string, resBrowserName: string|null, resBrowserVersion: string|null, resEngineName: string|null, resEngineVersion: string|null, resOsName: string|null, resOsVersion: string|null, resDeviceModel: string|null, resDeviceBrand: string|null, resDeviceType: string|null, resDeviceIsMobile: bool|null, resDeviceIsTouch: bool|null, resBotIsBot: bool|null, resBotName: string|null, resBotType: string|null}, headers: array<non-empty-string, non-empty-string>}>
      *
      * @throws RuntimeException
      * @throws UnexpectedValueException
      */
+    #[Override]
     public function getTests(): iterable
     {
         $source        = new CbschuldSource();
@@ -86,7 +98,7 @@ final class Cbschuld extends AbstractTestProvider
         }
 
         foreach ($source->getProperties($baseMessage, $messageLength) as $test) {
-            $key      = bin2hex(sha1($test['headers']['user-agent'], true));
+            $key      = bin2hex(sha1(var_export($test['headers'], true), true));
             $toInsert = [
                 'result' => [
                     'resBotIsBot' => null,
@@ -111,7 +123,7 @@ final class Cbschuld extends AbstractTestProvider
 
                     'resRawResult' => serialize($test['raw'] ?? null),
                 ],
-                'uaString' => $test['headers']['user-agent'],
+                'headers' => $test['headers'],
             ];
 
             yield $key => $toInsert;

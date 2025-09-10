@@ -1,9 +1,19 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use Override;
 use UserAgentParserComparison\Exception;
 use UserAgentParserComparison\Model;
 
@@ -26,31 +36,47 @@ final class Chain extends AbstractParseProvider
     {
     }
 
+    /** @throws void */
+    #[Override]
+    public function isActive(): bool
+    {
+        return true;
+    }
+
     /**
      * @return array<AbstractProvider>
      *
      * @throws void
+     *
+     * @api
      */
     public function getProviders(): array
     {
         return $this->providers;
     }
 
-    /** @throws Exception\NoResultFoundException */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    /**
+     * @param array<string, string> $headers
+     *
+     * @throws Exception\NoResultFoundException
+     */
+    #[Override]
+    public function parse(array $headers = []): Model\UserAgent
     {
         foreach ($this->getProviders() as $provider) {
-            if (!$provider instanceof AbstractParseProvider) {
+            if (!$provider instanceof AbstractParseProvider || !$provider->isActive()) {
                 continue;
             }
 
             try {
-                return $provider->parse($userAgent, $headers);
+                return $provider->parse($headers);
             } catch (Exception\NoResultFoundException) {
                 // just catch this and continue to the next provider
             }
         }
 
-        throw new Exception\NoResultFoundException('No result found for user agent: ' . $userAgent);
+        throw new Exception\NoResultFoundException(
+            'No result found for user agent: ' . ($headers['user-agent'] ?? ''),
+        );
     }
 }

@@ -1,15 +1,28 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use Override;
 use Throwable;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
 use Woothee\Classifier;
 use Woothee\DataSet;
+
+use function array_key_exists;
+use function is_string;
 
 /**
  * Abstraction for woothee/woothee
@@ -82,30 +95,54 @@ final class Woothee extends AbstractParseProvider
         'general' => ['/^UNKNOWN$/i'],
     ];
 
-    /** @throws PackageNotLoadedException */
+    /** @throws void */
     public function __construct(private readonly Classifier $parser)
     {
-        $this->checkIfInstalled();
+        // nothing to do here
+    }
+
+    /** @throws void */
+    #[Override]
+    public function isActive(): bool
+    {
+        try {
+            $this->checkIfInstalled();
+        } catch (PackageNotLoadedException) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
-     * @throws NoResultFoundException
+     * @param array<string, string> $headers
      *
-     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
+     * @throws NoResultFoundException
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    #[Override]
+    public function parse(array $headers = []): Model\UserAgent
     {
+        if (!array_key_exists('user-agent', $headers) || !is_string($headers['user-agent'])) {
+            throw new NoResultFoundException('Can only use the user-agent Header');
+        }
+
         try {
-            $resultRaw = $this->parser->parse($userAgent);
+            $resultRaw = $this->parser->parse($headers['user-agent']);
         } catch (Throwable $e) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent, 0, $e);
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
         }
 
         /*
          * No result found?
          */
-        if ($this->hasResult($resultRaw) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+        if ($resultRaw === false || $this->hasResult($resultRaw) !== true) {
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . $headers['user-agent'],
+            );
         }
 
         /*
@@ -134,7 +171,11 @@ final class Woothee extends AbstractParseProvider
         return $result;
     }
 
-    /** @throws void */
+    /**
+     * @param array<string, string|null> $resultRaw
+     *
+     * @throws void
+     */
     private function hasResult(array $resultRaw): bool
     {
         if (
@@ -147,13 +188,21 @@ final class Woothee extends AbstractParseProvider
         return isset($resultRaw['name']) && $this->isRealResult($resultRaw['name']);
     }
 
-    /** @throws void */
+    /**
+     * @param array<string, string|null> $resultRaw
+     *
+     * @throws void
+     */
     private function isBot(array $resultRaw): bool
     {
         return isset($resultRaw['category']) && $resultRaw['category'] === DataSet::DATASET_CATEGORY_CRAWLER;
     }
 
-    /** @throws void */
+    /**
+     * @param array<string, string|null> $resultRaw
+     *
+     * @throws void
+     */
     private function hydrateBot(Model\Bot $bot, array $resultRaw): void
     {
         $bot->setIsBot(true);
@@ -165,7 +214,11 @@ final class Woothee extends AbstractParseProvider
         $bot->setName($this->getRealResult($resultRaw['name'], 'bot', 'name'));
     }
 
-    /** @throws void */
+    /**
+     * @param array<string, string|null> $resultRaw
+     *
+     * @throws void
+     */
     private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
     {
         if (isset($resultRaw['name'])) {
@@ -179,7 +232,11 @@ final class Woothee extends AbstractParseProvider
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw['version']));
     }
 
-    /** @throws void */
+    /**
+     * @param array<string, string|null> $resultRaw
+     *
+     * @throws void
+     */
     private function hydrateDevice(Model\Device $device, array $resultRaw): void
     {
         if (!isset($resultRaw['category'])) {

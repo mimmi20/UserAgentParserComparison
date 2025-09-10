@@ -5,6 +5,10 @@
 # Source repository: https://github.com/actions/dependency-review-action
 # Public documentation: https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/about-dependency-review#dependency-review-enforcement
 
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+# file-version: 1.0
+
 name: "Dependency Review"
 
 on:
@@ -19,7 +23,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v3"
+        uses: "actions/checkout@v5"
         with:
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
@@ -27,7 +31,7 @@ jobs:
           persist-credentials: false
 
       - name: "Dependency Review"
-        uses: "actions/dependency-review-action@v3"
+        uses: "actions/dependency-review-action@v4"
         with:
           "license-check": true
           "vulnerability-check": true

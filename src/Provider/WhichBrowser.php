@@ -1,9 +1,19 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use Override;
 use Psr\Cache\CacheItemPoolInterface;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
@@ -14,8 +24,6 @@ use WhichBrowser\Model\Engine;
 use WhichBrowser\Model\Os;
 use WhichBrowser\Model\Using;
 use WhichBrowser\Parser as WhichBrowserParser;
-
-use function assert;
 
 /**
  * Abstraction for whichbrowser/parser
@@ -76,26 +84,44 @@ final class WhichBrowser extends AbstractParseProvider
         ],
     ];
 
-    /** @throws PackageNotLoadedException */
+    /** @throws void */
     public function __construct(
         private readonly WhichBrowserParser $parser,
         private readonly CacheItemPoolInterface $cache,
     ) {
-        $this->checkIfInstalled();
+        // nothing to do here
     }
 
-    /** @throws NoResultFoundException */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    /** @throws void */
+    #[Override]
+    public function isActive(): bool
     {
-        $headers['User-Agent'] = $userAgent;
+        try {
+            $this->checkIfInstalled();
+        } catch (PackageNotLoadedException) {
+            return false;
+        }
 
+        return true;
+    }
+
+    /**
+     * @param array<string, string> $headers
+     *
+     * @throws NoResultFoundException
+     */
+    #[Override]
+    public function parse(array $headers = []): Model\UserAgent
+    {
         $this->parser->analyse($headers, ['cache' => $this->cache]);
 
         /*
          * No result found?
          */
         if ($this->parser->isDetected() !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . ($headers['user-agent'] ?? ''),
+            );
         }
 
         /*
@@ -141,12 +167,11 @@ final class WhichBrowser extends AbstractParseProvider
             return;
         }
 
-        if (!isset($browserRaw->using) || !($browserRaw->using instanceof Using)) {
+        if (!$browserRaw->using instanceof Using) {
             return;
         }
 
         $usingRaw = $browserRaw->using;
-        assert($usingRaw instanceof Using);
 
         if ($this->isRealResult($usingRaw->getName()) !== true) {
             return;

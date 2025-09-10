@@ -1,13 +1,26 @@
 <?php
 
+/**
+ * This file is part of the mimmi20/user-agent-parser-comparison package.
+ *
+ * Copyright (c) 2015-2025, Thomas Mueller <mimmi20@live.de>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use Override;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
 use Wolfcast\BrowserDetection;
+
+use function array_key_exists;
+use function is_string;
 
 /**
  * Abstraction for donatj/PhpUserAgent
@@ -68,20 +81,38 @@ final class Wolfcast extends AbstractParseProvider
         ],
     ];
 
-    /** @throws PackageNotLoadedException */
+    /** @throws void */
     public function __construct(private readonly BrowserDetection $parser)
     {
-        $this->checkIfInstalled();
+        // nothing to do here
+    }
+
+    /** @throws void */
+    #[Override]
+    public function isActive(): bool
+    {
+        try {
+            $this->checkIfInstalled();
+        } catch (PackageNotLoadedException) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
-     * @throws NoResultFoundException
+     * @param array<string, string> $headers
      *
-     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
+     * @throws NoResultFoundException
      */
-    public function parse(string $userAgent, array $headers = []): Model\UserAgent
+    #[Override]
+    public function parse(array $headers = []): Model\UserAgent
     {
-        $this->parser->setUserAgent($userAgent);
+        if (!array_key_exists('user-agent', $headers) || !is_string($headers['user-agent'])) {
+            throw new NoResultFoundException('Can only use the user-agent Header');
+        }
+
+        $this->parser->setUserAgent($headers['user-agent']);
 
         $resultCache = [
             'browserName' => $this->parser->getName(),
@@ -94,7 +125,9 @@ final class Wolfcast extends AbstractParseProvider
         ];
 
         if ($this->hasResult($resultCache) !== true) {
-            throw new NoResultFoundException('No result found for user agent: ' . $userAgent);
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . $headers['user-agent'],
+            );
         }
 
         /*
@@ -117,7 +150,11 @@ final class Wolfcast extends AbstractParseProvider
         return $result;
     }
 
-    /** @throws void */
+    /**
+     * @param array{browserName: string, browserVersion: string, isMobile: bool, osName: string, osVersion: string} $resultRaw
+     *
+     * @throws void
+     */
     private function hasResult(array $resultRaw): bool
     {
         return $this->isRealResult($resultRaw['browserName']) || $this->isRealResult(
@@ -125,14 +162,22 @@ final class Wolfcast extends AbstractParseProvider
         );
     }
 
-    /** @throws void */
+    /**
+     * @param array{browserName: string, browserVersion: string, isMobile: bool, osName: string, osVersion: string} $resultRaw
+     *
+     * @throws void
+     */
     private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
     {
         $browser->setName($this->getRealResult($resultRaw['browserName']));
         $browser->getVersion()->setComplete($this->getRealResult($resultRaw['browserVersion']));
     }
 
-    /** @throws void */
+    /**
+     * @param array{browserName: string, browserVersion: string, isMobile: bool, osName: string, osVersion: string} $resultRaw
+     *
+     * @throws void
+     */
     private function hydrateOperatingSystem(Model\OperatingSystem $os, array $resultRaw): void
     {
         if ($this->isRealResult($resultRaw['osName']) !== true) {
@@ -143,7 +188,11 @@ final class Wolfcast extends AbstractParseProvider
         $os->getVersion()->setComplete($this->getRealResult($resultRaw['osVersion']));
     }
 
-    /** @throws void */
+    /**
+     * @param array{browserName: string, browserVersion: string, isMobile: bool, osName: string, osVersion: string} $resultRaw
+     *
+     * @throws void
+     */
     private function hydrateDevice(Model\Device $device, array $resultRaw): void
     {
         if ($resultRaw['isMobile'] !== true) {
