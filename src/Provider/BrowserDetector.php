@@ -32,8 +32,8 @@ use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
 
-use function str_contains;
 use function mb_strtolower;
+use function str_contains;
 
 /**
  * Abstraction for mimmi20/BrowserDetector
