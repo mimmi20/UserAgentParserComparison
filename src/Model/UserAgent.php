@@ -13,20 +13,23 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Model;
 
+use UaResult\Result\Result;
+
 /**
  * User agent model
  */
-final class UserAgent
+final readonly class UserAgent
 {
     /**
      * @param array<string, mixed> $rawResult
+     *
      * @throws void
      */
     public function __construct(
-        private readonly string | null $providerName = null,
-        private readonly string | null $providerVersion = null,
-        private readonly array         $rawResult = [],
-        private readonly \UaResult\Result\Result | null $result = null,
+        private string | null $providerName = null,
+        private string | null $providerVersion = null,
+        private array $rawResult = [],
+        private Result | null $result = null,
     ) {
         // nothing to do
     }
@@ -57,6 +60,7 @@ final class UserAgent
 
     /**
      * @return array<string, mixed>
+     *
      * @throws void
      */
     public function getRawResult(): array
@@ -65,7 +69,7 @@ final class UserAgent
     }
 
     /** @throws void */
-    public function getResult(): ?\UaResult\Result\Result
+    public function getResult(): Result | null
     {
         return $this->result;
     }

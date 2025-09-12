@@ -13,9 +13,20 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use BrowserDetector\Version\Exception\NotNumericException;
+use BrowserDetector\Version\NullVersion;
+use BrowserDetector\Version\VersionBuilder;
 use Override;
 use Throwable;
-use UaResult\Result\ResultInterface;
+use UaDeviceType\Type;
+use UaResult\Browser\Browser;
+use UaResult\Company\Company;
+use UaResult\Device\Device;
+use UaResult\Device\Display;
+use UaResult\Engine\Engine;
+use UaResult\Os\Os;
+use UaResult\Result\Result;
+use UserAgentParserComparison\Exception\DetectionErroredException;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -119,7 +130,7 @@ final class Woothee extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
-     * @throws \UserAgentParserComparison\Exception\DetectionErroredException
+     * @throws DetectionErroredException
      */
     #[Override]
     public function parse(array $headers = []): Model\UserAgent
@@ -131,7 +142,7 @@ final class Woothee extends AbstractParseProvider
         try {
             $resultRaw = $this->parser->parse($headers['user-agent']);
         } catch (Throwable $e) {
-            throw new \UserAgentParserComparison\Exception\DetectionErroredException(
+            throw new DetectionErroredException(
                 'No result found for user agent: ' . $headers['user-agent'],
                 0,
                 $e,
@@ -147,64 +158,78 @@ final class Woothee extends AbstractParseProvider
             );
         }
 
-        $resultObject = new \UaResult\Result\Result(
-            headers: $headers,
-            device: new \UaResult\Device\Device(
-                deviceName: null,
-                marketingName: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
+        try {
+            $resultObject = new Result(
+                headers: $headers,
+                device: new Device(
+                    deviceName: null,
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    brand: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    type: isset($resultRaw['category']) && $resultRaw['category'] !== DataSet::DATASET_CATEGORY_CRAWLER ? Type::fromName(
+                        $resultRaw['category'],
+                    ) : Type::Unknown,
+                    display: new Display(
+                        width: null,
+                        height: null,
+                        touch: null,
+                        size: null,
+                    ),
+                    dualOrientation: null,
+                    simCount: null,
+                ),
+                os: new Os(
+                    name: $resultRaw['os'] ?? null,
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: (new VersionBuilder())->set(
+                        $resultRaw['os_version'],
+                    ),
+                    bits: null,
+                ),
+                browser: new Browser(
+                    name: $resultRaw['name'],
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: (new VersionBuilder())->set(
+                        $resultRaw['version'],
+                    ),
+                    type: isset($resultRaw['category']) && $resultRaw['category'] === DataSet::DATASET_CATEGORY_CRAWLER ? \UaBrowserType\Type::Bot : \UaBrowserType\Type::Unknown,
+                    bits: null,
+                    modus: null,
+                ),
+                engine: new Engine(
                     name: null,
-                    brandname: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: new NullVersion(),
                 ),
-                brand: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                type: isset($resultRaw['category']) && $resultRaw['category'] !== DataSet::DATASET_CATEGORY_CRAWLER ? \UaDeviceType\Type::fromName($resultRaw['category']) : \UaDeviceType\Type::Unknown,
-                display: new \UaResult\Device\Display(
-                    width: null,
-                    height: null,
-                    touch: null,
-                    size: null,
-                ),
-                dualOrientation: null,
-                simCount: null,
-            ),
-            os: new \UaResult\Os\Os(
-                name: $resultRaw['os'] ?? null,
-                marketingName: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                version: (new \BrowserDetector\Version\VersionBuilder())->set($resultRaw['os_version']),
-                bits: null,
-            ),
-            browser: new \UaResult\Browser\Browser(
-                name: $resultRaw['name'],
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                version: (new \BrowserDetector\Version\VersionBuilder())->set($resultRaw['version']),
-                type: isset($resultRaw['category']) && $resultRaw['category'] === DataSet::DATASET_CATEGORY_CRAWLER ? \UaBrowserType\Type::Bot : \UaBrowserType\Type::Unknown,
-                bits: null,
-                modus: null,
-            ),
-            engine: new \UaResult\Engine\Engine(
-                name: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                version: new \BrowserDetector\Version\NullVersion(),
-            ),
-        );
+            );
+        } catch (NotNumericException $e) {
+            throw new DetectionErroredException(
+                'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
+        }
 
         /*
          * No result found?
@@ -226,12 +251,8 @@ final class Woothee extends AbstractParseProvider
         );
     }
 
-    /**
-     * @param array<string, string|null> $resultRaw
-     *
-     * @throws void
-     */
-    private function hasResult(ResultInterface $result): bool
+    /** @throws void */
+    private function hasResult(Result $result): bool
     {
         $client = $result->getBrowser()->getName();
 

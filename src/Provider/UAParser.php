@@ -13,13 +13,20 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use BrowserDetector\Version\Exception\NotNumericException;
+use BrowserDetector\Version\NullVersion;
+use BrowserDetector\Version\VersionBuilder;
 use Override;
+use UaDeviceType\Type;
 use UAParser\Parser;
-use UAParser\Result\Client;
-use UAParser\Result\Device;
-use UAParser\Result\OperatingSystem;
-use UAParser\Result\UserAgent;
-use UaResult\Result\ResultInterface;
+use UaResult\Browser\Browser;
+use UaResult\Company\Company;
+use UaResult\Device\Device;
+use UaResult\Device\Display;
+use UaResult\Engine\Engine;
+use UaResult\Os\Os;
+use UaResult\Result\Result;
+use UserAgentParserComparison\Exception\DetectionErroredException;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -142,6 +149,7 @@ final class UAParser extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
+     * @throws DetectionErroredException
      */
     #[Override]
     public function parse(array $headers = []): Model\UserAgent
@@ -152,64 +160,76 @@ final class UAParser extends AbstractParseProvider
 
         $resultRaw = $this->parser->parse($headers['user-agent']);
 
-        $resultObject = new \UaResult\Result\Result(
-            headers: $headers,
-            device: new \UaResult\Device\Device(
-                deviceName: $resultRaw->device->model,
-                marketingName: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
+        try {
+            $resultObject = new Result(
+                headers: $headers,
+                device: new Device(
+                    deviceName: $resultRaw->device->model,
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    brand: new Company(
+                        type: $resultRaw->device->brand ?? '',
+                        name: null,
+                        brandname: null,
+                    ),
+                    type: Type::Unknown,
+                    display: new Display(
+                        width: null,
+                        height: null,
+                        touch: null,
+                        size: null,
+                    ),
+                    dualOrientation: null,
+                    simCount: null,
+                ),
+                os: new Os(
+                    name: $resultRaw->os->family,
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: (new VersionBuilder())->set(
+                        $resultRaw->os->toVersion(),
+                    ),
+                    bits: null,
+                ),
+                browser: new Browser(
+                    name: $resultRaw->ua->family,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: (new VersionBuilder())->set(
+                        $resultRaw->ua->toVersion(),
+                    ),
+                    type: $resultRaw->device->family === 'Spider' ? \UaBrowserType\Type::Bot : \UaBrowserType\Type::Unknown,
+                    bits: null,
+                    modus: null,
+                ),
+                engine: new Engine(
                     name: null,
-                    brandname: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: new NullVersion(),
                 ),
-                brand: new \UaResult\Company\Company(
-                    type: $resultRaw->device->brand ?? '',
-                    name: null,
-                    brandname: null,
-                ),
-                type: \UaDeviceType\Type::Unknown,
-                display: new \UaResult\Device\Display(
-                    width: null,
-                    height: null,
-                    touch: null,
-                    size: null,
-                ),
-                dualOrientation: null,
-                simCount: null,
-            ),
-            os: new \UaResult\Os\Os(
-                name: $resultRaw->os->family,
-                marketingName: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                version: (new \BrowserDetector\Version\VersionBuilder())->set($resultRaw->os->toVersion()),
-                bits: null,
-            ),
-            browser: new \UaResult\Browser\Browser(
-                name: $resultRaw->ua->family,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                version: (new \BrowserDetector\Version\VersionBuilder())->set($resultRaw->ua->toVersion()),
-                type: $resultRaw->device->family === 'Spider' ? \UaBrowserType\Type::Bot : \UaBrowserType\Type::Unknown,
-                bits: null,
-                modus: null,
-            ),
-            engine: new \UaResult\Engine\Engine(
-                name: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                version: new \BrowserDetector\Version\NullVersion(),
-            ),
-        );
+            );
+        } catch (NotNumericException $e) {
+            throw new DetectionErroredException(
+                'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
+        }
 
         /*
          * No result found?
@@ -236,7 +256,7 @@ final class UAParser extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hasResult(ResultInterface $result): bool
+    private function hasResult(Result $result): bool
     {
         if ($result->getBrowser()->getType()->isBot()) {
             return true;

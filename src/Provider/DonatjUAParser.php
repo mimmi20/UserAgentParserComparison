@@ -13,13 +13,26 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use BrowserDetector\Version\Exception\NotNumericException;
+use BrowserDetector\Version\NullVersion;
+use BrowserDetector\Version\VersionBuilder;
+use InvalidArgumentException;
 use Override;
-use UaResult\Result\ResultInterface;
+use UaDeviceType\Type;
+use UaResult\Browser\Browser;
+use UaResult\Company\Company;
+use UaResult\Device\Device;
+use UaResult\Device\Display;
+use UaResult\Engine\Engine;
+use UaResult\Os\Os;
+use UaResult\Result\Result;
+use UserAgentParserComparison\Exception\DetectionErroredException;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
 
 use function array_key_exists;
+use function donatj\UserAgent\parse_user_agent;
 use function is_string;
 
 /**
@@ -104,7 +117,7 @@ final class DonatjUAParser extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
-     * @throws \UserAgentParserComparison\Exception\DetectionErroredException
+     * @throws DetectionErroredException
      */
     #[Override]
     public function parse(array $headers = []): Model\UserAgent
@@ -114,73 +127,83 @@ final class DonatjUAParser extends AbstractParseProvider
         }
 
         try {
-            $resultRaw = \donatj\UserAgent\parse_user_agent($headers['user-agent']);
-        } catch (\InvalidArgumentException $e) {
-            throw new \UserAgentParserComparison\Exception\DetectionErroredException(
+            $resultRaw = parse_user_agent($headers['user-agent']);
+        } catch (InvalidArgumentException $e) {
+            throw new DetectionErroredException(
                 'No result found for user agent: ' . $headers['user-agent'],
                 0,
                 $e,
             );
         }
 
-        $resultObject = new \UaResult\Result\Result(
-            headers: $headers,
-            device: new \UaResult\Device\Device(
-                deviceName: null,
-                marketingName: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
+        try {
+            $resultObject = new Result(
+                headers: $headers,
+                device: new Device(
+                    deviceName: null,
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    brand: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    type: Type::Unknown,
+                    display: new Display(
+                        width: null,
+                        height: null,
+                        touch: null,
+                        size: null,
+                    ),
+                    dualOrientation: null,
+                    simCount: null,
+                ),
+                os: new Os(
+                    name: $resultRaw['platform'],
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: new NullVersion(),
+                    bits: null,
+                ),
+                browser: new Browser(
+                    name: $resultRaw['browser'],
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: (new VersionBuilder())->set(
+                        $resultRaw['version'] ?? '',
+                    ),
+                    type: \UaBrowserType\Type::Unknown,
+                    bits: null,
+                    modus: null,
+                ),
+                engine: new Engine(
                     name: null,
-                    brandname: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: new NullVersion(),
                 ),
-                brand: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                type: \UaDeviceType\Type::Unknown,
-                display: new \UaResult\Device\Display(
-                    width: null,
-                    height: null,
-                    touch: null,
-                    size: null,
-                ),
-                dualOrientation: null,
-                simCount: null,
-            ),
-            os: new \UaResult\Os\Os(
-                name: $resultRaw['platform'],
-                marketingName: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                version: new \BrowserDetector\Version\NullVersion(),
-                bits: null,
-            ),
-            browser: new \UaResult\Browser\Browser(
-                name: $resultRaw['browser'],
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                version: (new \BrowserDetector\Version\VersionBuilder())->set($resultRaw['version'] ?? ''),
-                type: \UaBrowserType\Type::Unknown,
-                bits: null,
-                modus: null,
-            ),
-            engine: new \UaResult\Engine\Engine(
-                name: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                version: new \BrowserDetector\Version\NullVersion(),
-            ),
-        );
+            );
+        } catch (NotNumericException $e) {
+            throw new DetectionErroredException(
+                'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
+        }
 
         /*
          * No result found?
@@ -202,12 +225,8 @@ final class DonatjUAParser extends AbstractParseProvider
         );
     }
 
-    /**
-     * @param array{browserName: string, browserVersion: string, osName: string} $resultRaw
-     *
-     * @throws void
-     */
-    private function hasResult(ResultInterface $result): bool
+    /** @throws void */
+    private function hasResult(Result $result): bool
     {
         return $this->isRealResult($result->getBrowser()->getName())
             || $this->isRealResult($result->getOs()->getName());

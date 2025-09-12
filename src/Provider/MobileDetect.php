@@ -13,9 +13,19 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use BrowserDetector\Version\Exception\NotNumericException;
+use BrowserDetector\Version\NullVersion;
 use Detection\Exception\MobileDetectException;
 use Override;
-use UaResult\Result\ResultInterface;
+use UaDeviceType\Type;
+use UaResult\Browser\Browser;
+use UaResult\Company\Company;
+use UaResult\Device\Device;
+use UaResult\Device\Display;
+use UaResult\Engine\Engine;
+use UaResult\Os\Os;
+use UaResult\Result\Result;
+use UserAgentParserComparison\Exception\DetectionErroredException;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -95,7 +105,7 @@ final class MobileDetect extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
-     * @throws \UserAgentParserComparison\Exception\DetectionErroredException
+     * @throws DetectionErroredException
      */
     #[Override]
     public function parse(array $headers = []): Model\UserAgent
@@ -111,72 +121,80 @@ final class MobileDetect extends AbstractParseProvider
         try {
             $isMobile = $parser->isMobile();
             $isTablet = $parser->isTablet();
-        } catch (\Detection\Exception\MobileDetectException $e) {
-            throw new \UserAgentParserComparison\Exception\DetectionErroredException(
+        } catch (MobileDetectException $e) {
+            throw new DetectionErroredException(
                 'No result found for user agent: ' . $headers['user-agent'],
                 0,
                 $e,
             );
         }
 
-        $resultObject = new \UaResult\Result\Result(
-            headers: $headers,
-            device: new \UaResult\Device\Device(
-                deviceName: null,
-                marketingName: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
+        try {
+            $resultObject = new Result(
+                headers: $headers,
+                device: new Device(
+                    deviceName: null,
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    brand: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    type: $isTablet ? Type::Tablet : ($isMobile ? Type::MobileDevice : Type::Unknown),
+                    display: new Display(
+                        width: null,
+                        height: null,
+                        touch: null,
+                        size: null,
+                    ),
+                    dualOrientation: null,
+                    simCount: null,
+                ),
+                os: new Os(
                     name: null,
-                    brandname: null,
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: new NullVersion(),
+                    bits: null,
                 ),
-                brand: new \UaResult\Company\Company(
-                    type: 'unknown',
+                browser: new Browser(
                     name: null,
-                    brandname: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: new NullVersion(),
+                    type: \UaBrowserType\Type::Unknown,
+                    bits: null,
+                    modus: null,
                 ),
-                type: $isTablet ? \UaDeviceType\Type::Tablet : ($isMobile ? \UaDeviceType\Type::MobileDevice : \UaDeviceType\Type::Unknown),
-                display: new \UaResult\Device\Display(
-                    width: null,
-                    height: null,
-                    touch: null,
-                    size: null,
-                ),
-                dualOrientation: null,
-                simCount: null,
-            ),
-            os: new \UaResult\Os\Os(
-                name: null,
-                marketingName: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
+                engine: new Engine(
                     name: null,
-                    brandname: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: new NullVersion(),
                 ),
-                version: new \BrowserDetector\Version\NullVersion(),
-                bits: null,
-            ),
-            browser: new \UaResult\Browser\Browser(
-                name: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                version: new \BrowserDetector\Version\NullVersion(),
-                type: \UaBrowserType\Type::Unknown,
-                bits: null,
-                modus: null,
-            ),
-            engine: new \UaResult\Engine\Engine(
-                name: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                version: new \BrowserDetector\Version\NullVersion(),
-            ),
-        );
+            );
+        } catch (NotNumericException $e) {
+            throw new DetectionErroredException(
+                'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
+        }
 
         /*
          * No result found?
@@ -201,13 +219,9 @@ final class MobileDetect extends AbstractParseProvider
         );
     }
 
-    /**
-     * @param array{isMobile: bool} $resultRaw
-     *
-     * @throws void
-     */
-    private function hasResult(ResultInterface $result): bool
+    /** @throws void */
+    private function hasResult(Result $result): bool
     {
-        return $result->getDevice()->getType() !== \UaDeviceType\Type::Unknown;
+        return $result->getDevice()->getType() !== Type::Unknown;
     }
 }

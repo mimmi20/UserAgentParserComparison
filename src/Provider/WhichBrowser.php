@@ -13,17 +13,22 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use BrowserDetector\Version\Exception\NotNumericException;
+use BrowserDetector\Version\VersionBuilder;
 use Override;
 use Psr\Cache\CacheItemPoolInterface;
-use UaResult\Result\ResultInterface;
+use UaDeviceType\Type;
+use UaResult\Browser\Browser;
+use UaResult\Company\Company;
+use UaResult\Device\Device;
+use UaResult\Device\Display;
+use UaResult\Engine\Engine;
+use UaResult\Os\Os;
+use UaResult\Result\Result;
+use UserAgentParserComparison\Exception\DetectionErroredException;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
-use WhichBrowser\Model\Browser;
-use WhichBrowser\Model\Device;
-use WhichBrowser\Model\Engine;
-use WhichBrowser\Model\Os;
-use WhichBrowser\Model\Using;
 use WhichBrowser\Parser as WhichBrowserParser;
 
 /**
@@ -110,6 +115,7 @@ final class WhichBrowser extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
+     * @throws DetectionErroredException
      */
     #[Override]
     public function parse(array $headers = []): Model\UserAgent
@@ -125,64 +131,78 @@ final class WhichBrowser extends AbstractParseProvider
             );
         }
 
-        $resultObject = new \UaResult\Result\Result(
-            headers: $headers,
-            device: new \UaResult\Device\Device(
-                deviceName: $this->parser->device->getModel(),
-                marketingName: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: $this->parser->device->getManufacturer(),
-                    name: null,
-                    brandname: null,
+        try {
+            $resultObject = new Result(
+                headers: $headers,
+                device: new Device(
+                    deviceName: $this->parser->device->getModel(),
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: $this->parser->device->getManufacturer(),
+                        name: null,
+                        brandname: null,
+                    ),
+                    brand: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    type: Type::fromName($this->parser->getType()),
+                    display: new Display(
+                        width: null,
+                        height: null,
+                        touch: null,
+                        size: null,
+                    ),
+                    dualOrientation: null,
+                    simCount: null,
                 ),
-                brand: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
+                os: new Os(
+                    name: $this->parser->os->getName(),
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: (new VersionBuilder())->set(
+                        $this->parser->os->getVersion(),
+                    ),
+                    bits: null,
                 ),
-                type: \UaDeviceType\Type::fromName($this->parser->getType()),
-                display: new \UaResult\Device\Display(
-                    width: null,
-                    height: null,
-                    touch: null,
-                    size: null,
+                browser: new Browser(
+                    name: $this->parser->browser->getName(),
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: (new VersionBuilder())->set(
+                        $this->parser->browser->getVersion(),
+                    ),
+                    type: $this->parser->getType() === 'bot' ? \UaBrowserType\Type::Bot : \UaBrowserType\Type::Unknown,
+                    bits: null,
+                    modus: null,
                 ),
-                dualOrientation: null,
-                simCount: null,
-            ),
-            os: new \UaResult\Os\Os(
-                name: $this->parser->os->getName(),
-                marketingName: null,
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
+                engine: new Engine(
+                    name: $this->parser->engine->getName(),
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: (new VersionBuilder())->set(
+                        $this->parser->engine->getVersion(),
+                    ),
                 ),
-                version: (new \BrowserDetector\Version\VersionBuilder())->set($this->parser->os->getVersion()),
-                bits: null,
-            ),
-            browser: new \UaResult\Browser\Browser(
-                name: $this->parser->browser->getName(),
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                version: (new \BrowserDetector\Version\VersionBuilder())->set($this->parser->browser->getVersion()),
-                type: $this->parser->getType() === 'bot' ? \UaBrowserType\Type::Bot : \UaBrowserType\Type::Unknown,
-                bits: null,
-                modus: null,
-            ),
-            engine: new \UaResult\Engine\Engine(
-                name: $this->parser->engine->getName(),
-                manufacturer: new \UaResult\Company\Company(
-                    type: 'unknown',
-                    name: null,
-                    brandname: null,
-                ),
-                version: (new \BrowserDetector\Version\VersionBuilder())->set($this->parser->engine->getVersion()),
-            ),
-        );
+            );
+        } catch (NotNumericException $e) {
+            throw new DetectionErroredException(
+                'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
+        }
 
         /*
          * No result found?
@@ -205,7 +225,7 @@ final class WhichBrowser extends AbstractParseProvider
     }
 
     /** @throws void */
-    private function hasResult(ResultInterface $result): bool
+    private function hasResult(Result $result): bool
     {
         if ($result->getBrowser()->getType()->isBot()) {
             return true;
