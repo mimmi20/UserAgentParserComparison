@@ -18,23 +18,17 @@ namespace UserAgentParserComparison\Model;
  */
 final class UserAgent
 {
-    private Browser $browser;
-    private RenderingEngine $renderingEngine;
-    private OperatingSystem $operatingSystem;
-    private Device $device;
-    private Bot $bot;
-    private mixed $providerResultRaw;
-
-    /** @throws void */
+    /**
+     * @param array<string, mixed> $rawResult
+     * @throws void
+     */
     public function __construct(
         private readonly string | null $providerName = null,
         private readonly string | null $providerVersion = null,
+        private readonly array         $rawResult = [],
+        private readonly \UaResult\Result\Result | null $result = null,
     ) {
-        $this->browser         = new Browser();
-        $this->renderingEngine = new RenderingEngine();
-        $this->operatingSystem = new OperatingSystem();
-        $this->device          = new Device();
-        $this->bot             = new Bot();
+        // nothing to do
     }
 
     /** @throws void */
@@ -50,108 +44,45 @@ final class UserAgent
     }
 
     /** @throws void */
-    public function setBrowser(Browser $browser): void
-    {
-        $this->browser = $browser;
-    }
-
-    /** @throws void */
-    public function getBrowser(): Browser
-    {
-        return $this->browser;
-    }
-
-    /** @throws void */
-    public function setRenderingEngine(RenderingEngine $renderingEngine): void
-    {
-        $this->renderingEngine = $renderingEngine;
-    }
-
-    /** @throws void */
-    public function getRenderingEngine(): RenderingEngine
-    {
-        return $this->renderingEngine;
-    }
-
-    /** @throws void */
-    public function setOperatingSystem(OperatingSystem $operatingSystem): void
-    {
-        $this->operatingSystem = $operatingSystem;
-    }
-
-    /** @throws void */
-    public function getOperatingSystem(): OperatingSystem
-    {
-        return $this->operatingSystem;
-    }
-
-    /** @throws void */
-    public function setDevice(Device $device): void
-    {
-        $this->device = $device;
-    }
-
-    /** @throws void */
-    public function getDevice(): Device
-    {
-        return $this->device;
-    }
-
-    /** @throws void */
-    public function setBot(Bot $bot): void
-    {
-        $this->bot = $bot;
-    }
-
-    /** @throws void */
-    public function getBot(): Bot
-    {
-        return $this->bot;
-    }
-
-    /** @throws void */
     public function isBot(): bool
     {
-        return $this->getBot()->getIsBot();
+        return $this->result->getBrowser()->getType()->isBot();
     }
 
     /** @throws void */
     public function isMobile(): bool
     {
-        return $this->getDevice()->getIsMobile();
+        return $this->result->getDevice()->getType()->isMobile();
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws void
+     */
+    public function getRawResult(): array
+    {
+        return $this->rawResult;
     }
 
     /** @throws void */
-    public function setProviderResultRaw(mixed $providerResultRaw): void
+    public function getResult(): ?\UaResult\Result\Result
     {
-        $this->providerResultRaw = $providerResultRaw;
-    }
-
-    /** @throws void */
-    public function getProviderResultRaw(): mixed
-    {
-        return $this->providerResultRaw;
+        return $this->result;
     }
 
     /**
      * @return array<mixed>
-     * @phpstan-return array{browser: array{name: string|null, version: array{major: int|string|null, minor: int|string|null, patch: int|string|null, alias: string|null, complete: string|null}}, renderingEngine: array{name: string|null, version: array{major: int|string|null, minor: int|string|null, patch: int|string|null, alias: string|null, complete: string|null}}, operatingSystem: array{name: string|null, version: array{major: int|string|null, minor: int|string|null, patch: int|string|null, alias: string|null, complete: string|null}}, device: array{model: string|null, brand: string|null, type: string|null, isMobile: bool, isTouch: bool}, bot: array{isBot: bool, name: string|null, type: string|null}, providerResultRaw?: mixed}
+     * @phpstan-return array{headers: array<string, string>, device: array{deviceName: string|null, marketingName: string|null, manufacturer: string, brand: string, type: string, display: array{width: int|null, height: int|null, touch: bool|null, size: float|null}}, browser: array{name: string|null, modus: string|null, version: string|null, manufacturer: string, bits: int|null, type: string}, os: array{name: string|null, marketingName: string|null, version: string|null, manufacturer: string, bits: int|null}, engine: array{name: string|null, version: string|null, manufacturer: string}, rawResult?: array<string, mixed>}
      *
      * @throws void
      */
     public function toArray(bool $includeResultRaw = false): array
     {
-        $data = [
-            'bot' => $this->getBot()->toArray(),
-            'browser' => $this->getBrowser()->toArray(),
-            'device' => $this->getDevice()->toArray(),
-            'operatingSystem' => $this->getOperatingSystem()->toArray(),
-            'renderingEngine' => $this->getRenderingEngine()->toArray(),
-        ];
+        $data = $this->result->toArray();
 
         // should be only used for debug
         if ($includeResultRaw === true) {
-            $data['providerResultRaw'] = $this->getProviderResultRaw();
+            $data['rawResult'] = $this->getRawResult();
         }
 
         return $data;

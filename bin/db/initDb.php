@@ -60,6 +60,7 @@ $pdo->prepare('CREATE TABLE IF NOT EXISTS `result` (
   `resParseTime` DECIMAL(20,5) DEFAULT NULL,
   `resLastChangeDate` DATETIME NOT NULL,
   `resResultFound` TINYINT(1) NOT NULL,
+  `resResultError` TINYINT(1) NOT NULL,
   `resBrowserName` VARCHAR(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `resBrowserVersion` VARCHAR(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `resEngineName` VARCHAR(255) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -223,6 +224,7 @@ $pdo->prepare('CREATE OR REPLACE VIEW `providers-general-overview` AS SELECT
                 `real-provider`.*,
 
                 SUM(`resResultFound`) AS `resultFound`,
+                SUM(`resResultError`) AS `resultError`,
 
                 COUNT(`resBrowserName`) AS `browserFound`,
                 COUNT(DISTINCT `resBrowserName`) AS `browserFoundUnique`,
@@ -347,6 +349,7 @@ $pdo->prepare('CREATE OR REPLACE VIEW `found-general-bot-types` AS SELECT
     GROUP BY `resBotType`')->execute();
 
 $pdo->prepare('CREATE OR REPLACE VIEW `found-results` AS SELECT * FROM `result` WHERE `resResultFound` = 1 AND `provider_id` IN (SELECT `proId` FROM `real-provider`)')->execute();
+$pdo->prepare('CREATE OR REPLACE VIEW `errored-results` AS SELECT * FROM `result` WHERE `resResultError` = 1 AND `provider_id` IN (SELECT `proId` FROM `real-provider`)')->execute();
 
 // $pdo->prepare('CREATE OR REPLACE VIEW `useragentevaluation`')->execute();
 // $pdo->prepare('CREATE OR REPLACE VIEW `useragentevaluation`')->execute();

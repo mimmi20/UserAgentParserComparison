@@ -15,6 +15,7 @@ namespace UserAgentParserComparison\Provider;
 
 use Browser;
 use Override;
+use UaResult\Result\ResultInterface;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -114,36 +115,87 @@ final class Cbschuld extends AbstractParseProvider
 
         $this->parser->setUserAgent($headers['user-agent']);
 
-        $resultCache = [
-            'browserName' => $this->parser->getBrowser(),
-            'browserVersion' => $this->parser->getVersion(),
+        $resultObject = new \UaResult\Result\Result(
+            headers: $headers,
+            device: new \UaResult\Device\Device(
+                deviceName: null,
+                marketingName: null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                brand: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                type: $this->parser->isTablet() ? \UaDeviceType\Type::Tablet : ($this->parser->isMobile() ? \UaDeviceType\Type::MobileDevice : \UaDeviceType\Type::Unknown),
+                display: new \UaResult\Device\Display(
+                    width: null,
+                    height: null,
+                    touch: null,
+                    size: null,
+                ),
+                dualOrientation: null,
+                simCount: null,
+            ),
+            os: new \UaResult\Os\Os(
+                name: $this->parser->getPlatform(),
+                marketingName: null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: new \BrowserDetector\Version\NullVersion(),
+                bits: null,
+            ),
+            browser: new \UaResult\Browser\Browser(
+                name: $this->parser->getBrowser(),
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: (new \BrowserDetector\Version\VersionBuilder())->set($this->parser->getVersion()),
+                type: $this->parser->isRobot() ? \UaBrowserType\Type::Bot : \UaBrowserType\Type::Unknown,
+                bits: null,
+                modus: null,
+            ),
+            engine: new \UaResult\Engine\Engine(
+                name: null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: new \BrowserDetector\Version\NullVersion(),
+            ),
+        );
 
-            'osName' => $this->parser->getPlatform(),
-        ];
-
-        if ($this->hasResult($resultCache) !== true) {
+        /*
+         * No result found?
+         */
+        if ($this->hasResult($resultObject) !== true) {
             throw new NoResultFoundException(
-                'No result found for user agent: ' . $headers['user-agent'],
+                'No result found for user agent: ' . ($headers['user-agent'] ?? ''),
             );
         }
 
         /*
          * Hydrate the model
          */
-        $result = new Model\UserAgent($this->getName(), $this->getVersion());
-        $result->setProviderResultRaw($resultCache);
-
-        /*
-         * Bot detection - is currently not possible!
-         */
-
-        /*
-         * hydrate the result
-         */
-        $this->hydrateBrowser($result->getBrowser(), $resultCache);
-        $this->hydrateOperatingSystem($result->getOperatingSystem(), $resultCache);
-
-        return $result;
+        return new Model\UserAgent(
+            providerName: $this->getName(),
+            providerVersion: $this->getVersion(),
+            rawResult: [
+                'browserName' => $this->parser->getBrowser(),
+                'browserVersion' => $this->parser->getVersion(),
+                'osName' => $this->parser->getPlatform(),
+            ],
+            result: $resultObject,
+        );
     }
 
     /**
@@ -151,34 +203,9 @@ final class Cbschuld extends AbstractParseProvider
      *
      * @throws void
      */
-    private function hasResult(array $resultRaw): bool
+    private function hasResult(ResultInterface $result): bool
     {
-        return $this->isRealResult($resultRaw['browserName'])
-            || $this->isRealResult($resultRaw['osName']);
-    }
-
-    /**
-     * @param array{browserName: string, browserVersion: string, osName: string} $resultRaw
-     *
-     * @throws void
-     */
-    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
-    {
-        $browser->setName($this->getRealResult($resultRaw['browserName']));
-        $browser->getVersion()->setComplete($this->getRealResult($resultRaw['browserVersion']));
-    }
-
-    /**
-     * @param array{browserName: string, browserVersion: string, osName: string} $resultRaw
-     *
-     * @throws void
-     */
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, array $resultRaw): void
-    {
-        if ($this->isRealResult($resultRaw['osName']) !== true) {
-            return;
-        }
-
-        $os->setName($resultRaw['osName']);
+        return $this->isRealResult($result->getBrowser()->getName())
+            || $this->isRealResult($result->getOs()->getName());
     }
 }

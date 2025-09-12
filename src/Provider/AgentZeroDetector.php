@@ -18,32 +18,27 @@ use UaResult\Result\ResultInterface;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
-use Wolfcast\BrowserDetection;
+use hexydec\agentzero\agentzero;
 
 use function array_key_exists;
 use function is_string;
 
-/**
- * Abstraction for donatj/PhpUserAgent
- *
- * @see https://github.com/donatj/PhpUserAgent
- */
-final class Wolfcast extends AbstractParseProvider
+final class AgentZeroDetector extends AbstractParseProvider
 {
     /**
      * Name of the provider
      */
-    protected string $name = 'wolfcast';
+    protected string $name = 'agentzero';
 
     /**
      * Homepage of the provider
      */
-    protected string $homepage = 'https://github.com/wolfcast/browser-detection';
+    protected string $homepage = 'https://github.com/hexydec/agentzero';
 
     /**
      * Composer package name
      */
-    protected string $packageName = 'wolfcast/browser-detection';
+    protected string $packageName = 'hexydec/agentzero';
     protected string $language    = 'PHP';
 
     /**
@@ -64,10 +59,10 @@ final class Wolfcast extends AbstractParseProvider
         ],
 
         'device' => [
-            'brand' => false,
-            'isMobile' => true,
+            'brand' => true,
+            'isMobile' => false,
             'isTouch' => false,
-            'model' => false,
+            'model' => true,
             'type' => false,
         ],
 
@@ -77,13 +72,13 @@ final class Wolfcast extends AbstractParseProvider
         ],
 
         'renderingEngine' => [
-            'name' => false,
-            'version' => false,
+            'name' => true,
+            'version' => true,
         ],
     ];
 
     /** @throws void */
-    public function __construct(private readonly BrowserDetection $parser)
+    public function __construct()
     {
         // nothing to do here
     }
@@ -113,27 +108,36 @@ final class Wolfcast extends AbstractParseProvider
             throw new NoResultFoundException('Can only use the user-agent Header');
         }
 
-        $this->parser->setUserAgent($headers['user-agent']);
+        $r = agentzero::parse($headers['user-agent']);
+
+        /*
+         * No result found?
+         */
+        if ($r === false) {
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . $headers['user-agent'],
+            );
+        }
 
         $resultObject = new \UaResult\Result\Result(
             headers: $headers,
             device: new \UaResult\Device\Device(
                 deviceName: null,
-                marketingName: null,
+                marketingName: $r->device === null ? null : mb_trim($r->device . ' ' . $r->model),
                 manufacturer: new \UaResult\Company\Company(
                     type: 'unknown',
                     name: null,
                     brandname: null,
                 ),
                 brand: new \UaResult\Company\Company(
-                    type: 'unknown',
+                    type: $r->vendor,
                     name: null,
                     brandname: null,
                 ),
-                type: $this->parser->isMobile() ? \UaDeviceType\Type::MobileDevice : \UaDeviceType\Type::Unknown,
+                type: $r->type === 'robot' ? \UaDeviceType\Type::Unknown : ($r->ismobiledevice ? \UaDeviceType\Type::MobileDevice : \UaDeviceType\Type::fromName($r->category)),
                 display: new \UaResult\Device\Display(
-                    width: null,
-                    height: null,
+                    width: $r->width,
+                    height: $r->height,
                     touch: null,
                     size: null,
                 ),
@@ -141,36 +145,36 @@ final class Wolfcast extends AbstractParseProvider
                 simCount: null,
             ),
             os: new \UaResult\Os\Os(
-                name: $this->parser->getPlatform(),
+                name: $r->platform,
                 marketingName: null,
                 manufacturer: new \UaResult\Company\Company(
                     type: 'unknown',
                     name: null,
                     brandname: null,
                 ),
-                version: (new \BrowserDetector\Version\VersionBuilder())->set($this->parser->getPlatformVersion(true)),
+                version: (new \BrowserDetector\Version\VersionBuilder())->set($r->platformversion),
                 bits: null,
             ),
             browser: new \UaResult\Browser\Browser(
-                name: $this->parser->getName(),
+                name: $r->app ?? $r->browser,
                 manufacturer: new \UaResult\Company\Company(
                     type: 'unknown',
                     name: null,
                     brandname: null,
                 ),
-                version: (new \BrowserDetector\Version\VersionBuilder())->set($this->parser->getVersion()),
-                type: \UaBrowserType\Type::Unknown,
+                version: (new \BrowserDetector\Version\VersionBuilder())->set($r->appversion ?? $r->browserversion),
+                type: $r->type === 'robot' ? \UaBrowserType\Type::Bot : \UaBrowserType\Type::Unknown,
                 bits: null,
                 modus: null,
             ),
             engine: new \UaResult\Engine\Engine(
-                name: null,
+                name: $r->engine,
                 manufacturer: new \UaResult\Company\Company(
                     type: 'unknown',
                     name: null,
                     brandname: null,
                 ),
-                version: new \BrowserDetector\Version\NullVersion(),
+                version: (new \BrowserDetector\Version\VersionBuilder())->set($r->engineversion),
             ),
         );
 
@@ -189,34 +193,19 @@ final class Wolfcast extends AbstractParseProvider
         return new Model\UserAgent(
             providerName: $this->getName(),
             providerVersion: $this->getVersion(),
-            rawResult: [
-                'browserName' => $this->parser->getName(),
-                'browserVersion' => $this->parser->getVersion(),
-
-                'isMobile' => $this->parser->isMobile(),
-
-                'osName' => $this->parser->getPlatform(),
-                'osVersion' => $this->parser->getPlatformVersion(true),
-            ],
+            rawResult: get_object_vars($r),
             result: $resultObject,
         );
     }
 
     /**
-     * @param array{browserName: string, browserVersion: string, isMobile: bool, osName: string, osVersion: string} $resultRaw
+     * @param array{browserName: string, browserVersion: string, osName: string} $resultRaw
      *
      * @throws void
      */
     private function hasResult(ResultInterface $result): bool
     {
-        $client = $result->getBrowser()->getName();
-
-        if ($this->isRealResult($client)) {
-            return true;
-        }
-
-        $os = $result->getOs()->getName();
-
-        return $this->isRealResult($os);
+        return $this->isRealResult($result->getBrowser()->getName())
+            || $this->isRealResult($result->getOs()->getName());
     }
 }

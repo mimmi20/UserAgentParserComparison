@@ -15,6 +15,7 @@ namespace UserAgentParserComparison\Provider;
 
 use Detection\Exception\MobileDetectException;
 use Override;
+use UaResult\Result\ResultInterface;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -94,7 +95,7 @@ final class MobileDetect extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
-     * @throws MobileDetectException
+     * @throws \UserAgentParserComparison\Exception\DetectionErroredException
      */
     #[Override]
     public function parse(array $headers = []): Model\UserAgent
@@ -107,35 +108,97 @@ final class MobileDetect extends AbstractParseProvider
         $parser->setHttpHeaders($headers);
         $parser->setUserAgent($headers['user-agent']);
 
-        /*
-         * Since Mobile_Detect to a regex comparison on every call
-         * We cache it here for all checks and hydration
-         */
-        $resultCache = [
-            'isMobile' => $parser->isMobile(),
-        ];
+        try {
+            $isMobile = $parser->isMobile();
+            $isTablet = $parser->isTablet();
+        } catch (\Detection\Exception\MobileDetectException $e) {
+            throw new \UserAgentParserComparison\Exception\DetectionErroredException(
+                'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
+        }
+
+        $resultObject = new \UaResult\Result\Result(
+            headers: $headers,
+            device: new \UaResult\Device\Device(
+                deviceName: null,
+                marketingName: null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                brand: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                type: $isTablet ? \UaDeviceType\Type::Tablet : ($isMobile ? \UaDeviceType\Type::MobileDevice : \UaDeviceType\Type::Unknown),
+                display: new \UaResult\Device\Display(
+                    width: null,
+                    height: null,
+                    touch: null,
+                    size: null,
+                ),
+                dualOrientation: null,
+                simCount: null,
+            ),
+            os: new \UaResult\Os\Os(
+                name: null,
+                marketingName: null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: new \BrowserDetector\Version\NullVersion(),
+                bits: null,
+            ),
+            browser: new \UaResult\Browser\Browser(
+                name: null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: new \BrowserDetector\Version\NullVersion(),
+                type: \UaBrowserType\Type::Unknown,
+                bits: null,
+                modus: null,
+            ),
+            engine: new \UaResult\Engine\Engine(
+                name: null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: new \BrowserDetector\Version\NullVersion(),
+            ),
+        );
 
         /*
          * No result found?
          */
-        if ($this->hasResult($resultCache) !== true) {
+        if ($this->hasResult($resultObject) !== true) {
             throw new NoResultFoundException(
-                'No result found for user agent: ' . $headers['user-agent'],
+                'No result found for user agent: ' . ($headers['user-agent'] ?? ''),
             );
         }
 
         /*
          * Hydrate the model
          */
-        $result = new Model\UserAgent($this->getName(), $this->getVersion());
-        $result->setProviderResultRaw($resultCache);
-
-        /*
-         * hydrate the result
-         */
-        $this->hydrateDevice($result->getDevice(), $resultCache);
-
-        return $result;
+        return new Model\UserAgent(
+            providerName: $this->getName(),
+            providerVersion: $this->getVersion(),
+            rawResult: [
+                'isMobile' => $isMobile,
+                'isTablet' => $isTablet,
+            ],
+            result: $resultObject,
+        );
     }
 
     /**
@@ -143,22 +206,8 @@ final class MobileDetect extends AbstractParseProvider
      *
      * @throws void
      */
-    private function hasResult(array $resultRaw): bool
+    private function hasResult(ResultInterface $result): bool
     {
-        return $resultRaw['isMobile'] !== null;
-    }
-
-    /**
-     * @param array{isMobile: bool} $resultRaw
-     *
-     * @throws void
-     */
-    private function hydrateDevice(Model\Device $device, array $resultRaw): void
-    {
-        if ($resultRaw['isMobile'] !== true) {
-            return;
-        }
-
-        $device->setIsMobile(true);
+        return $result->getDevice()->getType() !== \UaDeviceType\Type::Unknown;
     }
 }

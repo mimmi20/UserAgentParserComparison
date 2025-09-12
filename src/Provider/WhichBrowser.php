@@ -15,6 +15,7 @@ namespace UserAgentParserComparison\Provider;
 
 use Override;
 use Psr\Cache\CacheItemPoolInterface;
+use UaResult\Result\ResultInterface;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -124,89 +125,112 @@ final class WhichBrowser extends AbstractParseProvider
             );
         }
 
+        $resultObject = new \UaResult\Result\Result(
+            headers: $headers,
+            device: new \UaResult\Device\Device(
+                deviceName: $this->parser->device->getModel(),
+                marketingName: null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: $this->parser->device->getManufacturer(),
+                    name: null,
+                    brandname: null,
+                ),
+                brand: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                type: \UaDeviceType\Type::fromName($this->parser->getType()),
+                display: new \UaResult\Device\Display(
+                    width: null,
+                    height: null,
+                    touch: null,
+                    size: null,
+                ),
+                dualOrientation: null,
+                simCount: null,
+            ),
+            os: new \UaResult\Os\Os(
+                name: $this->parser->os->getName(),
+                marketingName: null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: (new \BrowserDetector\Version\VersionBuilder())->set($this->parser->os->getVersion()),
+                bits: null,
+            ),
+            browser: new \UaResult\Browser\Browser(
+                name: $this->parser->browser->getName(),
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: (new \BrowserDetector\Version\VersionBuilder())->set($this->parser->browser->getVersion()),
+                type: $this->parser->getType() === 'bot' ? \UaBrowserType\Type::Bot : \UaBrowserType\Type::Unknown,
+                bits: null,
+                modus: null,
+            ),
+            engine: new \UaResult\Engine\Engine(
+                name: $this->parser->engine->getName(),
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: (new \BrowserDetector\Version\VersionBuilder())->set($this->parser->engine->getVersion()),
+            ),
+        );
+
+        /*
+         * No result found?
+         */
+        if ($this->hasResult($resultObject) !== true) {
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . ($headers['user-agent'] ?? ''),
+            );
+        }
+
         /*
          * Hydrate the model
          */
-        $result = new Model\UserAgent($this->getName(), $this->getVersion());
-        $result->setProviderResultRaw($this->parser->toArray());
-
-        /*
-         * Bot detection
-         */
-        if ($this->parser->getType() === 'bot') {
-            $this->hydrateBot($result->getBot(), $this->parser->browser);
-
-            return $result;
-        }
-
-        /*
-         * hydrate the result
-         */
-        $this->hydrateBrowser($result->getBrowser(), $this->parser->browser);
-        $this->hydrateRenderingEngine($result->getRenderingEngine(), $this->parser->engine);
-        $this->hydrateOperatingSystem($result->getOperatingSystem(), $this->parser->os);
-        $this->hydrateDevice($result->getDevice(), $this->parser->device, $this->parser);
-
-        return $result;
+        return new Model\UserAgent(
+            providerName: $this->getName(),
+            providerVersion: $this->getVersion(),
+            rawResult: $this->parser->toArray(),
+            result: $resultObject,
+        );
     }
 
     /** @throws void */
-    private function hydrateBot(Model\Bot $bot, Browser $browserRaw): void
+    private function hasResult(ResultInterface $result): bool
     {
-        $bot->setIsBot(true);
-        $bot->setName($this->getRealResult($browserRaw->getName()));
-    }
-
-    /** @throws void */
-    private function hydrateBrowser(Model\Browser $browser, Browser $browserRaw): void
-    {
-        if ($this->isRealResult($browserRaw->getName(), 'browser', 'name') === true) {
-            $browser->setName($browserRaw->getName());
-            $browser->getVersion()->setComplete($this->getRealResult($browserRaw->getVersion()));
-
-            return;
+        if ($result->getBrowser()->getType()->isBot()) {
+            return true;
         }
 
-        if (!$browserRaw->using instanceof Using) {
-            return;
+        $client = $result->getBrowser()->getName();
+
+        if ($this->isRealResult($client)) {
+            return true;
         }
 
-        $usingRaw = $browserRaw->using;
+        $os = $result->getOs()->getName();
 
-        if ($this->isRealResult($usingRaw->getName()) !== true) {
-            return;
+        if ($this->isRealResult($os)) {
+            return true;
         }
 
-        $browser->setName($usingRaw->getName());
+        $engine = $result->getEngine()->getName();
 
-        $browser->getVersion()->setComplete($this->getRealResult($usingRaw->getVersion()));
-    }
-
-    /** @throws void */
-    private function hydrateRenderingEngine(Model\RenderingEngine $engine, Engine $engineRaw): void
-    {
-        $engine->setName($this->getRealResult($engineRaw->getName()));
-        $engine->getVersion()->setComplete($this->getRealResult($engineRaw->getVersion()));
-    }
-
-    /** @throws void */
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, Os $osRaw): void
-    {
-        $os->setName($this->getRealResult($osRaw->getName()));
-        $os->getVersion()->setComplete($this->getRealResult($osRaw->getVersion()));
-    }
-
-    /** @throws void */
-    private function hydrateDevice(Model\Device $device, Device $deviceRaw, WhichBrowserParser $parser): void
-    {
-        $device->setModel($this->getRealResult($deviceRaw->getModel()));
-        $device->setBrand($this->getRealResult($deviceRaw->getManufacturer()));
-        $device->setType($this->getRealResult($parser->getType()));
-
-        if ($parser->isMobile() !== true) {
-            return;
+        if ($this->isRealResult($engine)) {
+            return true;
         }
 
-        $device->setIsMobile(true);
+        $device = $result->getDevice()->getDeviceName();
+
+        return $this->isRealResult($device);
     }
 }

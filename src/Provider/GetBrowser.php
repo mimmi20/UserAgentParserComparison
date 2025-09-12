@@ -109,10 +109,69 @@ final class GetBrowser extends AbstractBrowscap
         $resultRaw = get_browser($headers['user-agent'], false);
         assert($resultRaw instanceof stdClass);
 
+        $resultObject = new \UaResult\Result\Result(
+            headers: $headers,
+            device: new \UaResult\Device\Device(
+                deviceName: property_exists($resultRaw, 'device_name') ? $resultRaw->device_name : null,
+                marketingName: null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                brand: new \UaResult\Company\Company(
+                    type: property_exists($resultRaw, 'device_brand_name') ? $resultRaw->device_brand_name : 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                type: property_exists($resultRaw, 'device_type') ? \UaDeviceType\Type::fromName($resultRaw->device_type) : \UaDeviceType\Type::Unknown,
+                display: new \UaResult\Device\Display(
+                    width: null,
+                    height: null,
+                    touch: property_exists($resultRaw, 'device_pointing_method') && $resultRaw->device_pointing_method === 'touchscreen' ? true : null,
+                    size: null,
+                ),
+                dualOrientation: null,
+                simCount: null,
+            ),
+            os: new \UaResult\Os\Os(
+                name: property_exists($resultRaw, 'platform') ? $resultRaw->platform : null,
+                marketingName: null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: property_exists($resultRaw, 'platform_version') ? (new \BrowserDetector\Version\VersionBuilder())->set($resultRaw['platform_version']) : new \BrowserDetector\Version\NullVersion(),
+                bits: null,
+            ),
+            browser: new \UaResult\Browser\Browser(
+                name: property_exists($resultRaw, 'browser') ? $resultRaw['browser'] : null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: property_exists($resultRaw, 'version') ? (new \BrowserDetector\Version\VersionBuilder())->set($resultRaw['version']) : new \BrowserDetector\Version\NullVersion(),
+                type: property_exists($resultRaw, 'issyndicationreader') && $resultRaw->issyndicationreader === true ? \UaBrowserType\Type::BotSyndicationReader : ( property_exists($resultRaw, 'browser_type') ? \UaBrowserType\Type::fromName($resultRaw->browser_type) : \UaBrowserType\Type::Unknown),
+                bits: null,
+                modus: null,
+            ),
+            engine: new \UaResult\Engine\Engine(
+                name: property_exists($resultRaw, 'renderingengine_name') ? $resultRaw->renderingengine_name : null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: property_exists($resultRaw, 'renderingengine_version') ? (new \BrowserDetector\Version\VersionBuilder())->set($resultRaw['renderingengine_version']) : new \BrowserDetector\Version\NullVersion(),
+            ),
+        );
+
         /*
          * No result found?
          */
-        if ($this->hasResult($resultRaw) !== true) {
+        if ($this->hasResult($resultObject) !== true) {
             throw new NoResultFoundException(
                 'No result found for user agent: ' . $headers['user-agent'],
             );
@@ -121,26 +180,11 @@ final class GetBrowser extends AbstractBrowscap
         /*
          * Hydrate the model
          */
-        $result = new Model\UserAgent($this->getName(), $this->getVersion());
-        $result->setProviderResultRaw($resultRaw);
-
-        /*
-         * Bot detection (does only work with full_php_browscap.ini)
-         */
-        if ($this->isBot($resultRaw) === true) {
-            $this->hydrateBot($result->getBot(), $resultRaw);
-
-            return $result;
-        }
-
-        /*
-         * hydrate the result
-         */
-        $this->hydrateBrowser($result->getBrowser(), $resultRaw);
-        $this->hydrateRenderingEngine($result->getRenderingEngine(), $resultRaw);
-        $this->hydrateOperatingSystem($result->getOperatingSystem(), $resultRaw);
-        $this->hydrateDevice($result->getDevice(), $resultRaw);
-
-        return $result;
+        return new Model\UserAgent(
+            providerName: $this->getName(),
+            providerVersion: $this->getVersion(),
+            rawResult: (array) $resultRaw,
+            result: $resultObject,
+        );
     }
 }

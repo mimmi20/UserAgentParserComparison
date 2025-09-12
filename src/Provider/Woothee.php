@@ -15,6 +15,7 @@ namespace UserAgentParserComparison\Provider;
 
 use Override;
 use Throwable;
+use UaResult\Result\ResultInterface;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -85,7 +86,7 @@ final class Woothee extends AbstractParseProvider
 
     /** @var array<string, array<int|string, array<mixed>|string>> */
     protected array $defaultValues = [
-        'bot' => [
+        'client' => [
             'name' => ['/^misc crawler$/i'],
         ],
 
@@ -118,6 +119,7 @@ final class Woothee extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
+     * @throws \UserAgentParserComparison\Exception\DetectionErroredException
      */
     #[Override]
     public function parse(array $headers = []): Model\UserAgent
@@ -129,7 +131,7 @@ final class Woothee extends AbstractParseProvider
         try {
             $resultRaw = $this->parser->parse($headers['user-agent']);
         } catch (Throwable $e) {
-            throw new NoResultFoundException(
+            throw new \UserAgentParserComparison\Exception\DetectionErroredException(
                 'No result found for user agent: ' . $headers['user-agent'],
                 0,
                 $e,
@@ -139,36 +141,89 @@ final class Woothee extends AbstractParseProvider
         /*
          * No result found?
          */
-        if ($resultRaw === false || $this->hasResult($resultRaw) !== true) {
+        if ($resultRaw === false) {
             throw new NoResultFoundException(
                 'No result found for user agent: ' . $headers['user-agent'],
+            );
+        }
+
+        $resultObject = new \UaResult\Result\Result(
+            headers: $headers,
+            device: new \UaResult\Device\Device(
+                deviceName: null,
+                marketingName: null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                brand: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                type: isset($resultRaw['category']) && $resultRaw['category'] !== DataSet::DATASET_CATEGORY_CRAWLER ? \UaDeviceType\Type::fromName($resultRaw['category']) : \UaDeviceType\Type::Unknown,
+                display: new \UaResult\Device\Display(
+                    width: null,
+                    height: null,
+                    touch: null,
+                    size: null,
+                ),
+                dualOrientation: null,
+                simCount: null,
+            ),
+            os: new \UaResult\Os\Os(
+                name: $resultRaw['os'] ?? null,
+                marketingName: null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: (new \BrowserDetector\Version\VersionBuilder())->set($resultRaw['os_version']),
+                bits: null,
+            ),
+            browser: new \UaResult\Browser\Browser(
+                name: $resultRaw['name'],
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: (new \BrowserDetector\Version\VersionBuilder())->set($resultRaw['version']),
+                type: isset($resultRaw['category']) && $resultRaw['category'] === DataSet::DATASET_CATEGORY_CRAWLER ? \UaBrowserType\Type::Bot : \UaBrowserType\Type::Unknown,
+                bits: null,
+                modus: null,
+            ),
+            engine: new \UaResult\Engine\Engine(
+                name: null,
+                manufacturer: new \UaResult\Company\Company(
+                    type: 'unknown',
+                    name: null,
+                    brandname: null,
+                ),
+                version: new \BrowserDetector\Version\NullVersion(),
+            ),
+        );
+
+        /*
+         * No result found?
+         */
+        if ($this->hasResult($resultObject) !== true) {
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . ($headers['user-agent'] ?? ''),
             );
         }
 
         /*
          * Hydrate the model
          */
-        $result = new Model\UserAgent($this->getName(), $this->getVersion());
-        $result->setProviderResultRaw($resultRaw);
-
-        /*
-         * Bot detection
-         */
-        if ($this->isBot($resultRaw) === true) {
-            $this->hydrateBot($result->getBot(), $resultRaw);
-
-            return $result;
-        }
-
-        /*
-         * hydrate the result
-         */
-        $this->hydrateBrowser($result->getBrowser(), $resultRaw);
-        // renderingEngine not available
-        // operatingSystem filled OS is mixed! Examples: iPod, iPhone, Android...
-        $this->hydrateDevice($result->getDevice(), $resultRaw);
-
-        return $result;
+        return new Model\UserAgent(
+            providerName: $this->getName(),
+            providerVersion: $this->getVersion(),
+            rawResult: $resultRaw,
+            result: $resultObject,
+        );
     }
 
     /**
@@ -176,73 +231,14 @@ final class Woothee extends AbstractParseProvider
      *
      * @throws void
      */
-    private function hasResult(array $resultRaw): bool
+    private function hasResult(ResultInterface $result): bool
     {
-        if (
-            isset($resultRaw['category'])
-            && $this->isRealResult($resultRaw['category'], 'device', 'type')
-        ) {
+        $client = $result->getBrowser()->getName();
+
+        if ($this->isRealResult($client, 'client', 'name')) {
             return true;
         }
 
-        return isset($resultRaw['name']) && $this->isRealResult($resultRaw['name']);
-    }
-
-    /**
-     * @param array<string, string|null> $resultRaw
-     *
-     * @throws void
-     */
-    private function isBot(array $resultRaw): bool
-    {
-        return isset($resultRaw['category']) && $resultRaw['category'] === DataSet::DATASET_CATEGORY_CRAWLER;
-    }
-
-    /**
-     * @param array<string, string|null> $resultRaw
-     *
-     * @throws void
-     */
-    private function hydrateBot(Model\Bot $bot, array $resultRaw): void
-    {
-        $bot->setIsBot(true);
-
-        if (!isset($resultRaw['name'])) {
-            return;
-        }
-
-        $bot->setName($this->getRealResult($resultRaw['name'], 'bot', 'name'));
-    }
-
-    /**
-     * @param array<string, string|null> $resultRaw
-     *
-     * @throws void
-     */
-    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
-    {
-        if (isset($resultRaw['name'])) {
-            $browser->setName($this->getRealResult($resultRaw['name']));
-        }
-
-        if (!isset($resultRaw['version'])) {
-            return;
-        }
-
-        $browser->getVersion()->setComplete($this->getRealResult($resultRaw['version']));
-    }
-
-    /**
-     * @param array<string, string|null> $resultRaw
-     *
-     * @throws void
-     */
-    private function hydrateDevice(Model\Device $device, array $resultRaw): void
-    {
-        if (!isset($resultRaw['category'])) {
-            return;
-        }
-
-        $device->setType($this->getRealResult($resultRaw['category'], 'device', 'type'));
+        return $this->isRealResult($result->getDevice()->getType()->getType(), 'device', 'type');
     }
 }

@@ -59,6 +59,7 @@ final class Chain extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws Exception\NoResultFoundException
+     * @throws \UserAgentParserComparison\Exception\DetectionErroredException
      */
     #[Override]
     public function parse(array $headers = []): Model\UserAgent

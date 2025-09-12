@@ -32,6 +32,7 @@ abstract class AbstractParseProvider extends AbstractProvider
      * @param array<string, string> $headers
      *
      * @throws Exception\NoResultFoundException
+     * @throws \UserAgentParserComparison\Exception\DetectionErroredException
      */
     abstract public function parse(array $headers = []): Model\UserAgent;
 
