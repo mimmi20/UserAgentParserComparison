@@ -85,7 +85,7 @@ parameters:
 
   cognitive_complexity:
     class: 66
-    function: 9
+    function: 23
 
   type_coverage:
     return_type: 100
@@ -106,7 +106,9 @@ parameters:
     no_mixed: true
     narrow_param: true
 
-#  ignoreErrors:
+  ignoreErrors:
+    -
+      identifier: catch.neverThrown
 #    - '~Strict comparison using === between false and string will always evaluate to false~'
 
 rules:

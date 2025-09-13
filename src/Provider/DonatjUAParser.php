@@ -13,12 +13,26 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use BrowserDetector\Version\Exception\NotNumericException;
+use BrowserDetector\Version\NullVersion;
+use BrowserDetector\Version\VersionBuilder;
+use InvalidArgumentException;
 use Override;
+use UaDeviceType\Type;
+use UaResult\Browser\Browser;
+use UaResult\Company\Company;
+use UaResult\Device\Device;
+use UaResult\Device\Display;
+use UaResult\Engine\Engine;
+use UaResult\Os\Os;
+use UaResult\Result\Result;
+use UserAgentParserComparison\Exception\DetectionErroredException;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
 
 use function array_key_exists;
+use function donatj\UserAgent\parse_user_agent;
 use function is_string;
 
 /**
@@ -80,9 +94,6 @@ final class DonatjUAParser extends AbstractParseProvider
         ],
     ];
 
-    /** @phpstan-var callable-string */
-    private string $functionName = '\donatj\UserAgent\parse_user_agent';
-
     /** @throws void */
     public function __construct()
     {
@@ -106,6 +117,7 @@ final class DonatjUAParser extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
+     * @throws DetectionErroredException
      */
     #[Override]
     public function parse(array $headers = []): Model\UserAgent
@@ -114,53 +126,109 @@ final class DonatjUAParser extends AbstractParseProvider
             throw new NoResultFoundException('Can only use the user-agent Header');
         }
 
-        $resultRaw = ($this->functionName)($headers['user-agent']);
-
-        if ($this->hasResult($resultRaw) !== true) {
-            throw new NoResultFoundException(
+        try {
+            $resultRaw = parse_user_agent($headers['user-agent']);
+        } catch (InvalidArgumentException $e) {
+            throw new DetectionErroredException(
                 'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
+        }
+
+        try {
+            $resultObject = new Result(
+                headers: $headers,
+                device: new Device(
+                    deviceName: null,
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    brand: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    type: Type::Unknown,
+                    display: new Display(
+                        width: null,
+                        height: null,
+                        touch: null,
+                        size: null,
+                    ),
+                    dualOrientation: null,
+                    simCount: null,
+                ),
+                os: new Os(
+                    name: $resultRaw['platform'],
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: new NullVersion(),
+                    bits: null,
+                ),
+                browser: new Browser(
+                    name: $resultRaw['browser'],
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: (new VersionBuilder())->set(
+                        $resultRaw['version'] ?? '',
+                    ),
+                    type: \UaBrowserType\Type::Unknown,
+                    bits: null,
+                    modus: null,
+                ),
+                engine: new Engine(
+                    name: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: new NullVersion(),
+                ),
+            );
+        } catch (NotNumericException $e) {
+            throw new DetectionErroredException(
+                'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
+        }
+
+        /*
+         * No result found?
+         */
+        if ($this->hasResult($resultObject) !== true) {
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . ($headers['user-agent'] ?? ''),
             );
         }
 
         /*
          * Hydrate the model
          */
-        $result = new Model\UserAgent($this->getName(), $this->getVersion());
-        $result->setProviderResultRaw($resultRaw);
-
-        /*
-         * Bot detection - is currently not possible!
-         */
-
-        /*
-         * hydrate the result
-         */
-        $this->hydrateBrowser($result->getBrowser(), $resultRaw);
-        // renderingEngine not available
-        // os is mixed with device information
-        // device is mixed with os
-
-        return $result;
+        return new Model\UserAgent(
+            providerName: $this->getName(),
+            providerVersion: $this->getVersion(),
+            rawResult: $resultRaw,
+            result: $resultObject,
+        );
     }
 
-    /**
-     * @param array{browser: string, version: string, platform: string} $resultRaw
-     *
-     * @throws void
-     */
-    private function hasResult(array $resultRaw): bool
+    /** @throws void */
+    private function hasResult(Result $result): bool
     {
-        return $this->isRealResult($resultRaw['browser']);
-    }
-
-    /**
-     * @param array{browser: string, version: string, platform: string} $resultRaw
-     *
-     * @throws void
-     */
-    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
-    {
-        $browser->setName($this->getRealResult($resultRaw['browser']));
-        $browser->getVersion()->setComplete($this->getRealResult($resultRaw['version']));
+        return $this->isRealResult($result->getBrowser()->getName())
+            || $this->isRealResult($result->getOs()->getName());
     }
 }

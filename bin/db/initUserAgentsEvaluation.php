@@ -18,6 +18,7 @@ SELECT
     `userAgent_id`,
     COUNT(1) AS `resultCount`,
     SUM(`resResultFound`) AS `resultFound`,
+    SUM(`resResultError`) AS `resultError`,
 
     GROUP_CONCAT(`resBrowserName` SEPARATOR \'~~~\') AS `browserName`,
     GROUP_CONCAT(`resBrowserVersion` SEPARATOR \'~~~\') AS `browserVersion`,

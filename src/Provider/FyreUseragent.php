@@ -13,12 +13,13 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
-use Browser;
 use BrowserDetector\Version\Exception\NotNumericException;
 use BrowserDetector\Version\NullVersion;
 use BrowserDetector\Version\VersionBuilder;
+use Fyre\Http\UserAgent;
 use Override;
 use UaDeviceType\Type;
+use UaResult\Browser\Browser;
 use UaResult\Company\Company;
 use UaResult\Device\Device;
 use UaResult\Device\Display;
@@ -33,27 +34,22 @@ use UserAgentParserComparison\Model;
 use function array_key_exists;
 use function is_string;
 
-/**
- * Abstraction for donatj/PhpUserAgent
- *
- * @see https://github.com/donatj/PhpUserAgent
- */
-final class Cbschuld extends AbstractParseProvider
+final class FyreUseragent extends AbstractParseProvider
 {
     /**
      * Name of the provider
      */
-    protected string $name = 'cbschuld';
+    protected string $name = 'fyre-useragent';
 
     /**
      * Homepage of the provider
      */
-    protected string $homepage = 'https://github.com/cbschuld/browser.php';
+    protected string $homepage = 'https://github.com/fyre/useragent';
 
     /**
      * Composer package name
      */
-    protected string $packageName = 'cbschuld/browser.php';
+    protected string $packageName = 'fyre/useragent';
     protected string $language    = 'PHP';
 
     /**
@@ -75,7 +71,7 @@ final class Cbschuld extends AbstractParseProvider
 
         'device' => [
             'brand' => false,
-            'isMobile' => false,
+            'isMobile' => true,
             'isTouch' => false,
             'model' => false,
             'type' => false,
@@ -93,7 +89,7 @@ final class Cbschuld extends AbstractParseProvider
     ];
 
     /** @throws void */
-    public function __construct(private readonly Browser $parser)
+    public function __construct()
     {
         // nothing to do here
     }
@@ -124,7 +120,12 @@ final class Cbschuld extends AbstractParseProvider
             throw new NoResultFoundException('Can only use the user-agent Header');
         }
 
-        $this->parser->setUserAgent($headers['user-agent']);
+        $userAgent = new UserAgent($headers['user-agent']);
+        $browser   = $userAgent->getBrowser();
+        $version   = $userAgent->getVersion();
+        $os        = $userAgent->getPlatform();
+        $isMobile  = $userAgent->isMobile();
+        $isBot     = $userAgent->isRobot();
 
         try {
             $resultObject = new Result(
@@ -142,7 +143,7 @@ final class Cbschuld extends AbstractParseProvider
                         name: null,
                         brandname: null,
                     ),
-                    type: $this->parser->isTablet() ? Type::Tablet : ($this->parser->isMobile() ? Type::MobileDevice : Type::Unknown),
+                    type: $isMobile ? Type::MobileDevice : Type::Unknown,
                     display: new Display(
                         width: null,
                         height: null,
@@ -153,7 +154,7 @@ final class Cbschuld extends AbstractParseProvider
                     simCount: null,
                 ),
                 os: new Os(
-                    name: $this->parser->getPlatform(),
+                    name: $os,
                     marketingName: null,
                     manufacturer: new Company(
                         type: 'unknown',
@@ -163,17 +164,15 @@ final class Cbschuld extends AbstractParseProvider
                     version: new NullVersion(),
                     bits: null,
                 ),
-                browser: new \UaResult\Browser\Browser(
-                    name: $this->parser->getBrowser(),
+                browser: new Browser(
+                    name: $browser,
                     manufacturer: new Company(
                         type: 'unknown',
                         name: null,
                         brandname: null,
                     ),
-                    version: (new VersionBuilder())->set(
-                        $this->parser->getVersion(),
-                    ),
-                    type: $this->parser->isRobot() ? \UaBrowserType\Type::Bot : \UaBrowserType\Type::Unknown,
+                    version: (new VersionBuilder())->set((string) $version),
+                    type: $isBot ? \UaBrowserType\Type::Bot : \UaBrowserType\Type::Unknown,
                     bits: null,
                     modus: null,
                 ),
@@ -211,9 +210,11 @@ final class Cbschuld extends AbstractParseProvider
             providerName: $this->getName(),
             providerVersion: $this->getVersion(),
             rawResult: [
-                'browserName' => $this->parser->getBrowser(),
-                'browserVersion' => $this->parser->getVersion(),
-                'osName' => $this->parser->getPlatform(),
+                'browser' => $browser,
+                'version' => $version,
+                'os' => $os,
+                'isMobile' => $isMobile,
+                'isBot' => $isBot,
             ],
             result: $resultObject,
         );

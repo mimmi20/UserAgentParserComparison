@@ -13,7 +13,19 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use BrowserDetector\Version\Exception\NotNumericException;
+use BrowserDetector\Version\NullVersion;
+use BrowserDetector\Version\VersionBuilder;
 use Override;
+use UaDeviceType\Type;
+use UaResult\Browser\Browser;
+use UaResult\Company\Company;
+use UaResult\Device\Device;
+use UaResult\Device\Display;
+use UaResult\Engine\Engine;
+use UaResult\Os\Os;
+use UaResult\Result\Result;
+use UserAgentParserComparison\Exception\DetectionErroredException;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -104,6 +116,7 @@ final class Wolfcast extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
+     * @throws DetectionErroredException
      */
     #[Override]
     public function parse(array $headers = []): Model\UserAgent
@@ -114,91 +127,116 @@ final class Wolfcast extends AbstractParseProvider
 
         $this->parser->setUserAgent($headers['user-agent']);
 
-        $resultCache = [
-            'browserName' => $this->parser->getName(),
-            'browserVersion' => $this->parser->getVersion(),
-
-            'isMobile' => $this->parser->isMobile(),
-
-            'osName' => $this->parser->getPlatform(),
-            'osVersion' => $this->parser->getPlatformVersion(true),
-        ];
-
-        if ($this->hasResult($resultCache) !== true) {
-            throw new NoResultFoundException(
+        try {
+            $resultObject = new Result(
+                headers: $headers,
+                device: new Device(
+                    deviceName: null,
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    brand: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    type: $this->parser->isMobile() ? Type::MobileDevice : Type::Unknown,
+                    display: new Display(
+                        width: null,
+                        height: null,
+                        touch: null,
+                        size: null,
+                    ),
+                    dualOrientation: null,
+                    simCount: null,
+                ),
+                os: new Os(
+                    name: $this->parser->getPlatform(),
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: (new VersionBuilder())->set(
+                        $this->parser->getPlatformVersion(true),
+                    ),
+                    bits: null,
+                ),
+                browser: new Browser(
+                    name: $this->parser->getName(),
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: (new VersionBuilder())->set(
+                        $this->parser->getVersion(),
+                    ),
+                    type: \UaBrowserType\Type::Unknown,
+                    bits: null,
+                    modus: null,
+                ),
+                engine: new Engine(
+                    name: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: new NullVersion(),
+                ),
+            );
+        } catch (NotNumericException $e) {
+            throw new DetectionErroredException(
                 'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
+        }
+
+        /*
+         * No result found?
+         */
+        if ($this->hasResult($resultObject) !== true) {
+            throw new NoResultFoundException(
+                'No result found for user agent: ' . ($headers['user-agent'] ?? ''),
             );
         }
 
         /*
          * Hydrate the model
          */
-        $result = new Model\UserAgent($this->getName(), $this->getVersion());
-        $result->setProviderResultRaw($resultCache);
+        return new Model\UserAgent(
+            providerName: $this->getName(),
+            providerVersion: $this->getVersion(),
+            rawResult: [
+                'browserName' => $this->parser->getName(),
+                'browserVersion' => $this->parser->getVersion(),
 
-        /*
-         * Bot detection - is currently not possible!
-         */
+                'isMobile' => $this->parser->isMobile(),
 
-        /*
-         * hydrate the result
-         */
-        $this->hydrateBrowser($result->getBrowser(), $resultCache);
-        $this->hydrateOperatingSystem($result->getOperatingSystem(), $resultCache);
-        $this->hydrateDevice($result->getDevice(), $resultCache);
-
-        return $result;
-    }
-
-    /**
-     * @param array{browserName: string, browserVersion: string, isMobile: bool, osName: string, osVersion: string} $resultRaw
-     *
-     * @throws void
-     */
-    private function hasResult(array $resultRaw): bool
-    {
-        return $this->isRealResult($resultRaw['browserName']) || $this->isRealResult(
-            $resultRaw['osName'],
+                'osName' => $this->parser->getPlatform(),
+                'osVersion' => $this->parser->getPlatformVersion(true),
+            ],
+            result: $resultObject,
         );
     }
 
-    /**
-     * @param array{browserName: string, browserVersion: string, isMobile: bool, osName: string, osVersion: string} $resultRaw
-     *
-     * @throws void
-     */
-    private function hydrateBrowser(Model\Browser $browser, array $resultRaw): void
+    /** @throws void */
+    private function hasResult(Result $result): bool
     {
-        $browser->setName($this->getRealResult($resultRaw['browserName']));
-        $browser->getVersion()->setComplete($this->getRealResult($resultRaw['browserVersion']));
-    }
+        $client = $result->getBrowser()->getName();
 
-    /**
-     * @param array{browserName: string, browserVersion: string, isMobile: bool, osName: string, osVersion: string} $resultRaw
-     *
-     * @throws void
-     */
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, array $resultRaw): void
-    {
-        if ($this->isRealResult($resultRaw['osName']) !== true) {
-            return;
+        if ($this->isRealResult($client)) {
+            return true;
         }
 
-        $os->setName($resultRaw['osName']);
-        $os->getVersion()->setComplete($this->getRealResult($resultRaw['osVersion']));
-    }
+        $os = $result->getOs()->getName();
 
-    /**
-     * @param array{browserName: string, browserVersion: string, isMobile: bool, osName: string, osVersion: string} $resultRaw
-     *
-     * @throws void
-     */
-    private function hydrateDevice(Model\Device $device, array $resultRaw): void
-    {
-        if ($resultRaw['isMobile'] !== true) {
-            return;
-        }
-
-        $device->setIsMobile(true);
+        return $this->isRealResult($os);
     }
 }

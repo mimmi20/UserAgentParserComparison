@@ -14,6 +14,7 @@ declare(strict_types = 1);
 namespace UserAgentParserComparison\Provider;
 
 use UserAgentParserComparison\Exception;
+use UserAgentParserComparison\Exception\DetectionErroredException;
 use UserAgentParserComparison\Model;
 
 use function array_merge;
@@ -32,6 +33,7 @@ abstract class AbstractParseProvider extends AbstractProvider
      * @param array<string, string> $headers
      *
      * @throws Exception\NoResultFoundException
+     * @throws DetectionErroredException
      */
     abstract public function parse(array $headers = []): Model\UserAgent;
 

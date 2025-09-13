@@ -13,8 +13,20 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use BrowserDetector\Version\Exception\NotNumericException;
+use BrowserDetector\Version\NullVersion;
+use BrowserDetector\Version\VersionBuilder;
 use Override;
 use stdClass;
+use UaDeviceType\Type;
+use UaResult\Browser\Browser;
+use UaResult\Company\Company;
+use UaResult\Device\Device;
+use UaResult\Device\Display;
+use UaResult\Engine\Engine;
+use UaResult\Os\Os;
+use UaResult\Result\Result;
+use UserAgentParserComparison\Exception\DetectionErroredException;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Model;
 
@@ -22,11 +34,14 @@ use function array_key_exists;
 use function assert;
 use function get_browser;
 use function is_string;
+use function property_exists;
 
 /**
  * Abstraction for Browscap full type
  *
  * @see https://github.com/browscap/browscap-php
+ *
+ * @phpcs:disable Squiz.NamingConventions.ValidVariableName.MemberNotCamelCaps
  */
 final class GetBrowser extends AbstractBrowscap
 {
@@ -98,6 +113,7 @@ final class GetBrowser extends AbstractBrowscap
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
+     * @throws DetectionErroredException
      */
     #[Override]
     public function parse(array $headers = []): Model\UserAgent
@@ -109,10 +125,114 @@ final class GetBrowser extends AbstractBrowscap
         $resultRaw = get_browser($headers['user-agent'], false);
         assert($resultRaw instanceof stdClass);
 
+        try {
+            $resultObject = new Result(
+                headers: $headers,
+                device: new Device(
+                    deviceName: property_exists(
+                        $resultRaw,
+                        'device_name',
+                    ) ? $resultRaw->device_name : null,
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    brand: new Company(
+                        type: property_exists(
+                            $resultRaw,
+                            'device_brand_name',
+                        ) ? $resultRaw->device_brand_name : 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    type: property_exists($resultRaw, 'device_type') ? Type::fromName(
+                        $resultRaw->device_type,
+                    ) : Type::Unknown,
+                    display: new Display(
+                        width: null,
+                        height: null,
+                        touch: property_exists(
+                            $resultRaw,
+                            'device_pointing_method',
+                        ) && $resultRaw->device_pointing_method === 'touchscreen' ? true : null,
+                        size: null,
+                    ),
+                    dualOrientation: null,
+                    simCount: null,
+                ),
+                os: new Os(
+                    name: property_exists($resultRaw, 'platform') ? $resultRaw->platform : null,
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: property_exists(
+                        $resultRaw,
+                        'platform_version',
+                    ) ? (new VersionBuilder())->set(
+                        $resultRaw['platform_version'],
+                    ) : new NullVersion(),
+                    bits: null,
+                ),
+                browser: new Browser(
+                    name: property_exists($resultRaw, 'browser') ? $resultRaw['browser'] : null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: property_exists(
+                        $resultRaw,
+                        'version',
+                    ) ? (new VersionBuilder())->set(
+                        $resultRaw['version'],
+                    ) : new NullVersion(),
+                    type: property_exists(
+                        $resultRaw,
+                        'issyndicationreader',
+                    ) && $resultRaw->issyndicationreader === true ? \UaBrowserType\Type::BotSyndicationReader : (property_exists(
+                        $resultRaw,
+                        'browser_type',
+                    ) ? \UaBrowserType\Type::fromName(
+                        $resultRaw->browser_type,
+                    ) : \UaBrowserType\Type::Unknown),
+                    bits: null,
+                    modus: null,
+                ),
+                engine: new Engine(
+                    name: property_exists(
+                        $resultRaw,
+                        'renderingengine_name',
+                    ) ? $resultRaw->renderingengine_name : null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: property_exists(
+                        $resultRaw,
+                        'renderingengine_version',
+                    ) ? (new VersionBuilder())->set(
+                        $resultRaw['renderingengine_version'],
+                    ) : new NullVersion(),
+                ),
+            );
+        } catch (NotNumericException $e) {
+            throw new DetectionErroredException(
+                'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
+        }
+
         /*
          * No result found?
          */
-        if ($this->hasResult($resultRaw) !== true) {
+        if ($this->hasResult($resultObject) !== true) {
             throw new NoResultFoundException(
                 'No result found for user agent: ' . $headers['user-agent'],
             );
@@ -121,26 +241,11 @@ final class GetBrowser extends AbstractBrowscap
         /*
          * Hydrate the model
          */
-        $result = new Model\UserAgent($this->getName(), $this->getVersion());
-        $result->setProviderResultRaw($resultRaw);
-
-        /*
-         * Bot detection (does only work with full_php_browscap.ini)
-         */
-        if ($this->isBot($resultRaw) === true) {
-            $this->hydrateBot($result->getBot(), $resultRaw);
-
-            return $result;
-        }
-
-        /*
-         * hydrate the result
-         */
-        $this->hydrateBrowser($result->getBrowser(), $resultRaw);
-        $this->hydrateRenderingEngine($result->getRenderingEngine(), $resultRaw);
-        $this->hydrateOperatingSystem($result->getOperatingSystem(), $resultRaw);
-        $this->hydrateDevice($result->getDevice(), $resultRaw);
-
-        return $result;
+        return new Model\UserAgent(
+            providerName: $this->getName(),
+            providerVersion: $this->getVersion(),
+            rawResult: (array) $resultRaw,
+            result: $resultObject,
+        );
     }
 }

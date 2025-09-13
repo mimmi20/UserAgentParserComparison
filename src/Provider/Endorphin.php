@@ -13,16 +13,29 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use BrowserDetector\Version\Exception\NotNumericException;
+use BrowserDetector\Version\NullVersion;
+use BrowserDetector\Version\VersionBuilder;
 use EndorphinStudio\Detector as EndorphinDetector;
-use EndorphinStudio\Detector\Data\Result;
 use Override;
 use Throwable;
+use UaDeviceType\Type;
+use UaResult\Browser\Browser;
+use UaResult\Company\Company;
+use UaResult\Device\Device;
+use UaResult\Device\Display;
+use UaResult\Engine\Engine;
+use UaResult\Os\Os;
+use UaResult\Result\Result;
+use UserAgentParserComparison\Exception\DetectionErroredException;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
 
 use function array_key_exists;
 use function is_string;
+use function json_decode;
+use function json_encode;
 
 /**
  * Abstraction for endorphin-studio/browser-detector
@@ -114,6 +127,7 @@ final class Endorphin extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
+     * @throws DetectionErroredException
      */
     #[Override]
     public function parse(array $headers = []): Model\UserAgent
@@ -125,7 +139,80 @@ final class Endorphin extends AbstractParseProvider
         try {
             $resultRaw = $this->parser->analyse($headers['user-agent']);
         } catch (Throwable $e) {
-            throw new NoResultFoundException(
+            throw new DetectionErroredException(
+                'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
+        }
+
+        try {
+            $resultObject = new Result(
+                headers: $headers,
+                device: new Device(
+                    deviceName: $resultRaw->getDevice()->getName(),
+                    marketingName: $resultRaw->getDevice()->getModel()->getModel(),
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    brand: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    type: Type::fromName($resultRaw->getDevice()->getType()),
+                    display: new Display(
+                        width: null,
+                        height: null,
+                        touch: null,
+                        size: null,
+                    ),
+                    dualOrientation: null,
+                    simCount: null,
+                ),
+                os: new Os(
+                    name: $resultRaw->getOs()->getName(),
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: (new VersionBuilder())->set(
+                        $resultRaw->getOs()->getVersion(),
+                    ),
+                    bits: null,
+                ),
+                browser: new Browser(
+                    name: $resultRaw->getRobot()->getType() !== null ? $resultRaw->getRobot()->getName() : $resultRaw->getBrowser()->getName(),
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: (new VersionBuilder())->set(
+                        $resultRaw->getBrowser()->getVersion(),
+                    ),
+                    type: $resultRaw->getRobot()->getType() !== null ? \UaBrowserType\Type::fromName(
+                        $resultRaw->getRobot()->getType(),
+                    ) : \UaBrowserType\Type::Unknown,
+                    bits: null,
+                    modus: null,
+                ),
+                engine: new Engine(
+                    name: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: new NullVersion(),
+                ),
+            );
+        } catch (NotNumericException $e) {
+            throw new DetectionErroredException(
                 'No result found for user agent: ' . $headers['user-agent'],
                 0,
                 $e,
@@ -135,7 +222,7 @@ final class Endorphin extends AbstractParseProvider
         /*
          * No result found?
          */
-        if ($this->hasResult($resultRaw) !== true) {
+        if ($this->hasResult($resultObject) !== true) {
             throw new NoResultFoundException(
                 'No result found for user agent: ' . $headers['user-agent'],
             );
@@ -144,76 +231,29 @@ final class Endorphin extends AbstractParseProvider
         /*
          * Hydrate the model
          */
-        $result = new Model\UserAgent($this->getName(), $this->getVersion());
-        $result->setProviderResultRaw($resultRaw);
-
-        /*
-         * Bot detection
-         */
-        if ($this->isRealResult($resultRaw->getRobot()->getType()) === true) {
-            $this->hydrateBot($result->getBot(), $resultRaw->getRobot());
-
-            return $result;
-        }
-
-        /*
-         * hydrate the result
-         */
-        $this->hydrateBrowser($result->getBrowser(), $resultRaw->getBrowser());
-
-        $this->hydrateOperatingSystem($result->getOperatingSystem(), $resultRaw->getOs());
-
-        $this->hydrateDevice($result->getDevice(), $resultRaw->getDevice());
-
-        return $result;
-    }
-
-    /** @throws void */
-    private function hasResult(Result $resultRaw): bool
-    {
-        if ($this->isRealResult($resultRaw->getOs()->getName()) === true) {
-            return true;
-        }
-
-        if ($this->isRealResult($resultRaw->getBrowser()->getName()) === true) {
-            return true;
-        }
-
-        if ($this->isRealResult($resultRaw->getDevice()->getName(), 'device', 'model') === true) {
-            return true;
-        }
-
-        return $this->isRealResult($resultRaw->getRobot()->getType()) === true;
-    }
-
-    /** @throws void */
-    private function hydrateBot(Model\Bot $bot, EndorphinDetector\Data\Robot $resultRaw): void
-    {
-        $bot->setIsBot(true);
-        $bot->setName($this->getRealResult($resultRaw->getName()));
-        $bot->setType($this->getRealResult($resultRaw->getType()));
-    }
-
-    /** @throws void */
-    private function hydrateBrowser(Model\Browser $browser, EndorphinDetector\Data\Browser $resultRaw): void
-    {
-        $browser->setName($this->getRealResult($resultRaw->getName()));
-        $browser->getVersion()->setComplete($this->getRealResult($resultRaw->getVersion()));
-    }
-
-    /** @throws void */
-    private function hydrateOperatingSystem(Model\OperatingSystem $os, EndorphinDetector\Data\Os $resultRaw): void
-    {
-        $os->setName($this->getRealResult($resultRaw->getName()));
-        $os->getVersion()->setComplete($this->getRealResult($resultRaw->getVersion()));
-    }
-
-    /** @throws void */
-    private function hydrateDevice(Model\Device $device, EndorphinDetector\Data\Device $resultRaw): void
-    {
-        $device->setModel(
-            $this->getRealResult($resultRaw->getModel()->getModel()),
+        return new Model\UserAgent(
+            providerName: $this->getName(),
+            providerVersion: $this->getVersion(),
+            rawResult: json_decode(json_encode($resultRaw), true),
+            result: $resultObject,
         );
-        $device->setType($this->getRealResult($resultRaw->getType()));
+    }
+
+    /** @throws void */
+    private function hasResult(Result $result): bool
+    {
+        if ($this->isRealResult($result->getOs()->getName()) === true) {
+            return true;
+        }
+
+        if ($this->isRealResult($result->getBrowser()->getName()) === true) {
+            return true;
+        }
+
+        if ($this->isRealResult($result->getDevice()->getDeviceName(), 'device', 'model') === true) {
+            return true;
+        }
+
+        return $this->isRealResult($result->getBrowser()->getType()->getType()) === true;
     }
 }

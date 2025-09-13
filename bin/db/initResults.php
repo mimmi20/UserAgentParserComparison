@@ -20,8 +20,8 @@ $statementSelectProvider = $pdo->prepare('SELECT * FROM `real-provider` WHERE `p
 $statementCreateTempUas = $pdo->prepare('CREATE TEMPORARY TABLE IF NOT EXISTS `temp_userAgent` AS (SELECT * FROM `userAgent` LIMIT :start, :count)');
 
 $statementSelectResult = $pdo->prepare('SELECT * FROM `result` WHERE `provider_id` = :proId AND `userAgent_id` = :uaId');
-$statementInsertResult = $pdo->prepare('INSERT INTO `result` (`provider_id`, `userAgent_id`, `resId`, `resProviderVersion`, `resFilename`, `resParseTime`, `resLastChangeDate`, `resResultFound`, `resBrowserName`, `resBrowserVersion`, `resEngineName`, `resEngineVersion`, `resOsName`, `resOsVersion`, `resDeviceModel`, `resDeviceBrand`, `resDeviceType`, `resDeviceIsMobile`, `resDeviceIsTouch`, `resBotIsBot`, `resBotName`, `resBotType`, `resRawResult`) VALUES (:proId, :uaId, :resId, :resProviderVersion, :resFilename, :resParseTime, :resLastChangeDate, :resResultFound, :resBrowserName, :resBrowserVersion, :resEngineName, :resEngineVersion, :resOsName, :resOsVersion, :resDeviceModel, :resDeviceBrand, :resDeviceType, :resDeviceIsMobile, :resDeviceIsTouch, :resBotIsBot, :resBotName, :resBotType, :resRawResult)');
-$statementUpdateResult = $pdo->prepare('UPDATE `result` SET `provider_id` = :proId, `userAgent_id` = :uaId, `resProviderVersion` = :resProviderVersion, `resFilename` = :resFilename, `resParseTime` = :resParseTime, `resLastChangeDate` = :resLastChangeDate, `resResultFound` = :resResultFound, `resBrowserName` = :resBrowserName, `resBrowserVersion` = :resBrowserVersion, `resEngineName` = :resEngineName, `resEngineVersion` = :resEngineVersion, `resOsName` = :resOsName, `resOsVersion` = :resOsVersion, `resDeviceModel` = :resDeviceModel, `resDeviceBrand` = :resDeviceBrand, `resDeviceType` = :resDeviceType, `resDeviceIsMobile` = :resDeviceIsMobile, `resDeviceIsTouch` = :resDeviceIsTouch, `resBotIsBot` = :resBotIsBot, `resBotName` = :resBotName, `resBotType` = :resBotType, `resRawResult` = :resRawResult WHERE `resId` = :resId');
+$statementInsertResult = $pdo->prepare('INSERT INTO `result` (`provider_id`, `userAgent_id`, `resId`, `resProviderVersion`, `resFilename`, `resParseTime`, `resLastChangeDate`, `resResultFound`, `resResultError`, `resBrowserName`, `resBrowserVersion`, `resEngineName`, `resEngineVersion`, `resOsName`, `resOsVersion`, `resDeviceModel`, `resDeviceBrand`, `resDeviceType`, `resDeviceIsMobile`, `resDeviceIsTouch`, `resBotIsBot`, `resBotName`, `resBotType`, `resRawResult`) VALUES (:proId, :uaId, :resId, :resProviderVersion, :resFilename, :resParseTime, :resLastChangeDate, :resResultFound, :resResultError, :resBrowserName, :resBrowserVersion, :resEngineName, :resEngineVersion, :resOsName, :resOsVersion, :resDeviceModel, :resDeviceBrand, :resDeviceType, :resDeviceIsMobile, :resDeviceIsTouch, :resBotIsBot, :resBotName, :resBotType, :resRawResult)');
+$statementUpdateResult = $pdo->prepare('UPDATE `result` SET `provider_id` = :proId, `userAgent_id` = :uaId, `resProviderVersion` = :resProviderVersion, `resFilename` = :resFilename, `resParseTime` = :resParseTime, `resLastChangeDate` = :resLastChangeDate, `resResultFound` = :resResultFound, `resResultError` = :resResultError, `resBrowserName` = :resBrowserName, `resBrowserVersion` = :resBrowserVersion, `resEngineName` = :resEngineName, `resEngineVersion` = :resEngineVersion, `resOsName` = :resOsName, `resOsVersion` = :resOsVersion, `resDeviceModel` = :resDeviceModel, `resDeviceBrand` = :resDeviceBrand, `resDeviceType` = :resDeviceType, `resDeviceIsMobile` = :resDeviceIsMobile, `resDeviceIsTouch` = :resDeviceIsTouch, `resBotIsBot` = :resBotIsBot, `resBotName` = :resBotName, `resBotType` = :resBotType, `resRawResult` = :resRawResult WHERE `resId` = :resId');
 
 echo '~~~ Load all Results ~~~' . PHP_EOL;
 
@@ -123,7 +123,14 @@ do {
                 ];
             }
 
+            $row2['resProviderVersion'] = $provider->getVersion();
+            $date                       = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+            $row2['resLastChangeDate']  = $date->format('Y-m-d H:i:s');
+
+            $row2['resResultError'] = 0;
+
             $parseTime = null;
+            $updated = false;
 
             /*
              * Get the result with timing
@@ -140,28 +147,36 @@ do {
                 $startTime = microtime(true);
                 $parseResult = $provider->parse($headers);
                 $parseTime = microtime(true) - $startTime;
+                $updated = true;
             } catch (NoResultFoundException) {
                 $parseResult = null;
-            } catch (RequestException $e) {
+                $updated = true;
+            } catch (ErrorException $e) {
                 $message .= 'E';
 
                 echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
 
-                continue;
-            } catch (Throwable $e) {
-                $message .= 'X';
+                $parseResult = null;
+                $row2['resResultError'] = 1;
+            } catch (\UserAgentParserComparison\Exception\DetectionErroredException $e) {
+                $message .= 'D';
 
                 echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
 
-                continue;
+                $parseResult = null;
+                $row2['resResultError'] = 1;
+            } catch (Throwable $e) {
+                $message .= 'T';
+
+                echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
+
+                $parseResult = null;
+                $row2['resResultError'] = 1;
             } finally {
                 restore_error_handler();
             }
 
-            $row2['resProviderVersion'] = $provider->getVersion();
-            $row2['resParseTime']       = $parseTime;
-            $date                       = new DateTimeImmutable('now', new DateTimeZone('UTC'));
-            $row2['resLastChangeDate']  = $date->format('Y-m-d H:i:s');
+            $row2['resParseTime'] = $parseTime;
 
             /*
              * Hydrate the result
@@ -194,6 +209,7 @@ do {
                 $statementInsertResult->bindValue(':resParseTime', $row2['resParseTime']);
                 $statementInsertResult->bindValue(':resLastChangeDate', $row2['resLastChangeDate'], PDO::PARAM_STR);
                 $statementInsertResult->bindValue(':resResultFound', $row2['resResultFound'], PDO::PARAM_INT);
+                $statementInsertResult->bindValue(':resResultError', $row2['resResultError'], PDO::PARAM_INT);
 
                 if (array_key_exists('resBrowserName', $row2) && !in_array($row2['resBrowserName'], ['UNKNOWN', 'unknown', ''], true)) {
                     $statementInsertResult->bindValue(':resBrowserName', $row2['resBrowserName']);
@@ -249,9 +265,23 @@ do {
                     $statementInsertResult->bindValue(':resDeviceType', null);
                 }
 
-                $statementInsertResult->bindValue(':resDeviceIsMobile', (int) ($row2['resDeviceIsMobile'] ?? 0));
-                $statementInsertResult->bindValue(':resDeviceIsTouch', (int) ($row2['resDeviceIsTouch'] ?? 0));
-                $statementInsertResult->bindValue(':resBotIsBot', (int) ($row2['resBotIsBot'] ?? 0));
+                if (array_key_exists('resDeviceIsMobile', $row2) && $row2['resDeviceIsMobile'] !== null) {
+                    $statementInsertResult->bindValue(':resDeviceIsMobile', (int) $row2['resDeviceIsMobile']);
+                } else {
+                    $statementInsertResult->bindValue(':resDeviceIsMobile', null);
+                }
+
+                if (array_key_exists('resDeviceIsTouch', $row2) && $row2['resDeviceIsTouch'] !== null) {
+                    $statementInsertResult->bindValue(':resDeviceIsTouch', (int) $row2['resDeviceIsTouch']);
+                } else {
+                    $statementInsertResult->bindValue(':resDeviceIsTouch', null);
+                }
+
+                if (array_key_exists('resBotIsBot', $row2) && $row2['resBotIsBot'] !== null) {
+                    $statementInsertResult->bindValue(':resBotIsBot', (int) $row2['resBotIsBot']);
+                } else {
+                    $statementInsertResult->bindValue(':resBotIsBot', null);
+                }
 
                 if (array_key_exists('resBotName', $row2) && !in_array($row2['resBotName'], ['UNKNOWN', 'unknown', ''], true)) {
                     $statementInsertResult->bindValue(':resBotName', $row2['resBotName']);
@@ -273,7 +303,9 @@ do {
 
                 $statementInsertResult->execute();
 
-                $message .= 'I';
+                if ($updated) {
+                    $message .= 'I';
+                }
             } else {
                 $statementUpdateResult->bindValue(':resId', $dbResultResult['resId'], PDO::PARAM_STR);
                 $statementUpdateResult->bindValue(':proId', $dbResultProvider['proId'], PDO::PARAM_STR);
@@ -289,6 +321,7 @@ do {
                 $statementUpdateResult->bindValue(':resParseTime', $row2['resParseTime']);
                 $statementUpdateResult->bindValue(':resLastChangeDate', $row2['resLastChangeDate'], PDO::PARAM_STR);
                 $statementUpdateResult->bindValue(':resResultFound', $row2['resResultFound'], PDO::PARAM_INT);
+                $statementUpdateResult->bindValue(':resResultError', $row2['resResultError'], PDO::PARAM_INT);
 
                 if (array_key_exists('resBrowserName', $row2) && !in_array($row2['resBrowserName'], ['UNKNOWN', 'unknown', ''], true)) {
                     $statementUpdateResult->bindValue(':resBrowserName', $row2['resBrowserName']);
@@ -344,9 +377,23 @@ do {
                     $statementUpdateResult->bindValue(':resDeviceType', null);
                 }
 
-                $statementUpdateResult->bindValue(':resDeviceIsMobile', (int) ($row2['resDeviceIsMobile'] ?? 0));
-                $statementUpdateResult->bindValue(':resDeviceIsTouch', (int) ($row2['resDeviceIsTouch'] ?? 0));
-                $statementUpdateResult->bindValue(':resBotIsBot', (int) ($row2['resBotIsBot'] ?? 0));
+                if (array_key_exists('resDeviceIsMobile', $row2) && $row2['resDeviceIsMobile'] !== null) {
+                    $statementUpdateResult->bindValue(':resDeviceIsMobile', (int) $row2['resDeviceIsMobile']);
+                } else {
+                    $statementUpdateResult->bindValue(':resDeviceIsMobile', null);
+                }
+
+                if (array_key_exists('resDeviceIsTouch', $row2) && $row2['resDeviceIsTouch'] !== null) {
+                    $statementUpdateResult->bindValue(':resDeviceIsTouch', (int) $row2['resDeviceIsTouch']);
+                } else {
+                    $statementUpdateResult->bindValue(':resDeviceIsTouch', null);
+                }
+
+                if (array_key_exists('resBotIsBot', $row2) && $row2['resBotIsBot'] !== null) {
+                    $statementUpdateResult->bindValue(':resBotIsBot', (int) $row2['resBotIsBot']);
+                } else {
+                    $statementUpdateResult->bindValue(':resBotIsBot', null);
+                }
 
                 if (array_key_exists('resBotName', $row2) && !in_array($row2['resBotName'], ['UNKNOWN', 'unknown', ''], true)) {
                     $statementUpdateResult->bindValue(':resBotName', $row2['resBotName']);
@@ -368,7 +415,9 @@ do {
 
                 $statementUpdateResult->execute();
 
-                $message .= 'U';
+                if ($updated) {
+                    $message .= 'U';
+                }
             }
 
             echo str_pad($message, $providerCount + 3) . ' - Count: ' . str_pad((string) $currenUserAgent, 8, ' ', STR_PAD_LEFT) . ' - ' . str_pad($provider->getName(), $nameLength);
@@ -395,32 +444,32 @@ do {
 function hydrateResult(array $row2, UserAgent $result): array
 {
     $toHydrate = [
-        'resBrowserName' => $result->getBrowser()->getName(),
-        'resBrowserVersion' => $result->getBrowser()
+        'resBrowserName' => $result->getResult()->getBrowser()->getName(),
+        'resBrowserVersion' => $result->getResult()->getBrowser()
             ->getVersion()
-            ->getComplete(),
+            ->getVersion(),
 
-        'resEngineName' => $result->getRenderingEngine()->getName(),
-        'resEngineVersion' => $result->getRenderingEngine()
+        'resEngineName' => $result->getResult()->getEngine()->getName(),
+        'resEngineVersion' => $result->getResult()->getEngine()
             ->getVersion()
-            ->getComplete(),
+            ->getVersion(),
 
-        'resOsName' => $result->getOperatingSystem()->getName(),
-        'resOsVersion' => $result->getOperatingSystem()
+        'resOsName' => $result->getResult()->getOs()->getName(),
+        'resOsVersion' => $result->getResult()->getOs()
             ->getVersion()
-            ->getComplete(),
+            ->getVersion(),
 
-        'resDeviceModel' => $result->getDevice()->getModel(),
-        'resDeviceBrand' => $result->getDevice()->getBrand(),
-        'resDeviceType' => $result->getDevice()->getType(),
-        'resDeviceIsMobile' => $result->getDevice()->getIsMobile(),
-        'resDeviceIsTouch' => $result->getDevice()->getIsTouch(),
+        'resDeviceModel' => $result->getResult()->getDevice()->getDeviceName(),
+        'resDeviceBrand' => $result->getResult()->getDevice()->getBrand()->getType(),
+        'resDeviceType' => $result->getResult()->getDevice()->getType()->getType(),
+        'resDeviceIsMobile' => $result->getResult()->getDevice()->getType()->isMobile(),
+        'resDeviceIsTouch' => $result->getResult()->getDevice()->getDisplay()->hasTouch(),
 
-        'resBotIsBot' => $result->getBot()->getIsBot(),
-        'resBotName' => $result->getBot()->getName(),
-        'resBotType' => $result->getBot()->getType(),
+        'resBotIsBot' => $result->getResult()->getBrowser()->getType()->isBot(),
+        'resBotName' => $result->getResult()->getBrowser()->getName(),
+        'resBotType' => $result->getResult()->getBrowser()->getType()->getType(),
 
-        'resRawResult' => serialize($result->toArray(true)['providerResultRaw']),
+        'resRawResult' => serialize($result->getRawResult()),
     ];
 
     return array_merge($row2, $toHydrate);

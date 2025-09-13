@@ -30,8 +30,8 @@ $statementInsertUa = $pdo->prepare('INSERT INTO `useragent` (`uaId`, `uaHash`, `
 $statementUpdateUa = $pdo->prepare('UPDATE `useragent` SET `uaHash` = :uaHash, `uaHeaders` = :uaHeaders WHERE `uaId` = :uaId');
 
 $statementSelectResult = $pdo->prepare('SELECT * FROM `result` WHERE `provider_id` = :proId AND `userAgent_id` = :uaId');
-$statementInsertResult = $pdo->prepare('INSERT INTO `result` (`provider_id`, `userAgent_id`, `resId`, `resProviderVersion`, `resFilename`, `resParseTime`, `resLastChangeDate`, `resResultFound`, `resBrowserName`, `resBrowserVersion`, `resEngineName`, `resEngineVersion`, `resOsName`, `resOsVersion`, `resDeviceModel`, `resDeviceBrand`, `resDeviceType`, `resDeviceIsMobile`, `resDeviceIsTouch`, `resBotIsBot`, `resBotName`, `resBotType`, `resRawResult`) VALUES (:proId, :uaId, :resId, :resProviderVersion, :resFilename, :resParseTime, :resLastChangeDate, :resResultFound, :resBrowserName, :resBrowserVersion, :resEngineName, :resEngineVersion, :resOsName, :resOsVersion, :resDeviceModel, :resDeviceBrand, :resDeviceType, :resDeviceIsMobile, :resDeviceIsTouch, :resBotIsBot, :resBotName, :resBotType, :resRawResult)');
-$statementUpdateResult = $pdo->prepare('UPDATE `result` SET `provider_id` = :proId, `userAgent_id` = :uaId, `resProviderVersion` = :resProviderVersion, `resFilename` = :resFilename, `resParseTime` = :resParseTime, `resLastChangeDate` = :resLastChangeDate, `resResultFound` = :resResultFound, `resBrowserName` = :resBrowserName, `resBrowserVersion` = :resBrowserVersion, `resEngineName` = :resEngineName, `resEngineVersion` = :resEngineVersion, `resOsName` = :resOsName, `resOsVersion` = :resOsVersion, `resDeviceModel` = :resDeviceModel, `resDeviceBrand` = :resDeviceBrand, `resDeviceType` = :resDeviceType, `resDeviceIsMobile` = :resDeviceIsMobile, `resDeviceIsTouch` = :resDeviceIsTouch, `resBotIsBot` = :resBotIsBot, `resBotName` = :resBotName, `resBotType` = :resBotType, `resRawResult` = :resRawResult WHERE `resId` = :resId');
+$statementInsertResult = $pdo->prepare('INSERT INTO `result` (`provider_id`, `userAgent_id`, `resId`, `resProviderVersion`, `resFilename`, `resParseTime`, `resLastChangeDate`, `resResultFound`, `resResultError`, `resBrowserName`, `resBrowserVersion`, `resEngineName`, `resEngineVersion`, `resOsName`, `resOsVersion`, `resDeviceModel`, `resDeviceBrand`, `resDeviceType`, `resDeviceIsMobile`, `resDeviceIsTouch`, `resBotIsBot`, `resBotName`, `resBotType`, `resRawResult`) VALUES (:proId, :uaId, :resId, :resProviderVersion, :resFilename, :resParseTime, :resLastChangeDate, :resResultFound, :resResultError, :resBrowserName, :resBrowserVersion, :resEngineName, :resEngineVersion, :resOsName, :resOsVersion, :resDeviceModel, :resDeviceBrand, :resDeviceType, :resDeviceIsMobile, :resDeviceIsTouch, :resBotIsBot, :resBotName, :resBotType, :resRawResult)');
+$statementUpdateResult = $pdo->prepare('UPDATE `result` SET `provider_id` = :proId, `userAgent_id` = :uaId, `resProviderVersion` = :resProviderVersion, `resFilename` = :resFilename, `resParseTime` = :resParseTime, `resLastChangeDate` = :resLastChangeDate, `resResultFound` = :resResultFound, `resResultError` = :resResultError, `resBrowserName` = :resBrowserName, `resBrowserVersion` = :resBrowserVersion, `resEngineName` = :resEngineName, `resEngineVersion` = :resEngineVersion, `resOsName` = :resOsName, `resOsVersion` = :resOsVersion, `resDeviceModel` = :resDeviceModel, `resDeviceBrand` = :resDeviceBrand, `resDeviceType` = :resDeviceType, `resDeviceIsMobile` = :resDeviceIsMobile, `resDeviceIsTouch` = :resDeviceIsTouch, `resBotIsBot` = :resBotIsBot, `resBotName` = :resBotName, `resBotType` = :resBotType, `resRawResult` = :resRawResult WHERE `resId` = :resId');
 
 /*
  * Grab the userAgents!
@@ -39,16 +39,16 @@ $statementUpdateResult = $pdo->prepare('UPDATE `result` SET `provider_id` = :pro
 echo '~~~ Load all Useragents ~~~' . PHP_EOL;
 
 $chain = new Provider\Chain([
-    new Provider\Test\Cbschuld(),
+    // new Provider\Test\Cbschuld(),
     new Provider\Test\Donatj(),
-    new Provider\Test\MobileDetect(),
+    // new Provider\Test\MobileDetect(),
     new Provider\Test\Endorphin(),
     // new Provider\Test\UaParserJs(), <-- no tests
-    new Provider\Test\WhichBrowser(),
+    // new Provider\Test\WhichBrowser(),
     new Provider\Test\Woothee(),
     // new Provider\Test\CrawlerDetect(), <-- too many tests
     // new Provider\Test\Browscap(), <-- no tests
-    new Provider\Test\Matomo(),
+    // new Provider\Test\Matomo(),
     // new Provider\Test\BrowserDetector(), <-- too many tests
 ]);
 
@@ -258,6 +258,7 @@ foreach ($chain->getProviders() as $provider) {
             $statementUpdateResult->bindValue(':resParseTime', null);
             $statementUpdateResult->bindValue(':resLastChangeDate', $date->format('Y-m-d H:i:s'), PDO::PARAM_STR);
             $statementUpdateResult->bindValue(':resResultFound', 1, PDO::PARAM_INT);
+            $statementUpdateResult->bindValue(':resResultError', 0, PDO::PARAM_INT);
 
             if (array_key_exists('resBrowserName', $res) && !in_array($res['resBrowserName'], ['UNKNOWN', 'unknown', ''], true)) {
                 $statementUpdateResult->bindValue(':resBrowserName', $res['resBrowserName']);
@@ -356,6 +357,7 @@ foreach ($chain->getProviders() as $provider) {
         $statementInsertResult->bindValue(':resParseTime', null);
         $statementInsertResult->bindValue(':resLastChangeDate', $date->format('Y-m-d H:i:s'), PDO::PARAM_STR);
         $statementInsertResult->bindValue(':resResultFound', 1, PDO::PARAM_INT);
+        $statementInsertResult->bindValue(':resResultError', 0, PDO::PARAM_INT);
 
         if (array_key_exists('resBrowserName', $res) && !in_array($res['resBrowserName'], ['UNKNOWN', 'unknown', ''], true)) {
             $statementInsertResult->bindValue(':resBrowserName', $res['resBrowserName']);

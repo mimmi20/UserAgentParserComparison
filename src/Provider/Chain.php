@@ -15,6 +15,7 @@ namespace UserAgentParserComparison\Provider;
 
 use Override;
 use UserAgentParserComparison\Exception;
+use UserAgentParserComparison\Exception\DetectionErroredException;
 use UserAgentParserComparison\Model;
 
 /**
@@ -59,6 +60,7 @@ final class Chain extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws Exception\NoResultFoundException
+     * @throws DetectionErroredException
      */
     #[Override]
     public function parse(array $headers = []): Model\UserAgent

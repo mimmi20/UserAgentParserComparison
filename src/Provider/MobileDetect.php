@@ -13,8 +13,19 @@ declare(strict_types = 1);
 
 namespace UserAgentParserComparison\Provider;
 
+use BrowserDetector\Version\Exception\NotNumericException;
+use BrowserDetector\Version\NullVersion;
 use Detection\Exception\MobileDetectException;
 use Override;
+use UaDeviceType\Type;
+use UaResult\Browser\Browser;
+use UaResult\Company\Company;
+use UaResult\Device\Device;
+use UaResult\Device\Display;
+use UaResult\Engine\Engine;
+use UaResult\Os\Os;
+use UaResult\Result\Result;
+use UserAgentParserComparison\Exception\DetectionErroredException;
 use UserAgentParserComparison\Exception\NoResultFoundException;
 use UserAgentParserComparison\Exception\PackageNotLoadedException;
 use UserAgentParserComparison\Model;
@@ -94,7 +105,7 @@ final class MobileDetect extends AbstractParseProvider
      * @param array<string, string> $headers
      *
      * @throws NoResultFoundException
-     * @throws MobileDetectException
+     * @throws DetectionErroredException
      */
     #[Override]
     public function parse(array $headers = []): Model\UserAgent
@@ -107,58 +118,110 @@ final class MobileDetect extends AbstractParseProvider
         $parser->setHttpHeaders($headers);
         $parser->setUserAgent($headers['user-agent']);
 
-        /*
-         * Since Mobile_Detect to a regex comparison on every call
-         * We cache it here for all checks and hydration
-         */
-        $resultCache = [
-            'isMobile' => $parser->isMobile(),
-        ];
+        try {
+            $isMobile = $parser->isMobile();
+            $isTablet = $parser->isTablet();
+        } catch (MobileDetectException $e) {
+            throw new DetectionErroredException(
+                'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
+        }
+
+        try {
+            $resultObject = new Result(
+                headers: $headers,
+                device: new Device(
+                    deviceName: null,
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    brand: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    type: $isTablet ? Type::Tablet : ($isMobile ? Type::MobileDevice : Type::Unknown),
+                    display: new Display(
+                        width: null,
+                        height: null,
+                        touch: null,
+                        size: null,
+                    ),
+                    dualOrientation: null,
+                    simCount: null,
+                ),
+                os: new Os(
+                    name: null,
+                    marketingName: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: new NullVersion(),
+                    bits: null,
+                ),
+                browser: new Browser(
+                    name: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: new NullVersion(),
+                    type: \UaBrowserType\Type::Unknown,
+                    bits: null,
+                    modus: null,
+                ),
+                engine: new Engine(
+                    name: null,
+                    manufacturer: new Company(
+                        type: 'unknown',
+                        name: null,
+                        brandname: null,
+                    ),
+                    version: new NullVersion(),
+                ),
+            );
+        } catch (NotNumericException $e) {
+            throw new DetectionErroredException(
+                'No result found for user agent: ' . $headers['user-agent'],
+                0,
+                $e,
+            );
+        }
 
         /*
          * No result found?
          */
-        if ($this->hasResult($resultCache) !== true) {
+        if ($this->hasResult($resultObject) !== true) {
             throw new NoResultFoundException(
-                'No result found for user agent: ' . $headers['user-agent'],
+                'No result found for user agent: ' . ($headers['user-agent'] ?? ''),
             );
         }
 
         /*
          * Hydrate the model
          */
-        $result = new Model\UserAgent($this->getName(), $this->getVersion());
-        $result->setProviderResultRaw($resultCache);
-
-        /*
-         * hydrate the result
-         */
-        $this->hydrateDevice($result->getDevice(), $resultCache);
-
-        return $result;
+        return new Model\UserAgent(
+            providerName: $this->getName(),
+            providerVersion: $this->getVersion(),
+            rawResult: [
+                'isMobile' => $isMobile,
+                'isTablet' => $isTablet,
+            ],
+            result: $resultObject,
+        );
     }
 
-    /**
-     * @param array{isMobile: bool} $resultRaw
-     *
-     * @throws void
-     */
-    private function hasResult(array $resultRaw): bool
+    /** @throws void */
+    private function hasResult(Result $result): bool
     {
-        return $resultRaw['isMobile'] !== null;
-    }
-
-    /**
-     * @param array{isMobile: bool} $resultRaw
-     *
-     * @throws void
-     */
-    private function hydrateDevice(Model\Device $device, array $resultRaw): void
-    {
-        if ($resultRaw['isMobile'] !== true) {
-            return;
-        }
-
-        $device->setIsMobile(true);
+        return $result->getDevice()->getType() !== Type::Unknown;
     }
 }

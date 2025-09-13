@@ -59,6 +59,7 @@ final class OverviewProvider extends AbstractHtml
         $sql = '
             SELECT
                 SUM(`resResultFound`) AS `resultFound`,
+                SUM(`resResultError`) AS `resultError`,
 
                 COUNT(`resBrowserName`) AS `browserFound`,
                 COUNT(`resEngineName`) AS `engineFound`,
@@ -103,6 +104,7 @@ final class OverviewProvider extends AbstractHtml
                 'engineFound' => 0,
                 'osFound' => 0,
                 'resultFound' => 0,
+                'resultError' => 0,
             ];
         }
 
@@ -160,6 +162,23 @@ final class OverviewProvider extends AbstractHtml
         ';
 
         /*
+         * Result errors
+         */
+        $html .= '
+            <tr>
+            <td>
+                Result errors
+            </td>
+            <td>
+                ' . $this->getPercentageMarkup((int) $row['resultError']) . '
+            </td>
+            <td>
+                ' . $row['resultError'] . '
+            </td>
+            </tr>
+        ';
+
+        /*
          * browser
          */
         if ($provider['proCanDetectBrowserName']) {
@@ -180,7 +199,7 @@ final class OverviewProvider extends AbstractHtml
             $html .= '
                 <tr>
                 <td>
-                    Engine names
+                    Browser names
                 </td>
                 <td colspan="2" class="center-align red lighten-1">
                     <strong>Not available with this provider</strong>
@@ -210,7 +229,7 @@ final class OverviewProvider extends AbstractHtml
             $html .= '
                 <tr>
                 <td>
-                    Engine name
+                    Rendering engines
                 </td>
                 <td colspan="2" class="center-align red lighten-1">
                     <strong>Not available with this provider</strong>
