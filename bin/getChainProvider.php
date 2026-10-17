@@ -94,5 +94,4 @@ return new Provider\Chain([
     new Provider\MobileDetect(),
     new Provider\AgentZeroDetector(),
     new Provider\ForocoDetector(),
-    new Provider\FyreUseragent(),
 ]);

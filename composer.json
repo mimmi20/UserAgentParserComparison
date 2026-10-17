@@ -14,7 +14,7 @@
     }
   ],
   "require": {
-    "php": "~8.4.0 || ~8.5.0",
+    "php": "~8.4.0 || ~8.5.0 || ~8.6.0",
     "ext-ctype": "*",
     "ext-curl": "*",
     "ext-fileinfo": "*",
@@ -31,7 +31,6 @@
     "endorphin-studio/browser-detector-data": "^1.2.0",
     "endorphin-studio/browser-detector-tests": "^2.2.0 || ^3.1.0",
     "foroco/php-browser-detection": "^2.8.0",
-    "fyre/useragent": "^2.1.6",
     "guzzlehttp/guzzle": "^7.10.0",
     "guzzlehttp/psr7": "^2.8.0",
     "hexydec/agentzero": "^2.0.2",
